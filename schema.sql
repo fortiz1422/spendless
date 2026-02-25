@@ -1,0 +1,356 @@
+-- ============================================================
+-- SpendLess — Database Schema v1.0
+-- Run this entire file in Supabase SQL Editor
+-- ============================================================
+
+-- ============================================
+-- EXTENSIONS
+-- ============================================
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
+
+-- ============================================
+-- EXPENSES TABLE
+-- ============================================
+
+CREATE TABLE expenses (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+
+  amount DECIMAL(12,2) NOT NULL CHECK (amount >= 1),
+  currency VARCHAR(3) NOT NULL DEFAULT 'ARS' CHECK (currency IN ('ARS', 'USD')),
+
+  category VARCHAR(50) NOT NULL,
+  description TEXT NOT NULL CHECK (length(description) <= 100),
+  is_want BOOLEAN,
+
+  payment_method VARCHAR(20) NOT NULL CHECK (payment_method IN ('CASH', 'DEBIT', 'TRANSFER', 'CREDIT')),
+  card_id VARCHAR(50),
+
+  date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  CONSTRAINT no_credit_card_payment
+    CHECK (category != 'Pago de Tarjetas' OR payment_method != 'CREDIT'),
+
+  CONSTRAINT card_required_when_credit
+    CHECK (
+      (payment_method = 'CREDIT' AND card_id IS NOT NULL) OR
+      (category = 'Pago de Tarjetas' AND card_id IS NOT NULL) OR
+      (payment_method != 'CREDIT' AND category != 'Pago de Tarjetas')
+    )
+);
+
+CREATE INDEX idx_expenses_user_date ON expenses(user_id, date DESC);
+CREATE INDEX idx_expenses_user_created ON expenses(user_id, created_at DESC);
+CREATE INDEX idx_expenses_category ON expenses(user_id, category);
+CREATE INDEX idx_expenses_is_want ON expenses(user_id, is_want) WHERE is_want IS NOT NULL;
+CREATE INDEX idx_expenses_payment ON expenses(user_id, payment_method);
+CREATE INDEX idx_expenses_currency ON expenses(user_id, currency);
+CREATE INDEX idx_expenses_card ON expenses(user_id, card_id) WHERE card_id IS NOT NULL;
+CREATE INDEX idx_expenses_dashboard ON expenses(user_id, date DESC, currency, category)
+  WHERE category != 'Pago de Tarjetas';
+
+COMMENT ON TABLE expenses IS 'User expenses with multi-currency support';
+COMMENT ON COLUMN expenses.is_want IS 'NULL for Pago de Tarjetas category';
+COMMENT ON COLUMN expenses.card_id IS 'Required when payment_method=CREDIT or category=Pago de Tarjetas';
+
+-- ============================================
+-- MONTHLY_INCOME TABLE
+-- ============================================
+
+CREATE TABLE monthly_income (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+
+  month DATE NOT NULL,
+
+  amount_ars DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (amount_ars >= 0),
+  amount_usd DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (amount_usd >= 0),
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  CONSTRAINT unique_user_month UNIQUE(user_id, month)
+);
+
+CREATE INDEX idx_monthly_income_user_month ON monthly_income(user_id, month DESC);
+
+COMMENT ON TABLE monthly_income IS 'User monthly income in ARS and USD';
+COMMENT ON COLUMN monthly_income.month IS 'Always first day of month (YYYY-MM-01)';
+
+-- ============================================
+-- USER_CONFIG TABLE
+-- ============================================
+
+CREATE TABLE user_config (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+
+  default_currency VARCHAR(3) NOT NULL DEFAULT 'ARS' CHECK (default_currency IN ('ARS', 'USD')),
+
+  cards JSONB NOT NULL DEFAULT '[
+    {"id": "bbva_visa", "name": "BBVA VISA", "archived": false},
+    {"id": "bbva_master", "name": "BBVA MÁSTER", "archived": false},
+    {"id": "bna_master", "name": "BNA MASTER", "archived": false}
+  ]'::jsonb,
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+COMMENT ON TABLE user_config IS 'User configuration and preferences';
+COMMENT ON COLUMN user_config.cards IS 'Array of card objects: [{"id": "...", "name": "...", "archived": false}]';
+
+-- ============================================
+-- SHARED FUNCTIONS & TRIGGERS
+-- ============================================
+
+-- updated_at trigger function
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER expenses_updated_at
+  BEFORE UPDATE ON expenses
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER monthly_income_updated_at
+  BEFORE UPDATE ON monthly_income
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER user_config_updated_at
+  BEFORE UPDATE ON user_config
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Normalize month to first day of month
+CREATE OR REPLACE FUNCTION normalize_month()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.month = DATE_TRUNC('month', NEW.month)::DATE;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER monthly_income_normalize_month
+  BEFORE INSERT OR UPDATE ON monthly_income
+  FOR EACH ROW EXECUTE FUNCTION normalize_month();
+
+-- Validate cards JSONB
+CREATE OR REPLACE FUNCTION validate_cards_jsonb()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF jsonb_typeof(NEW.cards) != 'array' THEN
+    RAISE EXCEPTION 'cards must be a JSON array';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM jsonb_array_elements(NEW.cards) AS card
+    WHERE NOT (card ? 'id' AND card ? 'name')
+  ) THEN
+    RAISE EXCEPTION 'Each card must have id and name fields';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER user_config_validate_cards
+  BEFORE INSERT OR UPDATE ON user_config
+  FOR EACH ROW EXECUTE FUNCTION validate_cards_jsonb();
+
+-- Auto-create user_config on first login
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.user_config (user_id)
+  VALUES (NEW.id)
+  ON CONFLICT (user_id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- ============================================
+-- ROW LEVEL SECURITY
+-- ============================================
+
+ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE monthly_income ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_config ENABLE ROW LEVEL SECURITY;
+
+-- Expenses
+CREATE POLICY "expenses_select_policy" ON expenses FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "expenses_insert_policy" ON expenses FOR INSERT WITH CHECK (
+  auth.uid() = user_id AND amount >= 1 AND length(description) <= 100
+);
+CREATE POLICY "expenses_update_policy" ON expenses FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id AND amount >= 1 AND length(description) <= 100);
+CREATE POLICY "expenses_delete_policy" ON expenses FOR DELETE USING (auth.uid() = user_id);
+
+-- Monthly Income
+CREATE POLICY "monthly_income_select_policy" ON monthly_income FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "monthly_income_insert_policy" ON monthly_income FOR INSERT WITH CHECK (
+  auth.uid() = user_id AND amount_ars >= 0 AND amount_usd >= 0
+);
+CREATE POLICY "monthly_income_update_policy" ON monthly_income FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id AND amount_ars >= 0 AND amount_usd >= 0);
+CREATE POLICY "monthly_income_delete_policy" ON monthly_income FOR DELETE USING (auth.uid() = user_id);
+
+-- User Config
+CREATE POLICY "user_config_select_policy" ON user_config FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "user_config_insert_policy" ON user_config FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "user_config_update_policy" ON user_config FOR UPDATE
+  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "user_config_delete_policy" ON user_config FOR DELETE USING (false);
+
+-- ============================================
+-- HELPER VIEWS
+-- ============================================
+
+CREATE OR REPLACE VIEW user_active_cards AS
+SELECT
+  user_id,
+  jsonb_agg(card) AS cards
+FROM (
+  SELECT
+    user_id,
+    jsonb_array_elements(cards) AS card
+  FROM user_config
+) t
+WHERE (card->>'archived')::boolean = false OR card->>'archived' IS NULL
+GROUP BY user_id;
+
+-- ============================================
+-- DATABASE FUNCTIONS
+-- ============================================
+
+-- Dashboard analytics
+CREATE OR REPLACE FUNCTION get_dashboard_data(
+  p_user_id UUID,
+  p_month DATE,
+  p_currency VARCHAR(3)
+)
+RETURNS JSON AS $$
+DECLARE
+  v_result JSON;
+BEGIN
+  SELECT json_build_object(
+    'saldo_vivo', (
+      SELECT json_build_object(
+        'ingresos', COALESCE(
+          CASE WHEN p_currency = 'ARS' THEN amount_ars ELSE amount_usd END, 0
+        ),
+        'gastos_percibidos', COALESCE((
+          SELECT SUM(amount) FROM expenses
+          WHERE user_id = p_user_id AND currency = p_currency
+            AND DATE_TRUNC('month', date) = DATE_TRUNC('month', p_month)
+            AND payment_method IN ('CASH', 'DEBIT', 'TRANSFER')
+        ), 0),
+        'pago_tarjetas', COALESCE((
+          SELECT SUM(amount) FROM expenses
+          WHERE user_id = p_user_id AND currency = p_currency
+            AND DATE_TRUNC('month', date) = DATE_TRUNC('month', p_month)
+            AND category = 'Pago de Tarjetas'
+        ), 0)
+      )
+      FROM monthly_income
+      WHERE user_id = p_user_id AND month = DATE_TRUNC('month', p_month)
+    ),
+    'gastos_tarjeta', COALESCE((
+      SELECT SUM(amount) FROM expenses
+      WHERE user_id = p_user_id AND currency = p_currency
+        AND DATE_TRUNC('month', date) = DATE_TRUNC('month', p_month)
+        AND payment_method = 'CREDIT' AND category != 'Pago de Tarjetas'
+    ), 0),
+    'filtro_estoico', (
+      SELECT json_build_object(
+        'necesidad_count', COUNT(*) FILTER (WHERE is_want = false),
+        'deseo_count', COUNT(*) FILTER (WHERE is_want = true),
+        'total_count', COUNT(*)
+      )
+      FROM expenses
+      WHERE user_id = p_user_id AND currency = p_currency
+        AND DATE_TRUNC('month', date) = DATE_TRUNC('month', p_month)
+        AND category != 'Pago de Tarjetas' AND is_want IS NOT NULL
+    ),
+    'top_3', (
+      SELECT json_agg(row_to_json(t))
+      FROM (
+        SELECT category, SUM(amount) AS total, COUNT(*) AS count
+        FROM expenses
+        WHERE user_id = p_user_id AND currency = p_currency
+          AND DATE_TRUNC('month', date) = DATE_TRUNC('month', p_month)
+          AND category != 'Pago de Tarjetas'
+        GROUP BY category
+        ORDER BY SUM(amount) DESC, COUNT(*) DESC
+        LIMIT 3
+      ) t
+    ),
+    'ultimos_5', (
+      SELECT json_agg(row_to_json(t))
+      FROM (
+        SELECT id, amount, currency, category, description, is_want,
+               payment_method, card_id, date, created_at
+        FROM expenses
+        WHERE user_id = p_user_id
+          AND DATE_TRUNC('month', date) = DATE_TRUNC('month', p_month)
+        ORDER BY date DESC, created_at DESC
+        LIMIT 5
+      ) t
+    )
+  ) INTO v_result;
+
+  RETURN v_result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Daily expense limit check (50/day)
+CREATE OR REPLACE FUNCTION check_daily_expense_limit(p_user_id UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+  v_count INTEGER;
+BEGIN
+  SELECT COUNT(*) INTO v_count
+  FROM expenses
+  WHERE user_id = p_user_id AND DATE(created_at) = CURRENT_DATE;
+  RETURN v_count < 50;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Duplicate detection
+CREATE OR REPLACE FUNCTION detect_duplicate_expenses(
+  p_user_id UUID,
+  p_amount DECIMAL,
+  p_category VARCHAR,
+  p_date DATE
+)
+RETURNS TABLE (id UUID, description TEXT, created_at TIMESTAMPTZ) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT e.id, e.description, e.created_at
+  FROM expenses e
+  WHERE e.user_id = p_user_id
+    AND e.amount = p_amount
+    AND e.category = p_category
+    AND DATE(e.date) = p_date
+  ORDER BY e.created_at DESC
+  LIMIT 5;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================
+-- VERIFY
+-- ============================================
+
+-- Run after migration to confirm:
+-- SELECT tablename FROM pg_tables WHERE schemaname = 'public';
+-- Should return: expenses, monthly_income, user_config

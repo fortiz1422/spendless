@@ -1,0 +1,120 @@
+'use client'
+
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { CATEGORIES } from '@/lib/validation/schemas'
+
+const PAYMENT_OPTIONS = [
+  { value: '', label: 'Todos' },
+  { value: 'CASH', label: 'Efectivo' },
+  { value: 'DEBIT', label: 'Débito' },
+  { value: 'TRANSFER', label: 'Transferencia' },
+  { value: 'CREDIT', label: 'Crédito' },
+]
+
+function getCurrentMonth(): string {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+}
+
+function addMonths(ym: string, delta: number): string {
+  const [y, m] = ym.split('-').map(Number)
+  const d = new Date(y, m - 1 + delta, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+interface Props {
+  month: string
+  category: string
+  paymentMethod: string
+}
+
+export function ExpenseFilters({ month, category, paymentMethod }: Props) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const current = getCurrentMonth()
+  const min = addMonths(current, -12)
+
+  const update = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value) {
+      params.set(key, value)
+    } else {
+      params.delete(key)
+    }
+    params.delete('page') // reset page on filter change
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  const monthLabel = new Date(month + '-15').toLocaleDateString('es-AR', {
+    month: 'long',
+    year: 'numeric',
+  })
+  const monthLabelCap = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)
+
+  return (
+    <div className="space-y-3">
+      {/* Month navigation */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => update('month', addMonths(month, -1))}
+          disabled={month <= min}
+          aria-label="Mes anterior"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-text-secondary hover:bg-white/5 disabled:opacity-30"
+        >
+          ‹
+        </button>
+        <span className="text-sm font-semibold text-text-primary">{monthLabelCap}</span>
+        <button
+          onClick={() => update('month', addMonths(month, 1))}
+          disabled={month >= current}
+          aria-label="Mes siguiente"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-text-secondary hover:bg-white/5 disabled:opacity-30"
+        >
+          ›
+        </button>
+      </div>
+
+      {/* Category filter */}
+      <div>
+        <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+          Categoría
+        </label>
+        <select
+          value={category}
+          onChange={(e) => update('category', e.target.value)}
+          className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none"
+        >
+          <option value="">Todas</option>
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Payment method filter */}
+      <div>
+        <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+          Medio de pago
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {PAYMENT_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => update('payment_method', opt.value)}
+              className={`rounded-button px-3 py-1.5 text-xs font-medium transition-colors ${
+                paymentMethod === opt.value
+                  ? 'bg-primary text-white'
+                  : 'bg-bg-tertiary text-text-secondary hover:bg-white/5'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
