@@ -3,7 +3,10 @@
 import { useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { CATEGORIES } from '@/lib/validation/schemas'
+import { formatDate } from '@/lib/format'
 import type { Card } from '@/types/database'
+
+type Duplicate = { id: string; description: string; created_at: string }
 
 interface ParsedData {
   amount: number
@@ -53,7 +56,10 @@ export function ParsePreview({
     date: toDateInput(data.date),
   })
   const [isSaving, setIsSaving] = useState(false)
+  const [isChecking, setIsChecking] = useState(false)
   const [cardError, setCardError] = useState(false)
+  const [duplicatesChecked, setDuplicatesChecked] = useState(false)
+  const [foundDuplicates, setFoundDuplicates] = useState<Duplicate[]>([])
 
   const isPagoTarjetas = form.category === 'Pago de Tarjetas'
   const needsCard =
@@ -62,12 +68,38 @@ export function ParsePreview({
   const set = <K extends keyof ParsedData>(key: K, value: ParsedData[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }))
     if (key === 'card_id') setCardError(false)
+    if (key === 'amount' || key === 'category' || key === 'date') {
+      setDuplicatesChecked(false)
+      setFoundDuplicates([])
+    }
   }
 
   const handleSave = async () => {
     if (needsCard && !form.card_id) {
       setCardError(true)
       return
+    }
+
+    if (!duplicatesChecked) {
+      setIsChecking(true)
+      try {
+        const params = new URLSearchParams({
+          amount: String(form.amount),
+          category: form.category,
+          date: form.date,
+        })
+        const res = await fetch(`/api/expenses/duplicates?${params}`)
+        const data = await res.json()
+        const dupes: Duplicate[] = data.duplicates ?? []
+        setFoundDuplicates(dupes)
+        setDuplicatesChecked(true)
+        if (dupes.length > 0) return
+      } catch {
+        // on network error, skip duplicate check and proceed
+        setDuplicatesChecked(true)
+      } finally {
+        setIsChecking(false)
+      }
     }
 
     setIsSaving(true)
@@ -262,14 +294,40 @@ export function ParsePreview({
         )}
       </div>
 
+      {/* Duplicate warning */}
+      {duplicatesChecked && foundDuplicates.length > 0 && (
+        <div className="mt-5 rounded-input bg-warning/10 p-3">
+          <p className="mb-2 text-xs font-medium text-warning">
+            Posible gasto duplicado:
+          </p>
+          <ul className="mb-2 space-y-1">
+            {foundDuplicates.map((d) => (
+              <li key={d.id} className="text-xs text-text-secondary">
+                · {d.description}{' '}
+                <span className="text-text-tertiary">({formatDate(d.created_at)})</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-text-tertiary">
+            Si es un gasto distinto, guardalo de todas formas.
+          </p>
+        </div>
+      )}
+
       {/* Botones */}
       <div className="mt-6 flex flex-col gap-2">
         <button
           onClick={handleSave}
-          disabled={isSaving}
+          disabled={isSaving || isChecking}
           className="w-full rounded-button bg-gradient-to-r from-primary to-purple-500 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/30 transition-transform active:scale-95 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isSaving ? 'Guardando...' : 'Guardar gasto ✓'}
+          {isChecking
+            ? 'Verificando...'
+            : isSaving
+              ? 'Guardando...'
+              : duplicatesChecked && foundDuplicates.length > 0
+                ? 'Guardar de todas formas'
+                : 'Guardar gasto ✓'}
         </button>
         <button
           onClick={onCancel}
