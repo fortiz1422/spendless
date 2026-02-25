@@ -58,7 +58,8 @@ export default async function ExpensesPage({
     .range(offset, offset + pageSize - 1)
 
   if (category) query = query.eq('category', category)
-  if (paymentMethod) query = query.eq('payment_method', paymentMethod)
+  if (paymentMethod)
+    query = query.eq('payment_method', paymentMethod as 'CASH' | 'DEBIT' | 'TRANSFER' | 'CREDIT')
 
   const { data, count } = await query
   const expenses = (data ?? []) as Expense[]

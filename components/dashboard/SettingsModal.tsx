@@ -318,7 +318,7 @@ function CardsSection({
 }
 
 // ─── Section: Income ─────────────────────────────────────────────────────────
-function IncomeSection({ defaultMonth }: { defaultMonth: string }) {
+function IncomeSection({ defaultMonth, onSaved }: { defaultMonth: string; onSaved: () => void }) {
   const currentMonth = getCurrentMonth()
   const [month, setMonth] = useState(defaultMonth)
   const [amountArs, setAmountArs] = useState('')
@@ -353,6 +353,7 @@ function IncomeSection({ defaultMonth }: { defaultMonth: string }) {
         }),
       })
       if (!res.ok) throw new Error()
+      onSaved()
     } catch {
       alert('Error al guardar ingreso.')
     } finally {
@@ -487,7 +488,7 @@ export function SettingsModal({ open, onClose, email, currency, cards, month }: 
         <div className="space-y-5">
           <CurrencySection currency={currency} onSaved={handleSaved} />
           <CardsSection cards={cards} onSaved={handleSaved} />
-          <IncomeSection defaultMonth={month} />
+          <IncomeSection defaultMonth={month} onSaved={handleSaved} />
         </div>
       )}
 

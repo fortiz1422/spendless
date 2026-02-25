@@ -36,13 +36,14 @@ export async function GET(request: Request) {
   if (category) query = query.eq('category', category)
 
   const paymentMethod = searchParams.get('payment_method')
-  if (paymentMethod) query = query.eq('payment_method', paymentMethod)
+  if (paymentMethod)
+    query = query.eq('payment_method', paymentMethod as 'CASH' | 'DEBIT' | 'TRANSFER' | 'CREDIT')
 
   const cardId = searchParams.get('card_id')
   if (cardId) query = query.eq('card_id', cardId)
 
   const currency = searchParams.get('currency')
-  if (currency) query = query.eq('currency', currency)
+  if (currency) query = query.eq('currency', currency as 'ARS' | 'USD')
 
   const { data, count, error } = await query
   if (error) {
