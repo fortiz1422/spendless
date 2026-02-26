@@ -68,7 +68,7 @@ export default async function ExpensesPage({
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <div className="mx-auto max-w-md px-4 py-6">
+      <div className="mx-auto max-w-md px-4 pb-6 pt-safe">
         {/* Header */}
         <div className="mb-4 flex items-center gap-3">
           <Link

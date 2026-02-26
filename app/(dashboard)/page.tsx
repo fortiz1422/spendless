@@ -65,7 +65,7 @@ export default async function DashboardPage({
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <div className="mx-auto max-w-md space-y-3 px-4 py-6">
+      <div className="mx-auto max-w-md space-y-3 px-4 pb-6 pt-safe">
         <DashboardHeader
           month={selectedMonth}
           email={user.email ?? ''}
