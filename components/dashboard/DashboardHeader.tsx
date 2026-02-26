@@ -48,26 +48,26 @@ export function DashboardHeader({ month, email, currency, cards }: Props) {
           onClick={() => go(-1)}
           disabled={month <= min}
           aria-label="Mes anterior"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-text-secondary transition-colors hover:bg-white/5 disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-text-tertiary transition-colors hover:bg-white/5 disabled:opacity-30"
         >
           ‹
         </button>
 
-        <h1 className="text-base font-semibold text-text-primary">{labelCap}</h1>
+        <h1 className="text-base font-medium text-text-secondary">{labelCap}</h1>
 
         <div className="flex items-center gap-1">
           <button
             onClick={() => go(1)}
             disabled={month >= current}
             aria-label="Mes siguiente"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-text-secondary transition-colors hover:bg-white/5 disabled:opacity-30"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-text-tertiary transition-colors hover:bg-white/5 disabled:opacity-30"
           >
             ›
           </button>
           <button
             onClick={() => setSettingsOpen(true)}
             aria-label="Configuración"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-white/5"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-primary transition-colors hover:bg-white/5"
           >
             <Settings size={16} strokeWidth={1.5} />
           </button>

@@ -476,7 +476,7 @@ export function SettingsModal({ open, onClose, email, currency, cards, month }: 
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="w-full rounded-button bg-danger/10 py-2.5 text-sm font-medium text-danger transition-colors hover:bg-danger/20 disabled:opacity-50"
+            className="w-full rounded-button py-2.5 text-sm font-medium text-danger transition-colors hover:bg-white/5 disabled:opacity-50"
           >
             {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
           </button>

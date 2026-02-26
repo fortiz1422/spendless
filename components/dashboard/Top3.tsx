@@ -40,9 +40,9 @@ export function Top3({ data, currency }: Props) {
                 <span className="text-xs text-text-tertiary">{item.count}x</span>
               </div>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg-tertiary">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-[rgba(56,189,248,0.12)]">
               <div
-                className="h-full rounded-full bg-primary opacity-60"
+                className="h-full rounded-full bg-[rgba(56,189,248,0.65)]"
                 style={{ width: `${(item.total / maxTotal) * 100}%` }}
               />
             </div>

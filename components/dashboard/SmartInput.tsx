@@ -79,7 +79,7 @@ export function SmartInput({ cards }: SmartInputProps) {
           }}
           placeholder="café 2500"
           disabled={isParsing}
-          className="flex-1 rounded-input border border-transparent bg-bg-tertiary px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:outline-none disabled:opacity-50"
+          className="flex-1 rounded-input border border-[rgba(56,189,248,0.15)] bg-bg-tertiary px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-[rgba(56,189,248,0.4)] focus:outline-none disabled:opacity-50"
         />
         <button
           onClick={handleSubmit}

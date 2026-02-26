@@ -33,7 +33,7 @@ export function FiltroEstoico({ data }: Props) {
         </span>
       </div>
 
-      <div className="flex h-2 w-full overflow-hidden rounded-full bg-bg-tertiary">
+      <div className="flex h-2 w-full gap-[2px] overflow-hidden rounded-full bg-bg-tertiary">
         <div className="h-full bg-success" style={{ width: `${necesidadPct}%` }} />
         <div className="h-full bg-want" style={{ width: `${deseoPct}%` }} />
       </div>

@@ -52,7 +52,7 @@ export function SaldoVivo({ data, currency }: Props) {
       <div className="mt-4 border-t border-border-subtle pt-4 flex items-center justify-between">
         <span className="text-sm font-semibold text-text-primary">Disponible</span>
         <span
-          className={`text-2xl font-bold tabular-nums ${disponible >= 0 ? 'text-success' : 'text-danger'}`}
+          className={`text-2xl font-semibold tabular-nums ${disponible >= 0 ? 'text-success' : 'text-danger'}`}
         >
           {disponible < 0 ? '−' : ''}
           {formatAmount(Math.abs(disponible), currency)}

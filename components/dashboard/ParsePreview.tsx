@@ -319,7 +319,7 @@ export function ParsePreview({
         <button
           onClick={handleSave}
           disabled={isSaving || isChecking}
-          className="w-full rounded-button bg-gradient-to-r from-primary to-purple-500 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/30 transition-transform active:scale-95 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-button bg-primary py-3 text-sm font-semibold text-white transition-transform active:scale-95 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isChecking
             ? 'Verificando...'
