@@ -11,9 +11,7 @@ export function Top3({ data, currency }: Props) {
   if (!data || data.length === 0) {
     return (
       <div className="rounded-card bg-bg-secondary p-4">
-        <p className="text-xs font-medium uppercase tracking-wider text-text-secondary">
-          Top 3 Categorías
-        </p>
+        <p className="text-xs text-text-tertiary">top categorías</p>
         <p className="mt-2 text-sm text-text-tertiary">Sin gastos registrados este mes.</p>
       </div>
     )
@@ -23,9 +21,7 @@ export function Top3({ data, currency }: Props) {
 
   return (
     <div className="rounded-card bg-bg-secondary p-4">
-      <p className="mb-3 text-xs font-medium uppercase tracking-wider text-text-secondary">
-        Top 3 Categorías
-      </p>
+      <p className="mb-3 text-xs text-text-tertiary">top categorías</p>
 
       <div className="space-y-3">
         {data.map((item) => (

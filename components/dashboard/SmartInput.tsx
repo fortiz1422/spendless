@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { ArrowRight } from 'lucide-react'
 import { ParsePreview } from './ParsePreview'
 import type { Card } from '@/types/database'
 
@@ -89,7 +90,7 @@ export function SmartInput({ cards }: SmartInputProps) {
           {isParsing ? (
             <span className="spinner" />
           ) : (
-            <span className="text-base">▶</span>
+            <ArrowRight size={18} strokeWidth={2} />
           )}
         </button>
       </div>

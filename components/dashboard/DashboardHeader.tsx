@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Settings } from 'lucide-react'
 import { SettingsModal } from './SettingsModal'
 import type { Card } from '@/types/database'
 
@@ -68,7 +69,7 @@ export function DashboardHeader({ month, email, currency, cards }: Props) {
             aria-label="Configuración"
             className="flex h-9 w-9 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-white/5"
           >
-            ⚙️
+            <Settings size={16} strokeWidth={1.5} />
           </button>
         </div>
       </header>
