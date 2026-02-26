@@ -9,7 +9,7 @@ interface Props {
 export function SaldoVivo({ data, currency }: Props) {
   if (!data) {
     return (
-      <div className="rounded-card-lg border border-white/5 bg-bg-secondary p-5">
+      <div className="rounded-card-lg bg-bg-elevated p-5">
         <p className="text-xs text-text-tertiary">saldo vivo</p>
         <p className="mt-3 text-sm text-text-tertiary">
           Configurá tu ingreso mensual para ver cuánto te queda disponible.
@@ -21,7 +21,7 @@ export function SaldoVivo({ data, currency }: Props) {
   const disponible = data.ingresos - data.gastos_percibidos - data.pago_tarjetas
 
   return (
-    <div className="rounded-card-lg border border-white/5 bg-bg-secondary p-5">
+    <div className="rounded-card-lg bg-bg-elevated p-5">
       <p className="mb-4 text-xs text-text-tertiary">saldo vivo</p>
 
       <div className="space-y-2">
@@ -48,7 +48,7 @@ export function SaldoVivo({ data, currency }: Props) {
       <div className="mt-5 flex items-end justify-between">
         <span className="text-xs text-text-tertiary">disponible</span>
         <span
-          className={`text-4xl font-semibold tabular-nums ${disponible >= 0 ? 'text-success' : 'text-danger'}`}
+          className={`text-2xl font-bold tabular-nums ${disponible >= 0 ? 'text-success' : 'text-danger'}`}
         >
           {disponible < 0 ? '−' : ''}
           {formatAmount(Math.abs(disponible), currency)}
