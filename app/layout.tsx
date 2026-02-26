@@ -8,12 +8,12 @@ const geistSans = Geist({
 })
 
 export const metadata: Metadata = {
-  title: 'SpendLess',
+  title: 'Gota',
   description: 'Tus gastos, sin fricción',
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0a0e1a',
+  themeColor: '#060a0e',
 }
 
 export default function RootLayout({

@@ -1,5 +1,5 @@
 -- ============================================================
--- SpendLess — Database Schema v1.0
+-- Gota — Database Schema v1.0
 -- Run this entire file in Supabase SQL Editor
 -- ============================================================
 

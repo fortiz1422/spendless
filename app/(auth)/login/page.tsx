@@ -20,7 +20,7 @@ export default async function LoginPage({
     <div className="flex min-h-screen items-center justify-center bg-bg-primary px-4">
       <div className="w-full max-w-sm text-center">
         <h1 className="mb-2 text-4xl font-bold text-text-primary">
-          💰 SpendLess
+          💧 Gota
         </h1>
         <p className="mb-10 text-base text-text-secondary">
           Tus gastos, sin fricción
