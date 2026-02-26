@@ -28,7 +28,7 @@ export function Ultimos5({ expenses, month }: Props) {
   return (
     <div className="rounded-card bg-bg-secondary p-4">
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs text-text-tertiary">últimos gastos</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-text-secondary">Últimos Gastos</p>
         <Link href={expensesHref} className="text-xs text-primary hover:underline">
           Ver todos →
         </Link>

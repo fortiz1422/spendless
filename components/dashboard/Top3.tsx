@@ -21,7 +21,7 @@ export function Top3({ data, currency }: Props) {
 
   return (
     <div className="rounded-card bg-bg-secondary p-4">
-      <p className="mb-3 text-xs text-text-tertiary">top categorías</p>
+      <p className="mb-3 text-xs font-medium uppercase tracking-wider text-text-secondary">Top Categorías</p>
 
       <div className="space-y-3">
         {data.map((item) => (
