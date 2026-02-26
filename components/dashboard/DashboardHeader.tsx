@@ -43,7 +43,7 @@ export function DashboardHeader({ month, email, currency, cards }: Props) {
 
   return (
     <>
-      <header className="mb-6 flex items-center justify-between">
+      <header className="mb-6 grid grid-cols-3 items-center">
         <button
           onClick={() => go(-1)}
           disabled={month <= min}
@@ -53,9 +53,9 @@ export function DashboardHeader({ month, email, currency, cards }: Props) {
           ‹
         </button>
 
-        <h1 className="text-base font-medium text-text-secondary">{labelCap}</h1>
+        <h1 className="text-center text-base font-medium text-text-secondary">{labelCap}</h1>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-end gap-1">
           <button
             onClick={() => go(1)}
             disabled={month >= current}
