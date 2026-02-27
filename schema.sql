@@ -69,6 +69,8 @@ CREATE TABLE monthly_income (
 
   amount_ars DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (amount_ars >= 0),
   amount_usd DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (amount_usd >= 0),
+  saldo_inicial_ars DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (saldo_inicial_ars >= 0),
+  saldo_inicial_usd DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (saldo_inicial_usd >= 0),
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -246,6 +248,9 @@ BEGIN
   SELECT json_build_object(
     'saldo_vivo', (
       SELECT json_build_object(
+        'saldo_inicial', COALESCE(
+          CASE WHEN p_currency = 'ARS' THEN saldo_inicial_ars ELSE saldo_inicial_usd END, 0
+        ),
         'ingresos', COALESCE(
           CASE WHEN p_currency = 'ARS' THEN amount_ars ELSE amount_usd END, 0
         ),

@@ -16,19 +16,23 @@ export async function GET(request: Request) {
 
   const { data, error } = await supabase
     .from('monthly_income')
-    .select('amount_ars, amount_usd')
+    .select('amount_ars, amount_usd, saldo_inicial_ars, saldo_inicial_usd')
     .eq('user_id', user.id)
     .eq('month', month)
     .maybeSingle()
 
   if (error) return NextResponse.json({ error: 'Error' }, { status: 500 })
-  return NextResponse.json(data ?? { amount_ars: 0, amount_usd: 0 })
+  return NextResponse.json(
+    data ?? { amount_ars: 0, amount_usd: 0, saldo_inicial_ars: 0, saldo_inicial_usd: 0 },
+  )
 }
 
 const Schema = z.object({
   month: z.string().regex(/^\d{4}-\d{2}(-\d{2})?$/), // accepts YYYY-MM or YYYY-MM-DD
   amount_ars: z.number().min(0),
   amount_usd: z.number().min(0),
+  saldo_inicial_ars: z.number().min(0).optional().default(0),
+  saldo_inicial_usd: z.number().min(0).optional().default(0),
 })
 
 export async function POST(request: Request) {
@@ -41,7 +45,8 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { month: rawMonth, amount_ars, amount_usd } = Schema.parse(body)
+    const { month: rawMonth, amount_ars, amount_usd, saldo_inicial_ars, saldo_inicial_usd } =
+      Schema.parse(body)
     // Ensure full date format required by DATE column
     const month = rawMonth.length === 7 ? rawMonth + '-01' : rawMonth
 
@@ -56,13 +61,13 @@ export async function POST(request: Request) {
     if (existing) {
       const { error } = await supabase
         .from('monthly_income')
-        .update({ amount_ars, amount_usd })
+        .update({ amount_ars, amount_usd, saldo_inicial_ars, saldo_inicial_usd })
         .eq('id', existing.id)
       if (error) throw error
     } else {
       const { error } = await supabase
         .from('monthly_income')
-        .insert({ user_id: user.id, month, amount_ars, amount_usd })
+        .insert({ user_id: user.id, month, amount_ars, amount_usd, saldo_inicial_ars, saldo_inicial_usd })
       if (error) throw error
     }
 

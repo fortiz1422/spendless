@@ -20,7 +20,7 @@ export function SaldoVivo({ data, currency }: Props) {
     )
   }
 
-  const disponible = data.ingresos - data.gastos_percibidos - data.pago_tarjetas
+  const disponible = data.saldo_inicial + data.ingresos - data.gastos_percibidos - data.pago_tarjetas
 
   return (
     <div className="rounded-card-lg bg-bg-elevated p-5">
@@ -29,6 +29,12 @@ export function SaldoVivo({ data, currency }: Props) {
       </p>
 
       <div className="space-y-2">
+        {data.saldo_inicial > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-text-secondary">Saldo inicial</span>
+            <span className="text-success">{formatAmount(data.saldo_inicial, currency)}</span>
+          </div>
+        )}
         <div className="flex justify-between text-sm">
           <span className="text-text-secondary">Ingresos</span>
           <span className="text-success">{formatAmount(data.ingresos, currency)}</span>

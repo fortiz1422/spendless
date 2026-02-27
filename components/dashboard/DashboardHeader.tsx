@@ -53,7 +53,7 @@ export function DashboardHeader({ month, email, currency, cards }: Props) {
           ‹
         </button>
 
-        <h1 className="text-center text-base font-medium text-text-secondary">{labelCap}</h1>
+        <h1 className="whitespace-nowrap text-center text-sm font-medium text-text-secondary">{labelCap}</h1>
 
         <div className="flex items-center justify-end gap-1">
           <button

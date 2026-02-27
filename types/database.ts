@@ -61,6 +61,8 @@ export type Database = {
           month: string
           amount_ars: number
           amount_usd: number
+          saldo_inicial_ars: number
+          saldo_inicial_usd: number
           created_at: string
           updated_at: string
         }
@@ -70,6 +72,8 @@ export type Database = {
           month: string
           amount_ars?: number
           amount_usd?: number
+          saldo_inicial_ars?: number
+          saldo_inicial_usd?: number
           created_at?: string
           updated_at?: string
         }
@@ -79,6 +83,8 @@ export type Database = {
           month?: string
           amount_ars?: number
           amount_usd?: number
+          saldo_inicial_ars?: number
+          saldo_inicial_usd?: number
           created_at?: string
           updated_at?: string
         }
@@ -203,6 +209,7 @@ export type Category =
 
 export type DashboardData = {
   saldo_vivo: {
+    saldo_inicial: number
     ingresos: number
     gastos_percibidos: number
     pago_tarjetas: number

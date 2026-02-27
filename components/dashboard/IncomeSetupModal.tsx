@@ -22,6 +22,8 @@ export function IncomeSetupModal({ month, currency }: Props) {
   const [mounted, setMounted] = useState(false)
   const [amountArs, setAmountArs] = useState('')
   const [amountUsd, setAmountUsd] = useState('')
+  const [saldoInicialArs, setSaldoInicialArs] = useState('')
+  const [saldoInicialUsd, setSaldoInicialUsd] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
   // Avoid SSR / hydration mismatch with createPortal
@@ -29,13 +31,19 @@ export function IncomeSetupModal({ month, currency }: Props) {
 
   if (!mounted) return null
 
-  const save = async (ars: number, usd: number) => {
+  const save = async (ars: number, usd: number, saldoArs = 0, saldoUsd = 0) => {
     setIsSaving(true)
     try {
       const res = await fetch('/api/monthly-income', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ month, amount_ars: ars, amount_usd: usd }),
+        body: JSON.stringify({
+          month,
+          amount_ars: ars,
+          amount_usd: usd,
+          saldo_inicial_ars: saldoArs,
+          saldo_inicial_usd: saldoUsd,
+        }),
       })
       if (!res.ok) throw new Error()
       router.refresh()
@@ -45,7 +53,13 @@ export function IncomeSetupModal({ month, currency }: Props) {
     }
   }
 
-  const handleSave = () => save(Number(amountArs) || 0, Number(amountUsd) || 0)
+  const handleSave = () =>
+    save(
+      Number(amountArs) || 0,
+      Number(amountUsd) || 0,
+      Number(saldoInicialArs) || 0,
+      Number(saldoInicialUsd) || 0,
+    )
   const handleSkip = () => save(0, 0)
 
   return (
@@ -84,6 +98,35 @@ export function IncomeSetupModal({ month, currency }: Props) {
             onChange={(e) => setAmountUsd(e.target.value)}
             className="w-full rounded-input border border-transparent bg-bg-tertiary px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:outline-none"
           />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+            Saldo inicial ARS
+          </label>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="0"
+            value={saldoInicialArs}
+            onChange={(e) => setSaldoInicialArs(e.target.value)}
+            className="w-full rounded-input border border-transparent bg-bg-tertiary px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+            Saldo inicial USD
+          </label>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="0"
+            value={saldoInicialUsd}
+            onChange={(e) => setSaldoInicialUsd(e.target.value)}
+            className="w-full rounded-input border border-transparent bg-bg-tertiary px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:outline-none"
+          />
+          <p className="mt-1.5 text-xs text-text-tertiary">El dinero que ya tenías antes de este mes</p>
         </div>
       </div>
 

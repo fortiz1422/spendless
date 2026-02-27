@@ -323,6 +323,8 @@ function IncomeSection({ defaultMonth, onSaved }: { defaultMonth: string; onSave
   const [month, setMonth] = useState(defaultMonth)
   const [amountArs, setAmountArs] = useState('')
   const [amountUsd, setAmountUsd] = useState('')
+  const [saldoInicialArs, setSaldoInicialArs] = useState('')
+  const [saldoInicialUsd, setSaldoInicialUsd] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const minMonth = addMonths(currentMonth, -12)
@@ -335,6 +337,8 @@ function IncomeSection({ defaultMonth, onSaved }: { defaultMonth: string; onSave
       .then((data) => {
         setAmountArs(data.amount_ars > 0 ? String(data.amount_ars) : '')
         setAmountUsd(data.amount_usd > 0 ? String(data.amount_usd) : '')
+        setSaldoInicialArs(data.saldo_inicial_ars > 0 ? String(data.saldo_inicial_ars) : '')
+        setSaldoInicialUsd(data.saldo_inicial_usd > 0 ? String(data.saldo_inicial_usd) : '')
       })
       .catch(() => {})
       .finally(() => setIsLoading(false))
@@ -350,6 +354,8 @@ function IncomeSection({ defaultMonth, onSaved }: { defaultMonth: string; onSave
           month,
           amount_ars: Number(amountArs) || 0,
           amount_usd: Number(amountUsd) || 0,
+          saldo_inicial_ars: Number(saldoInicialArs) || 0,
+          saldo_inicial_usd: Number(saldoInicialUsd) || 0,
         }),
       })
       if (!res.ok) throw new Error()
@@ -408,6 +414,23 @@ function IncomeSection({ defaultMonth, onSaved }: { defaultMonth: string; onSave
             onChange={(e) => setAmountUsd(e.target.value)}
             className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:outline-none"
           />
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="Saldo inicial ARS"
+            value={saldoInicialArs}
+            onChange={(e) => setSaldoInicialArs(e.target.value)}
+            className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:outline-none"
+          />
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="Saldo inicial USD"
+            value={saldoInicialUsd}
+            onChange={(e) => setSaldoInicialUsd(e.target.value)}
+            className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:outline-none"
+          />
+          <p className="text-xs text-text-tertiary">El dinero que ya tenías antes de este mes</p>
           <button
             onClick={handleSave}
             disabled={isSaving}
