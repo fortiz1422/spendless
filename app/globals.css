@@ -62,6 +62,11 @@ body {
   padding-top: calc(env(safe-area-inset-top) + 1.5rem);
 }
 
+/* Espacio para tab bar fijo en el fondo */
+.pb-tab-bar {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 4rem);
+}
+
 /* Focus ring */
 *:focus-visible {
   outline: 2px solid #38bdf8;

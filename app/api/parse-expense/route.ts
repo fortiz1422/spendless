@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { geminiModel } from '@/lib/gemini/client'
 import { createExpensePrompt } from '@/lib/gemini/prompts'
@@ -42,9 +43,15 @@ export async function POST(request: Request) {
     return NextResponse.json(validated)
   } catch (error) {
     console.error('Parse expense error:', error)
+    if (error instanceof ZodError) {
+      return NextResponse.json({
+        is_valid: false,
+        reason: 'No pude interpretar ese gasto. Revisá que tenga descripción y monto.',
+      })
+    }
     return NextResponse.json({
       is_valid: false,
-      reason: 'Error al procesar el gasto. Intentá de nuevo.',
+      reason: 'Error al procesar. Revisá tu conexión e intentá de nuevo.',
     })
   }
 }

@@ -5,7 +5,6 @@ import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { SaldoVivo } from '@/components/dashboard/SaldoVivo'
 import { GastosTarjeta } from '@/components/dashboard/GastosTarjeta'
 import { FiltroEstoico } from '@/components/dashboard/FiltroEstoico'
-import { Top3 } from '@/components/dashboard/Top3'
 import { Ultimos5 } from '@/components/dashboard/Ultimos5'
 import { IncomeSetupModal } from '@/components/dashboard/IncomeSetupModal'
 import type { Card, DashboardData } from '@/types/database'
@@ -66,12 +65,7 @@ export default async function DashboardPage({
   return (
     <div className="min-h-screen bg-bg-primary">
       <div className="mx-auto max-w-md space-y-3 px-4 pb-6 pt-safe">
-        <DashboardHeader
-          month={selectedMonth}
-          email={user.email ?? ''}
-          currency={currency}
-          cards={allCards}
-        />
+        <DashboardHeader month={selectedMonth} />
 
         <SmartInput cards={cards} />
 
@@ -81,11 +75,13 @@ export default async function DashboardPage({
 
         <SaldoVivo data={dashboardData?.saldo_vivo ?? null} currency={currency} />
 
-        <GastosTarjeta total={dashboardData?.gastos_tarjeta ?? 0} currency={currency} />
+        {(dashboardData?.gastos_tarjeta ?? 0) > 0 && (
+          <GastosTarjeta total={dashboardData!.gastos_tarjeta} currency={currency} />
+        )}
 
-        <FiltroEstoico data={dashboardData?.filtro_estoico ?? { necesidad_count: 0, deseo_count: 0, total_count: 0 }} />
-
-        <Top3 data={dashboardData?.top_3 ?? null} currency={currency} />
+        {(dashboardData?.ultimos_5?.length ?? 0) > 0 && (
+          <FiltroEstoico data={dashboardData!.filtro_estoico} />
+        )}
 
         <Ultimos5 expenses={dashboardData?.ultimos_5 ?? null} month={selectedMonth} />
       </div>

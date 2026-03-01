@@ -1,16 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Settings } from 'lucide-react'
-import { SettingsModal } from './SettingsModal'
-import type { Card } from '@/types/database'
 
 interface Props {
   month: string // YYYY-MM
-  email: string
-  currency: 'ARS' | 'USD'
-  cards: Card[]
+  basePath?: string // default '/'
 }
 
 function addMonths(ym: string, delta: number): string {
@@ -24,9 +18,8 @@ function getCurrentMonth(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 }
 
-export function DashboardHeader({ month, email, currency, cards }: Props) {
+export function DashboardHeader({ month, basePath = '/' }: Props) {
   const router = useRouter()
-  const [settingsOpen, setSettingsOpen] = useState(false)
   const current = getCurrentMonth()
   const min = addMonths(current, -12)
 
@@ -38,50 +31,34 @@ export function DashboardHeader({ month, email, currency, cards }: Props) {
 
   const go = (delta: number) => {
     const next = addMonths(month, delta)
-    router.push(next === current ? '/' : `/?month=${next}`)
+    router.push(next === current ? basePath : `${basePath}?month=${next}`)
   }
 
   return (
-    <>
-      <header className="mb-6 grid grid-cols-3 items-center">
+    <header className="mb-6 grid grid-cols-3 items-center">
+      <button
+        onClick={() => go(-1)}
+        disabled={month <= min}
+        aria-label="Mes anterior"
+        className="flex h-9 w-9 items-center justify-center rounded-full text-2xl text-text-secondary transition-colors hover:bg-white/5 disabled:opacity-30"
+      >
+        ‹
+      </button>
+
+      <h1 className="whitespace-nowrap text-center text-sm font-medium text-text-secondary">
+        {labelCap}
+      </h1>
+
+      <div className="flex items-center justify-end">
         <button
-          onClick={() => go(-1)}
-          disabled={month <= min}
-          aria-label="Mes anterior"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-text-tertiary transition-colors hover:bg-white/5 disabled:opacity-30"
+          onClick={() => go(1)}
+          disabled={month >= current}
+          aria-label="Mes siguiente"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-2xl text-text-secondary transition-colors hover:bg-white/5 disabled:opacity-30"
         >
-          ‹
+          ›
         </button>
-
-        <h1 className="whitespace-nowrap text-center text-sm font-medium text-text-secondary">{labelCap}</h1>
-
-        <div className="flex items-center justify-end gap-1">
-          <button
-            onClick={() => go(1)}
-            disabled={month >= current}
-            aria-label="Mes siguiente"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-text-tertiary transition-colors hover:bg-white/5 disabled:opacity-30"
-          >
-            ›
-          </button>
-          <button
-            onClick={() => setSettingsOpen(true)}
-            aria-label="Configuración"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-primary transition-colors hover:bg-white/5"
-          >
-            <Settings size={16} strokeWidth={1.5} />
-          </button>
-        </div>
-      </header>
-
-      <SettingsModal
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        email={email}
-        currency={currency}
-        cards={cards}
-        month={month}
-      />
-    </>
+      </div>
+    </header>
   )
 }

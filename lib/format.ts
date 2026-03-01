@@ -5,6 +5,14 @@ export function formatAmount(amount: number, currency: 'ARS' | 'USD'): string {
   return 'USD ' + new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)
 }
 
+export function formatCompact(amount: number, currency: 'ARS' | 'USD'): string {
+  if (amount === 0) return ''
+  if (currency === 'USD') return 'U$' + amount.toFixed(0)
+  if (amount >= 1_000_000) return '$ ' + (amount / 1_000_000).toFixed(1).replace('.0', '') + 'M'
+  if (amount >= 1_000) return '$ ' + (amount / 1_000).toFixed(0) + 'k'
+  return '$ ' + amount.toFixed(0)
+}
+
 export function formatDate(isoString: string): string {
   return new Date(isoString).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
 }
