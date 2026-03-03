@@ -157,7 +157,7 @@ export function ExpenseItem({ expense, cards }: Props) {
 
       {/* Expanded edit form */}
       {expanded && (
-        <div className="space-y-3 rounded-b-input border-t border-border-subtle bg-bg-secondary p-3">
+        <div className="space-y-3 rounded-b-card border-t border-border-subtle bg-bg-secondary p-3">
           {error && <p className="text-xs text-danger">{error}</p>}
 
           <div className="grid grid-cols-2 gap-2">
