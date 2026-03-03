@@ -35,30 +35,76 @@ export function DashboardHeader({ month, basePath = '/' }: Props) {
   }
 
   return (
-    <header className="mb-6 grid grid-cols-3 items-center">
+    <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 8, paddingRight: 8, marginBottom: 4 }}>
       <button
         onClick={() => go(-1)}
         disabled={month <= min}
         aria-label="Mes anterior"
-        className="flex h-9 w-9 items-center justify-center rounded-full text-2xl text-text-secondary transition-colors hover:bg-white/5 disabled:opacity-30"
+        style={{
+          width: 32,
+          height: 32,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+          fontSize: 22,
+          color: '#7B98B8',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          opacity: month <= min ? 0.25 : 1,
+          transition: 'opacity 150ms',
+        }}
       >
         ‹
       </button>
 
-      <h1 className="whitespace-nowrap text-center text-sm font-medium text-text-secondary">
-        {labelCap}
-      </h1>
-
-      <div className="flex items-center justify-end">
-        <button
-          onClick={() => go(1)}
-          disabled={month >= current}
-          aria-label="Mes siguiente"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-2xl text-text-secondary transition-colors hover:bg-white/5 disabled:opacity-30"
+      <button
+        onClick={() => go(0)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '4px 8px',
+        }}
+      >
+        <span
+          style={{
+            fontSize: 22,
+            fontWeight: 900,
+            color: '#f0f9ff',
+            letterSpacing: '-0.02em',
+          }}
         >
-          ›
-        </button>
-      </div>
+          {labelCap.split(' ')[0]}
+        </span>
+      </button>
+
+      <button
+        onClick={() => go(1)}
+        disabled={month >= current}
+        aria-label="Mes siguiente"
+        style={{
+          width: 32,
+          height: 32,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+          fontSize: 22,
+          color: '#7B98B8',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          opacity: month >= current ? 0.25 : 1,
+          transition: 'opacity 150ms',
+        }}
+      >
+        ›
+      </button>
     </header>
   )
 }

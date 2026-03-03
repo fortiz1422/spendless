@@ -10,10 +10,12 @@ interface Props {
 }
 
 export function RachaRegistro({ days, streak }: Props) {
+  const activeCount = days.filter((d) => d.active).length
+
   return (
-    <div className="rounded-card bg-bg-secondary px-4 py-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
+    <div className="px-2">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           {days.map((day) => (
             <div
               key={day.date}
@@ -27,18 +29,18 @@ export function RachaRegistro({ days, streak }: Props) {
                     : 'rgba(56,189,248,0.55)'
                   : day.isToday
                     ? 'transparent'
-                    : '#1e293b',
-                border: day.isToday && !day.active ? '1.5px solid #334155' : 'none',
+                    : 'rgba(148,210,255,0.08)',
+                border: day.isToday && !day.active ? '1.5px solid rgba(148,210,255,0.2)' : 'none',
                 flexShrink: 0,
               }}
             />
           ))}
         </div>
-        <span className="text-[10px] text-text-tertiary">
+        <span style={{ fontSize: 10, color: '#4B6472' }}>
           {streak >= 3
-            ? `${streak} días seguidos · ${days.filter((d) => d.active).length} de 10`
-            : days.some((d) => d.active)
-              ? `${days.filter((d) => d.active).length} de 10${streak > 0 ? ` · racha ${streak}` : ''}`
+            ? `${streak} días seguidos · ${activeCount} de 10`
+            : activeCount > 0
+              ? `${activeCount} de 10${streak > 0 ? ` · racha ${streak}` : ''}`
               : 'Empezá tu racha hoy'}
         </span>
       </div>

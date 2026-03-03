@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gota - Analytics 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+    
+    :root {
+      --bg-base: #030508;
+      --primary: #38bdf8;
+      --success: #4ade80;
+      --want: #fdba74;
+      --asphalt: #111111;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-base);
+      color: #f0f9ff;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      overscroll-behavior-y: none;
+    }
+
+    /* Ruido visual sutil mantenido */
+    .noise-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    /* Iluminación ambiental atenuada */
+    .ambient-light {
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150vw;
+      height: 60vh;
+      background: radial-gradient(ellipse at bottom, rgba(56,189,248,0.06) 0%, rgba(3,5,8,0) 70%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Animaciones */
+    @keyframes springUp {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-spring-1 { animation: springUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards; opacity: 0; }
+    .animate-spring-2 { animation: springUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
+    .animate-spring-3 { animation: springUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; opacity: 0; }
+
+    /* Gráfico de barras premium (Sin bordes, orgánico) */
+    .trend-bar-wrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 4px;
+      height: 140px;
+    }
+    
+    .trend-bar-expense {
+      width: 8px;
+      border-radius: 4px;
+      background: linear-gradient(180deg, var(--primary) 0%, rgba(56,189,248,0.2) 100%);
+      box-shadow: 0 -4px 12px rgba(56,189,248,0.15);
+      transition: height 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .trend-bar-income {
+      width: 8px;
+      border-radius: 4px;
+      background: linear-gradient(180deg, var(--success) 0%, rgba(74,222,128,0.2) 100%);
+      box-shadow: 0 -4px 12px rgba(74,222,128,0.1);
+      transition: height 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .trend-bar-group {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    /* Dynamic Island Nav */
+    .dynamic-island-nav {
+      background-color: var(--asphalt);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 8px 24px rgba(0,0,0,1);
+      border-radius: 9999px;
+    }
+
+    /* Distribución de categorías - Línea orgánica */
+    .dist-bar-track {
+      height: 4px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 2px;
+      overflow: hidden;
+      width: 100%;
+    }
+    .dist-bar-fill {
+      height: 100%;
+      background: rgba(255,255,255,0.8);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(255,255,255,0.2);
+    }
+  </style>
+</head>
+<body class="pb-[120px]">
+  <div class="noise-overlay"></div>
+  <div class="ambient-light"></div>
+
+  <div class="max-w-[400px] mx-auto px-5 pt-10 flex flex-col gap-10">
+    
+    <!-- HEADER -->
+    <header class="flex justify-between items-center animate-spring-1">
+      <button class="w-10 h-10 flex items-center justify-center text-white/70 active:scale-90 transition-transform">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="flex flex-col items-center">
+        <h1 class="text-base font-semibold tracking-wide text-white">Analytics</h1>
+      </div>
+      <button class="w-10 h-10 flex items-center justify-center text-white/70 active:scale-90 transition-transform opacity-50">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-8m0 0V4m0 8h8m-8 0H4"/></svg>
+      </button>
+    </header>
+
+    <!-- BIG NUMBER (Gasto Total del Mes) -->
+    <div class="animate-spring-1 flex flex-col items-center justify-center pt-2">
+      <span class="text-xs uppercase tracking-[0.2em] text-white/60 font-medium mb-2">Gastado en Marzo</span>
+      <div class="flex items-start gap-1">
+        <span class="text-3xl font-light text-[#38bdf8] mt-1.5">$</span>
+        <span class="text-[4rem] leading-none font-light tracking-tight tabular-nums text-white">780.000</span>
+      </div>
+    </div>
+
+    <!-- TENDENCIAS MENSUALES (Flotante) -->
+    <div class="animate-spring-2">
+      <div class="flex justify-between items-end mb-8 px-1">
+        <h3 class="text-xs font-semibold uppercase tracking-[0.1em] text-white/70">Histórico de Flujo</h3>
+        <div class="flex gap-3">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#38bdf8]"></span>
+            <span class="text-[10px] text-white/50 uppercase tracking-wider">Gastos</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#4ade80]"></span>
+            <span class="text-[10px] text-white/50 uppercase tracking-wider">Ingresos</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Gráfico -->
+      <div class="flex justify-between items-end px-2">
+        
+        <!-- Oct -->
+        <div class="trend-bar-wrapper opacity-50">
+          <div class="trend-bar-group">
+            <div class="trend-bar-expense" style="height: 60px;"></div>
+            <div class="trend-bar-income" style="height: 90px;"></div>
+          </div>
+          <span class="text-xs text-white/50 mt-3">Oct</span>
+          <span class="text-[10px] tabular-nums text-white/30">$450k</span>
+        </div>
+
+        <!-- Nov -->
+        <div class="trend-bar-wrapper opacity-50">
+          <div class="trend-bar-group">
+            <div class="trend-bar-expense" style="height: 75px;"></div>
+            <div class="trend-bar-income" style="height: 85px;"></div>
+          </div>
+          <span class="text-xs text-white/50 mt-3">Nov</span>
+          <span class="text-[10px] tabular-nums text-white/30">$520k</span>
+        </div>
+
+        <!-- Dic -->
+        <div class="trend-bar-wrapper opacity-50">
+          <div class="trend-bar-group">
+            <div class="trend-bar-expense" style="height: 120px;"></div>
+            <div class="trend-bar-income" style="height: 100px;"></div>
+          </div>
+          <span class="text-xs text-white/50 mt-3">Dic</span>
+          <span class="text-[10px] tabular-nums text-white/30">$890k</span>
+        </div>
+
+        <!-- Ene -->
+        <div class="trend-bar-wrapper opacity-70">
+          <div class="trend-bar-group">
+            <div class="trend-bar-expense" style="height: 80px;"></div>
+            <div class="trend-bar-income" style="height: 110px;"></div>
+          </div>
+          <span class="text-xs text-white/70 mt-3">Ene</span>
+          <span class="text-[10px] tabular-nums text-white/40">$600k</span>
+        </div>
+
+        <!-- Feb -->
+        <div class="trend-bar-wrapper opacity-70">
+          <div class="trend-bar-group">
+            <div class="trend-bar-expense" style="height: 65px;"></div>
+            <div class="trend-bar-income" style="height: 110px;"></div>
+          </div>
+          <span class="text-xs text-white/70 mt-3">Feb</span>
+          <span class="text-[10px] tabular-nums text-white/40">$480k</span>
+        </div>
+
+        <!-- Mar (Current) -->
+        <div class="trend-bar-wrapper relative">
+          <div class="absolute -top-6 text-[10px] text-[#38bdf8] font-medium bg-[#38bdf8]/10 px-2 py-1 rounded-full border border-[#38bdf8]/20">Actual</div>
+          <div class="trend-bar-group">
+            <div class="trend-bar-expense" style="height: 105px;"></div>
+            <div class="trend-bar-income" style="height: 130px;"></div>
+          </div>
+          <span class="text-xs text-white font-medium mt-3">Mar</span>
+          <span class="text-[10px] tabular-nums text-[#38bdf8] font-medium">$780k</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DISTRIBUCIÓN DE CATEGORÍAS (Lista tipográfica sin cajas) -->
+    <div class="animate-spring-3 pt-4">
+      <h3 class="text-xs font-semibold uppercase tracking-[0.1em] text-white/70 mb-6 px-1">Top Categorías</h3>
+      
+      <div class="flex flex-col gap-6 px-1">
+        
+        <!-- Categoría 1 -->
+        <div>
+          <div class="flex justify-between items-end mb-2">
+            <div class="flex items-center gap-3">
+              <span class="text-xl opacity-80">🛒</span>
+              <span class="text-base font-medium text-white/90">Supermercado</span>
+            </div>
+            <div class="text-right">
+              <span class="text-sm font-semibold text-white tabular-nums">$320.000</span>
+              <span class="text-xs text-white/50 ml-2">41%</span>
+            </div>
+          </div>
+          <div class="dist-bar-track">
+            <div class="dist-bar-fill" style="width: 41%;"></div>
+          </div>
+        </div>
+
+        <!-- Categoría 2 -->
+        <div class="opacity-80">
+          <div class="flex justify-between items-end mb-2">
+            <div class="flex items-center gap-3">
+              <span class="text-xl opacity-70">🍽️</span>
+              <span class="text-base font-medium text-white/80">Restaurantes</span>
+            </div>
+            <div class="text-right">
+              <span class="text-sm font-medium text-white/90 tabular-nums">$180.000</span>
+              <span class="text-xs text-white/40 ml-2">23%</span>
+            </div>
+          </div>
+          <div class="dist-bar-track">
+            <div class="dist-bar-fill" style="width: 23%; background: rgba(255,255,255,0.5); box-shadow: none;"></div>
+          </div>
+        </div>
+
+        <!-- Categoría 3 -->
+        <div class="opacity-60">
+          <div class="flex justify-between items-end mb-2">
+            <div class="flex items-center gap-3">
+              <span class="text-xl opacity-60">🚗</span>
+              <span class="text-base font-medium text-white/70">Transporte</span>
+            </div>
+            <div class="text-right">
+              <span class="text-sm font-medium text-white/80 tabular-nums">$85.000</span>
+              <span class="text-xs text-white/40 ml-2">11%</span>
+            </div>
+          </div>
+          <div class="dist-bar-track">
+            <div class="dist-bar-fill" style="width: 11%; background: rgba(255,255,255,0.3); box-shadow: none;"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FIXED BOTTOM AREA: Navigation Only (Analytics doesn't need input) -->
+  <div class="fixed bottom-0 w-full left-0 flex flex-col items-center pb-8 pt-6 px-4 bg-gradient-to-t from-[#030508] via-[#030508] to-transparent z-40 pointer-events-none">
+    
+    <!-- DYNAMIC ISLAND NAV (Sólido) -->
+    <div class="dynamic-island-nav px-3 py-2 flex items-center gap-4 z-50 pointer-events-auto">
+      <button class="w-12 h-12 flex items-center justify-center text-white/50 hover:text-white transition-colors active:scale-90">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      </button>
+      <button class="w-12 h-12 flex items-center justify-center text-[#38bdf8] bg-white/[0.08] rounded-full transition-transform active:scale-90">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      </button>
+      <button class="w-12 h-12 flex items-center justify-center text-white/50 hover:text-white transition-colors active:scale-90">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+
+</body>
+</html>

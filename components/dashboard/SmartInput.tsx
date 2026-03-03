@@ -68,7 +68,20 @@ export function SmartInput({ cards }: SmartInputProps) {
 
   return (
     <>
-      <div className="flex gap-3">
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          borderRadius: 9999,
+          background: 'rgba(11,18,33,0.92)',
+          border: `1px solid ${input ? 'rgba(56,189,248,0.35)' : 'rgba(148,210,255,0.15)'}`,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          padding: '10px 10px 10px 18px',
+          transition: 'border-color 200ms',
+        }}
+      >
         <input
           ref={inputRef}
           type="text"
@@ -79,18 +92,40 @@ export function SmartInput({ cards }: SmartInputProps) {
           }}
           placeholder="café 2500"
           disabled={isParsing}
-          className="flex-1 rounded-input border border-[rgba(56,189,248,0.15)] bg-bg-tertiary px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-[rgba(56,189,248,0.4)] focus:outline-none disabled:opacity-50"
+          style={{
+            flex: 1,
+            background: 'transparent',
+            border: 'none',
+            outline: 'none',
+            fontSize: 14,
+            color: '#f0f9ff',
+            caretColor: '#38bdf8',
+            opacity: isParsing ? 0.5 : 1,
+          }}
         />
+        <style>{`input::placeholder { color: #4B6472; }`}</style>
         <button
           onClick={handleSubmit}
           disabled={!input.trim() || isParsing}
           aria-label="Agregar gasto"
-          className="flex h-12 w-12 items-center justify-center rounded-input bg-primary text-white transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: '50%',
+            flexShrink: 0,
+            background: input.trim() ? '#38bdf8' : 'rgba(148,210,255,0.08)',
+            border: input.trim() ? 'none' : '1px solid rgba(148,210,255,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background 200ms, border 200ms',
+            cursor: input.trim() && !isParsing ? 'pointer' : 'default',
+          }}
         >
           {isParsing ? (
-            <span className="spinner" />
+            <span className="spinner" style={{ width: 16, height: 16 }} />
           ) : (
-            <ArrowRight size={18} strokeWidth={2} />
+            <ArrowRight size={15} style={{ color: input.trim() ? '#050A14' : '#7B98B8', transition: 'color 200ms' }} strokeWidth={2.5} />
           )}
         </button>
       </div>

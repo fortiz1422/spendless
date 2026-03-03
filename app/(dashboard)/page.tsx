@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import { SmartInput } from '@/components/dashboard/SmartInput'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { SaldoVivo } from '@/components/dashboard/SaldoVivo'
-import { GastosTarjeta } from '@/components/dashboard/GastosTarjeta'
 import { FiltroEstoico } from '@/components/dashboard/FiltroEstoico'
 import { Ultimos5 } from '@/components/dashboard/Ultimos5'
 import { IncomeSetupModal } from '@/components/dashboard/IncomeSetupModal'
@@ -94,7 +93,7 @@ export default async function DashboardPage({
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <div className="mx-auto max-w-md space-y-3 px-4 pb-6 pt-safe">
+      <div className="mx-auto max-w-md px-4 pb-6 pt-safe" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <DashboardHeader month={selectedMonth} />
 
         <SmartInput cards={cards} />
@@ -105,11 +104,11 @@ export default async function DashboardPage({
           <IncomeSetupModal month={selectedMonth} currency={currency} />
         )}
 
-        <SaldoVivo data={dashboardData?.saldo_vivo ?? null} currency={currency} />
-
-        {(dashboardData?.gastos_tarjeta ?? 0) > 0 && (
-          <GastosTarjeta total={dashboardData!.gastos_tarjeta} currency={currency} />
-        )}
+        <SaldoVivo
+          data={dashboardData?.saldo_vivo ?? null}
+          currency={currency}
+          gastosTarjeta={dashboardData?.gastos_tarjeta ?? 0}
+        />
 
         {(dashboardData?.ultimos_5?.length ?? 0) > 0 && (
           <FiltroEstoico data={dashboardData!.filtro_estoico} />

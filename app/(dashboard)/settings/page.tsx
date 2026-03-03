@@ -30,22 +30,52 @@ export default async function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <div className="mx-auto max-w-md space-y-6 px-4 pt-safe">
-        <h1 className="text-base font-semibold text-text-primary">Configuración</h1>
+      <div className="mx-auto max-w-md px-6 pt-safe pb-6">
+        <h1
+          style={{
+            fontSize: 30,
+            fontWeight: 900,
+            color: '#f0f9ff',
+            letterSpacing: '-0.03em',
+            marginBottom: 36,
+          }}
+        >
+          Configuración
+        </h1>
 
         {/* Configuración */}
-        <section className="space-y-4 rounded-card bg-bg-secondary p-4">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-text-secondary">
-            Configuración
+        <section style={{ marginBottom: 40 }}>
+          <p
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              color: '#7B98B8',
+              marginBottom: 16,
+            }}
+          >
+            Preferencias
           </p>
-          <CurrencySection currency={currency} />
-          <CardsSection cards={allCards} />
-          <IncomeSection defaultMonth={currentMonth} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <CurrencySection currency={currency} />
+            <CardsSection cards={allCards} />
+            <IncomeSection defaultMonth={currentMonth} />
+          </div>
         </section>
 
-        {/* Cuenta — al fondo */}
-        <section className="space-y-2 pb-6">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+        {/* Cuenta */}
+        <section>
+          <p
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              color: '#7B98B8',
+              marginBottom: 16,
+            }}
+          >
             Cuenta
           </p>
           <AccountSection email={user.email ?? ''} />

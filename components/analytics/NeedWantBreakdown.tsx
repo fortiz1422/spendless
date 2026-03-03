@@ -12,52 +12,68 @@ interface Props {
 }
 
 export function NeedWantBreakdown({ data }: Props) {
-  if (!data.length) {
-    return (
-      <div className="rounded-card bg-bg-secondary p-4">
-        <p className="text-[10px] font-medium uppercase tracking-wider text-text-secondary">
-          Comportamiento por categoría
-        </p>
-        <p className="mt-2 text-sm text-text-tertiary">
-          Sin gastos clasificados este mes.
-        </p>
-      </div>
-    )
-  }
+  if (!data.length) return null
 
   return (
-    <div className="rounded-card bg-bg-secondary p-4">
-      <p className="mb-4 text-[10px] font-medium uppercase tracking-wider text-text-secondary">
-        Comportamiento por categoría
+    <div style={{ padding: '0 8px' }}>
+      <p
+        style={{
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: '#7B98B8',
+          marginBottom: 20,
+        }}
+      >
+        Necesidades vs. Deseos
       </p>
-      <div className="space-y-3">
-        {data.map(({ category, want, need, wantPct }) => (
-          <div key={category}>
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-sm text-text-primary">
-                {CATEGORY_ICONS[category] ?? '•'} {category}
-              </span>
-              <span
-                className={`text-xs tabular-nums ${
-                  wantPct >= 60
-                    ? 'text-want'
-                    : wantPct <= 30
-                      ? 'text-success'
-                      : 'text-text-secondary'
-                }`}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        {data.map(({ category, want, need, wantPct }) => {
+          const labelColor =
+            wantPct >= 60 ? '#fdba74' : wantPct <= 30 ? '#4ade80' : '#7B98B8'
+          return (
+            <div key={category}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'baseline',
+                  marginBottom: 7,
+                }}
               >
-                {wantPct}% deseo
-              </span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#f0f9ff' }}>
+                  {CATEGORY_ICONS[category] ?? '•'} {category}
+                </span>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: labelColor,
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {wantPct}% deseo
+                </span>
+              </div>
+              <div
+                style={{
+                  height: 5,
+                  borderRadius: 9999,
+                  overflow: 'hidden',
+                  background: 'rgba(148,210,255,0.06)',
+                  display: 'flex',
+                }}
+              >
+                <div style={{ width: `${100 - wantPct}%`, background: '#4ade80' }} />
+                <div style={{ width: `${wantPct}%`, background: '#fdba74' }} />
+              </div>
+              <p style={{ marginTop: 5, fontSize: 10, color: '#4B6472' }}>
+                {need} necesidad{need !== 1 ? 'es' : ''} · {want} deseo{want !== 1 ? 's' : ''}
+              </p>
             </div>
-            <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-bg-tertiary">
-              <div className="h-full bg-success" style={{ width: `${100 - wantPct}%` }} />
-              <div className="h-full bg-want" style={{ width: `${wantPct}%` }} />
-            </div>
-            <p className="mt-1 text-[10px] text-text-disabled">
-              {need} necesidad{need !== 1 ? 'es' : ''} · {want} deseo{want !== 1 ? 's' : ''}
-            </p>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

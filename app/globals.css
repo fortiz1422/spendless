@@ -7,10 +7,13 @@
 
 @theme {
   /* Backgrounds */
-  --color-bg-primary:   #060a0e;
-  --color-bg-secondary: #0c1520;
-  --color-bg-tertiary:  #132030;
-  --color-bg-elevated:  #334155;
+  --color-bg-primary:   #050A14;
+  --color-bg-secondary: #0b1221;
+  --color-bg-tertiary:  #0f1c30;
+  --color-bg-elevated:  #1a2d42;
+
+  /* Surface overlay for pills / floating elements */
+  --color-surface:      rgba(148,210,255,0.05);
 
   /* Text */
   --color-text-primary:   #f0f9ff;
@@ -31,10 +34,13 @@
   --color-want:      #fdba74;
 
   /* Border Radius */
-  --radius-card:    16px;
-  --radius-card-lg: 18px;
-  --radius-input:   12px;
-  --radius-button:  12px;
+  --radius-card:    20px;
+  --radius-card-lg: 28px;
+  --radius-input:   9999px;
+  --radius-button:  9999px;
+
+  /* Ocean borders */
+  --color-border-ocean: rgba(148,210,255,0.15);
 
   /* Font */
   --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont,
@@ -50,7 +56,7 @@
 }
 
 body {
-  background-color: #060a0e;
+  background-color: #050A14;
   color: #f0f9ff;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;

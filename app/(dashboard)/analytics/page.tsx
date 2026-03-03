@@ -125,7 +125,7 @@ export default async function AnalyticsPage({
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <div className="mx-auto max-w-md space-y-3 px-4 pt-safe">
+      <div className="mx-auto max-w-md px-4 pt-safe pb-6" style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
         <DashboardHeader month={selectedMonth} basePath="/analytics" />
 
         <MonthlyTrends data={trendData} currency={currency} />
@@ -135,14 +135,25 @@ export default async function AnalyticsPage({
         <CategoryDistribution data={categoryDist} />
 
         {/* Exportar datos */}
-        <div className="rounded-card bg-bg-secondary p-4">
-          <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-text-secondary">
-            Datos
-          </p>
+        <div style={{ padding: '0 8px' }}>
           <a
             href="/api/export"
             download
-            className="block w-full rounded-button bg-bg-tertiary py-2.5 text-center text-sm font-medium text-text-primary transition-colors hover:bg-bg-elevated"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              width: '100%',
+              padding: '14px',
+              borderRadius: 9999,
+              background: 'rgba(148,210,255,0.05)',
+              border: '1px solid rgba(148,210,255,0.15)',
+              fontSize: 13,
+              fontWeight: 600,
+              color: '#38bdf8',
+              textDecoration: 'none',
+            }}
           >
             Exportar gastos (CSV)
           </a>

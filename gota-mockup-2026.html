@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gota - Concepto 2026 (Iteración 2)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+    
+    :root {
+      --bg-base: #030508;
+      --primary: #38bdf8;
+      --success: #4ade80;
+      --want: #fdba74;
+      --asphalt: #111111;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-base);
+      color: #f0f9ff;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      overscroll-behavior-y: none; /* Previene bounce en iOS para mantener el input fijo */
+    }
+
+    /* Ruido visual sutil mantenido */
+    .noise-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    /* Iluminación ambiental atenuada */
+    .ambient-light {
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150vw;
+      height: 60vh;
+      background: radial-gradient(ellipse at bottom, rgba(56,189,248,0.06) 0%, rgba(3,5,8,0) 70%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Animaciones */
+    @keyframes springUp {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-spring-1 { animation: springUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards; opacity: 0; }
+    .animate-spring-2 { animation: springUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
+    .animate-spring-3 { animation: springUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; opacity: 0; }
+
+    /* Input anclado al fondo (Sólido, sin glassmorphism) */
+    .bottom-input-container {
+      background-color: var(--asphalt);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+      transition: border-color 0.3s ease;
+    }
+    .bottom-input-container:focus-within {
+      border-color: var(--primary);
+    }
+
+    /* Dynamic Island Nav */
+    .dynamic-island-nav {
+      background-color: var(--asphalt);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 8px 24px rgba(0,0,0,1);
+      border-radius: 9999px;
+    }
+
+    /* Tarjeta de gasto premium (Aumento de contraste) */
+    .expense-item {
+      transition: transform 0.2s ease, background 0.2s ease;
+      border-radius: 1rem;
+    }
+    .expense-item:active {
+      transform: scale(0.97);
+      background: rgba(255,255,255,0.05);
+    }
+
+    /* Línea del filtro estoico mejorada */
+    .stoic-bar-container {
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.05);
+      overflow: hidden;
+      display: flex;
+    }
+  </style>
+</head>
+<body class="pb-[140px]"> <!-- Espacio extra para el input + nav fijos -->
+  <div class="noise-overlay"></div>
+  <div class="ambient-light"></div>
+
+  <div class="max-w-[400px] mx-auto px-5 pt-10 flex flex-col gap-8">
+    
+    <!-- HEADER -->
+    <header class="flex justify-between items-center animate-spring-1">
+      <button class="w-10 h-10 flex items-center justify-center text-white/70 active:scale-90 transition-transform">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="flex flex-col items-center">
+        <h1 class="text-base font-semibold tracking-wide text-white">Marzo 2026</h1>
+      </div>
+      <button class="w-10 h-10 flex items-center justify-center text-[#38bdf8] active:scale-90 transition-transform">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-8m0 0V4m0 8h8m-8 0H4"/></svg>
+      </button>
+    </header>
+
+    <!-- SALDO VIVO (Hero) -->
+    <div class="animate-spring-1 flex flex-col items-center justify-center pt-2">
+      <!-- Etiqueta más legible -->
+      <span class="text-xs uppercase tracking-[0.2em] text-white/60 font-medium mb-3">Disponible</span>
+      
+      <div class="flex items-start gap-1">
+        <span class="text-4xl font-light text-white/50 mt-1.5">$</span>
+        <span class="text-[5.5rem] leading-none font-light tracking-tight tabular-nums text-white">420.500</span>
+      </div>
+      
+      <!-- Badges de contexto con contraste mejorado -->
+      <div class="flex gap-3 mt-6 w-full px-2">
+        <div class="flex-1 flex justify-between items-center px-4 py-3 rounded-2xl bg-[#111] border border-white/[0.08]">
+          <span class="text-xs text-white/70 font-medium">Ingresos</span>
+          <span class="text-sm text-white font-medium tabular-nums">$1.2M</span>
+        </div>
+        <div class="flex-1 flex justify-between items-center px-4 py-3 rounded-2xl bg-[#111] border border-white/[0.08]">
+          <span class="text-xs text-white/70 font-medium">Tarjetas</span>
+          <span class="text-sm text-white font-medium tabular-nums">$380k</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTRO ESTOICO (Accionable y Legible) -->
+    <div class="animate-spring-2 bg-[#111] border border-white/[0.08] rounded-2xl p-5 mt-2">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <h3 class="text-sm font-semibold text-white mb-1">Filtro Estoico</h3>
+          <!-- Explicación de la métrica -->
+          <p class="text-xs text-white/60">Del total gastado este mes</p>
+        </div>
+        <div class="text-right">
+          <span class="text-lg font-semibold text-[#4ade80]">65%</span>
+          <p class="text-xs text-white/60 uppercase tracking-wider mt-0.5">Necesidad</p>
+        </div>
+      </div>
+      
+      <!-- Barra de progreso sólida -->
+      <div class="stoic-bar-container mb-3">
+        <div class="bg-[#4ade80]" style="width: 65%;"></div>
+        <div class="bg-[#fdba74]" style="width: 35%;"></div>
+      </div>
+      
+      <div class="flex justify-between items-center">
+        <!-- Cita/Insight accionable -->
+        <span class="text-xs text-white/70 italic">"No será esta una de las cosas innecesarias?"</span>
+        <span class="text-xs font-medium text-[#fdba74] tabular-nums">35% Deseo</span>
+      </div>
+    </div>
+
+    <!-- LISTA DE GASTOS (Contraste aumentado) -->
+    <div class="animate-spring-3 mt-2">
+      <div class="flex justify-between items-center mb-4 px-1">
+        <h3 class="text-xs font-semibold uppercase tracking-[0.1em] text-white/70">Últimos Gastos</h3>
+        <button class="text-xs font-medium text-[#38bdf8] hover:text-white transition-colors">Ver todos</button>
+      </div>
+      
+      <div class="flex flex-col gap-2">
+        
+        <!-- Item 1 -->
+        <div class="expense-item flex items-center justify-between p-3 cursor-pointer bg-[#0c1520] border border-transparent hover:border-white/[0.05]">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-[0.8rem] bg-[#111] border border-white/[0.08] flex items-center justify-center text-xl">☕</div>
+            <div class="flex flex-col gap-1">
+              <span class="text-base font-medium text-white">Café con leche</span>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-white/60">Efectivo</span>
+                <span class="w-1 h-1 rounded-full bg-white/20"></span>
+                <span class="text-xs text-[#4ade80]">Necesidad</span>
+              </div>
+            </div>
+          </div>
+          <span class="text-base font-semibold tabular-nums text-white">-$2.500</span>
+        </div>
+
+        <!-- Item 2 -->
+        <div class="expense-item flex items-center justify-between p-3 cursor-pointer bg-[#0c1520] border border-transparent hover:border-white/[0.05]">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-[0.8rem] bg-[#111] border border-white/[0.08] flex items-center justify-center text-xl">🛒</div>
+            <div class="flex flex-col gap-1">
+              <span class="text-base font-medium text-white">Supermercado</span>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-white/60">Débito</span>
+                <span class="w-1 h-1 rounded-full bg-white/20"></span>
+                <span class="text-xs text-[#4ade80]">Necesidad</span>
+              </div>
+            </div>
+          </div>
+          <span class="text-base font-semibold tabular-nums text-white">-$45.200</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FIXED BOTTOM AREA: Input + Navigation -->
+  <div class="fixed bottom-0 w-full left-0 flex flex-col items-center pb-6 pt-4 px-4 bg-gradient-to-t from-[#030508] via-[#030508] to-transparent z-40">
+    
+    <!-- SMART INPUT ANCLADO AL FONDO -->
+    <div class="w-full max-w-[400px] bottom-input-container rounded-[1.25rem] p-1.5 flex items-center mb-4 relative z-50">
+      <div class="absolute -top-7 left-4 flex items-center gap-1.5 opacity-0 transition-opacity duration-300 pointer-events-none" id="input-hint">
+        <span class="flex h-2 w-2 relative">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#38bdf8] opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-[#38bdf8]"></span>
+        </span>
+        <span class="text-xs text-[#38bdf8] font-medium">Analizando texto...</span>
+      </div>
+      <input 
+        type="text" 
+        placeholder="Ej: cena con amigos 15000" 
+        class="flex-1 bg-transparent border-none text-base text-white placeholder-white/40 focus:ring-0 px-4 py-3 outline-none"
+        onfocus="document.getElementById('input-hint').style.opacity = '1'"
+        onblur="document.getElementById('input-hint').style.opacity = '0'"
+      >
+      <button class="w-12 h-12 rounded-xl bg-[#38bdf8] text-[#030508] flex items-center justify-center font-bold transition-transform hover:scale-105 active:scale-95">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <!-- DYNAMIC ISLAND NAV (Sólido) -->
+    <div class="dynamic-island-nav px-3 py-2 flex items-center gap-4 z-50">
+      <button class="w-12 h-12 flex items-center justify-center text-[#38bdf8] bg-white/[0.08] rounded-full transition-transform active:scale-90">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      </button>
+      <button class="w-12 h-12 flex items-center justify-center text-white/50 hover:text-white transition-colors active:scale-90">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      </button>
+      <button class="w-12 h-12 flex items-center justify-center text-white/50 hover:text-white transition-colors active:scale-90">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+
+</body>
+</html>

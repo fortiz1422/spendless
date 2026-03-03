@@ -10,33 +10,65 @@ interface Props {
 }
 
 export function CategoryDistribution({ data }: Props) {
-  if (!data.length) {
-    return (
-      <div className="rounded-card bg-bg-secondary p-4">
-        <p className="text-[10px] font-medium uppercase tracking-wider text-text-secondary">
-          Distribución por categoría
-        </p>
-        <p className="mt-2 text-sm text-text-tertiary">Sin gastos este mes.</p>
-      </div>
-    )
-  }
+  if (!data.length) return null
 
   return (
-    <div className="rounded-card bg-bg-secondary p-4">
-      <p className="mb-4 text-[10px] font-medium uppercase tracking-wider text-text-secondary">
-        Distribución por categoría
+    <div style={{ padding: '0 8px' }}>
+      <p
+        style={{
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: '#7B98B8',
+          marginBottom: 20,
+        }}
+      >
+        Distribución
       </p>
-      <div className="space-y-3">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         {data.map(({ category, pct }) => (
           <div key={category}>
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-sm text-text-primary">
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                marginBottom: 7,
+              }}
+            >
+              <span style={{ fontSize: 13, fontWeight: 500, color: '#f0f9ff' }}>
                 {CATEGORY_ICONS[category] ?? '•'} {category}
               </span>
-              <span className="text-xs tabular-nums text-text-secondary">{pct}%</span>
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: '#38bdf8',
+                  letterSpacing: '-0.01em',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {pct}%
+              </span>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg-tertiary">
-              <div className="h-full rounded-full bg-primary/50" style={{ width: `${pct}%` }} />
+            <div
+              style={{
+                height: 5,
+                borderRadius: 9999,
+                background: 'rgba(148,210,255,0.08)',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  height: '100%',
+                  width: `${pct}%`,
+                  background: '#38bdf8',
+                  opacity: 0.6,
+                  borderRadius: 9999,
+                }}
+              />
             </div>
           </div>
         ))}
