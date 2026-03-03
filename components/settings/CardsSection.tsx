@@ -52,7 +52,7 @@ export function CardsSection({ cards: initialCards }: { cards: Card[] }) {
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-center justify-between py-1"
       >
-        <p className="text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+        <p className="type-label text-text-label">
           Tarjetas
           {activeCount > 0 && (
             <span className="ml-1.5 text-text-tertiary normal-case tracking-normal">
@@ -72,7 +72,7 @@ export function CardsSection({ cards: initialCards }: { cards: Card[] }) {
           {cards.map((card) => (
             <div
               key={card.id}
-              className="flex items-center justify-between rounded-input bg-bg-tertiary px-3 py-2"
+              className="flex items-center justify-between rounded-card bg-bg-tertiary border border-border-ocean px-3 py-2"
             >
               <span
                 className={`text-sm ${card.archived ? 'text-text-disabled line-through' : 'text-text-primary'}`}
@@ -100,7 +100,7 @@ export function CardsSection({ cards: initialCards }: { cards: Card[] }) {
             <button
               onClick={addCard}
               disabled={!newName.trim() || isSaving}
-              className="rounded-button bg-primary px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              className="rounded-button bg-primary px-3 py-2 text-sm font-semibold text-bg-primary disabled:opacity-50"
             >
               +
             </button>

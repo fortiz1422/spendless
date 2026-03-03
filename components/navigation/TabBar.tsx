@@ -34,63 +34,30 @@ function TabBarInner() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50"
-      style={{
-        paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)',
-        paddingTop: 8,
-        display: 'flex',
-        justifyContent: 'center',
-      }}
+      className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pt-2"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
     >
       <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
-          padding: '6px 8px',
-          borderRadius: 9999,
-          width: 'fit-content',
-          background: 'rgba(5,12,28,0.92)',
-          border: '1px solid rgba(148,210,255,0.15)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(148,210,255,0.06)',
-        }}
+        className="flex items-center gap-1 px-2 py-1.5 rounded-full w-fit bg-nav-bg border border-border-ocean backdrop-blur-2xl"
+        style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(148,210,255,0.06)' }}
       >
         {tabs.map(({ href, icon: Icon, label, isActive }) => (
           <Link
             key={label}
             href={href}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: isActive ? 8 : 0,
-              padding: isActive ? '8px 18px' : '8px 14px',
-              borderRadius: 9999,
-              background: isActive ? 'rgba(148,210,255,0.13)' : 'transparent',
-              transition: 'all 200ms',
-              overflow: 'hidden',
-              textDecoration: 'none',
-            }}
+            className={`flex items-center rounded-full overflow-hidden transition-all duration-200 ${
+              isActive
+                ? 'gap-2 px-[18px] py-2 bg-primary/[0.13]'
+                : 'gap-0 px-[14px] py-2 bg-transparent'
+            }`}
           >
             <Icon
               size={18}
-              style={{
-                color: isActive ? '#fff' : '#7B98B8',
-                strokeWidth: isActive ? 2.2 : 1.7,
-                flexShrink: 0,
-              }}
+              strokeWidth={isActive ? 2.2 : 1.7}
+              className={`shrink-0 ${isActive ? 'text-text-primary' : 'text-text-label'}`}
             />
             {isActive && (
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: '#fff',
-                  whiteSpace: 'nowrap',
-                  letterSpacing: '-0.01em',
-                }}
-              >
+              <span className="text-[12px] font-semibold text-text-primary whitespace-nowrap tracking-[-0.01em]">
                 {label}
               </span>
             )}
@@ -105,8 +72,8 @@ export function TabBar() {
   return (
     <Suspense
       fallback={
-        <div className="fixed bottom-0 left-0 right-0 flex justify-center" style={{ paddingBottom: 20 }}>
-          <div style={{ width: 160, height: 48, borderRadius: 9999, background: 'rgba(5,12,28,0.92)', border: '1px solid rgba(148,210,255,0.15)' }} />
+        <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-5">
+          <div className="w-40 h-12 rounded-full bg-nav-bg border border-border-ocean" />
         </div>
       }
     >

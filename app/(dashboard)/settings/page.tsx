@@ -31,33 +31,16 @@ export default async function SettingsPage() {
   return (
     <div className="min-h-screen bg-bg-primary">
       <div className="mx-auto max-w-md px-6 pt-safe pb-6">
-        <h1
-          style={{
-            fontSize: 30,
-            fontWeight: 900,
-            color: '#f0f9ff',
-            letterSpacing: '-0.03em',
-            marginBottom: 36,
-          }}
-        >
+        <h1 className="mb-9 text-[30px] font-black tracking-tight text-text-primary">
           Configuración
         </h1>
 
-        {/* Configuración */}
-        <section style={{ marginBottom: 40 }}>
-          <p
-            style={{
-              fontSize: 10,
-              fontWeight: 600,
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: '#7B98B8',
-              marginBottom: 16,
-            }}
-          >
+        {/* Preferencias */}
+        <section className="mb-10">
+          <p className="mb-4 type-label text-text-label">
             Preferencias
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          <div className="flex flex-col gap-4">
             <CurrencySection currency={currency} />
             <CardsSection cards={allCards} />
             <IncomeSection defaultMonth={currentMonth} />
@@ -66,16 +49,7 @@ export default async function SettingsPage() {
 
         {/* Cuenta */}
         <section>
-          <p
-            style={{
-              fontSize: 10,
-              fontWeight: 600,
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: '#7B98B8',
-              marginBottom: 16,
-            }}
-          >
+          <p className="mb-4 type-label text-text-label">
             Cuenta
           </p>
           <AccountSection email={user.email ?? ''} />

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { CATEGORIES } from '@/lib/validation/schemas'
 
 const PAYMENT_OPTIONS = [
@@ -60,24 +61,24 @@ export function ExpenseFilters({ month, category, paymentMethod }: Props) {
           onClick={() => update('month', addMonths(month, -1))}
           disabled={month <= min}
           aria-label="Mes anterior"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-text-secondary hover:bg-white/5 disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-primary/5 disabled:opacity-30"
         >
-          ‹
+          <ChevronLeft size={18} />
         </button>
         <span className="text-sm font-semibold text-text-primary">{monthLabelCap}</span>
         <button
           onClick={() => update('month', addMonths(month, 1))}
           disabled={month >= current}
           aria-label="Mes siguiente"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-text-secondary hover:bg-white/5 disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-primary/5 disabled:opacity-30"
         >
-          ›
+          <ChevronRight size={18} />
         </button>
       </div>
 
       {/* Category filter */}
       <div>
-        <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+        <label className="mb-1 block type-label text-text-label">
           Categoría
         </label>
         <select
@@ -96,7 +97,7 @@ export function ExpenseFilters({ month, category, paymentMethod }: Props) {
 
       {/* Payment method filter */}
       <div>
-        <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+        <label className="mb-1 block type-label text-text-label">
           Medio de pago
         </label>
         <div className="flex flex-wrap gap-1.5">
@@ -106,8 +107,8 @@ export function ExpenseFilters({ month, category, paymentMethod }: Props) {
               onClick={() => update('payment_method', opt.value)}
               className={`rounded-button px-3 py-1.5 text-xs font-medium transition-colors ${
                 paymentMethod === opt.value
-                  ? 'bg-primary text-white'
-                  : 'bg-bg-tertiary text-text-secondary hover:bg-white/5'
+                  ? 'bg-primary text-bg-primary'
+                  : 'bg-bg-tertiary text-text-secondary hover:bg-primary/5'
               }`}
             >
               {opt.label}

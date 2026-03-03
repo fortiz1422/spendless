@@ -15,7 +15,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           height: 80,
           zIndex: 45,
           pointerEvents: 'none',
-          background: 'linear-gradient(to bottom, transparent, #060a0e)',
+          background: 'linear-gradient(to bottom, transparent, #050A14)',
           backdropFilter: 'blur(6px)',
           WebkitBackdropFilter: 'blur(6px)',
         }}

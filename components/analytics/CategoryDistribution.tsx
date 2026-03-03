@@ -1,4 +1,4 @@
-import { CATEGORY_ICONS } from '@/lib/categories'
+import { CategoryIcon } from '@/components/ui/CategoryIcon'
 
 type CategoryRow = {
   category: string
@@ -13,61 +13,24 @@ export function CategoryDistribution({ data }: Props) {
   if (!data.length) return null
 
   return (
-    <div style={{ padding: '0 8px' }}>
-      <p
-        style={{
-          fontSize: 10,
-          fontWeight: 600,
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          color: '#7B98B8',
-          marginBottom: 20,
-        }}
-      >
-        Distribución
-      </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+    <div className="px-2">
+      <p className="type-label text-text-label mb-5">Distribución</p>
+      <div className="flex flex-col gap-[18px]">
         {data.map(({ category, pct }) => (
           <div key={category}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'baseline',
-                marginBottom: 7,
-              }}
-            >
-              <span style={{ fontSize: 13, fontWeight: 500, color: '#f0f9ff' }}>
-                {CATEGORY_ICONS[category] ?? '•'} {category}
+            <div className="flex justify-between items-center mb-[7px]">
+              <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-text-primary">
+                <CategoryIcon category={category} size={13} />
+                {category}
               </span>
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: '#38bdf8',
-                  letterSpacing: '-0.01em',
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
+              <span className="text-[13px] font-bold text-primary tabular-nums tracking-[-0.01em]">
                 {pct}%
               </span>
             </div>
-            <div
-              style={{
-                height: 5,
-                borderRadius: 9999,
-                background: 'rgba(148,210,255,0.08)',
-                overflow: 'hidden',
-              }}
-            >
+            <div className="h-[5px] rounded-full bg-primary/8 overflow-hidden">
               <div
-                style={{
-                  height: '100%',
-                  width: `${pct}%`,
-                  background: '#38bdf8',
-                  opacity: 0.6,
-                  borderRadius: 9999,
-                }}
+                className="h-full bg-primary/60 rounded-full bar-grow"
+                style={{ width: `${pct}%` }}
               />
             </div>
           </div>

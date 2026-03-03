@@ -6,9 +6,9 @@ import { ChevronDown } from 'lucide-react'
 import { MonthSelectorSheet } from './MonthSelectorSheet'
 
 interface Props {
-  month: string             // YYYY-MM
-  basePath?: string         // default '/'
-  earliestDataMonth?: string  // YYYY-MM — si hay data más vieja que 6 meses, extiende la lista
+  month: string
+  basePath?: string
+  earliestDataMonth?: string
 }
 
 function addMonths(ym: string, delta: number): string {
@@ -26,7 +26,6 @@ function buildMonthList(
   current: string,
   earliestDataMonth?: string,
 ): { value: string; label: string }[] {
-  // Siempre mostramos los últimos 6 meses; si hay data más vieja, extendemos hasta ahí
   const defaultStart = addMonths(current, -5)
   const start =
     earliestDataMonth && earliestDataMonth < defaultStart
@@ -43,7 +42,7 @@ function buildMonthList(
     months.push({ value: m, label: raw.charAt(0).toUpperCase() + raw.slice(1) })
     m = addMonths(m, -1)
   }
-  return months // más reciente primero
+  return months
 }
 
 export function DashboardHeader({ month, basePath = '/', earliestDataMonth }: Props) {
@@ -62,33 +61,13 @@ export function DashboardHeader({ month, basePath = '/', earliestDataMonth }: Pr
 
   return (
     <>
-      <header style={{ padding: '20px 24px 0' }}>
+      <header className="px-6 pt-5">
         <button
           onClick={() => setIsSheetOpen(true)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            background: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 0,
-          }}
+          className="flex items-center gap-1.5 bg-transparent border-0 p-0 cursor-pointer transition-opacity duration-150 hover:opacity-70 active:opacity-50"
         >
-          <span
-            style={{
-              fontSize: 22,
-              fontWeight: 900,
-              color: '#ffffff',
-              letterSpacing: '-0.02em',
-            }}
-          >
-            {monthCap}
-          </span>
-          <ChevronDown
-            size={16}
-            style={{ color: '#7B98B8', marginTop: 2, flexShrink: 0 }}
-          />
+          <span className="type-month text-text-primary">{monthCap}</span>
+          <ChevronDown size={16} className="text-text-label mt-0.5 shrink-0" />
         </button>
       </header>
 

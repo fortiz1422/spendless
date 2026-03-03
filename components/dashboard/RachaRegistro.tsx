@@ -9,34 +9,30 @@ interface Props {
   streak: number
 }
 
+function getDotClass(day: DayMark): string {
+  const size = day.isToday ? 'size-2.5' : 'size-2'
+  const color = day.active
+    ? day.isToday
+      ? 'bg-primary'
+      : 'bg-primary/55'
+    : day.isToday
+      ? 'bg-transparent border border-primary/20'
+      : 'bg-primary/8'
+  return `rounded-full shrink-0 ${size} ${color}`
+}
+
 export function RachaRegistro({ days, streak }: Props) {
   const activeCount = days.filter((d) => d.active).length
 
   return (
     <div className="px-2">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-[5px]">
           {days.map((day) => (
-            <div
-              key={day.date}
-              style={{
-                width: day.isToday ? 10 : 8,
-                height: day.isToday ? 10 : 8,
-                borderRadius: '50%',
-                backgroundColor: day.active
-                  ? day.isToday
-                    ? '#38bdf8'
-                    : 'rgba(56,189,248,0.55)'
-                  : day.isToday
-                    ? 'transparent'
-                    : 'rgba(148,210,255,0.08)',
-                border: day.isToday && !day.active ? '1.5px solid rgba(148,210,255,0.2)' : 'none',
-                flexShrink: 0,
-              }}
-            />
+            <div key={day.date} className={getDotClass(day)} />
           ))}
         </div>
-        <span style={{ fontSize: 10, color: '#4B6472' }}>
+        <span className="text-[10px] text-text-dim">
           {streak >= 3
             ? `${streak} días seguidos · ${activeCount} de 10`
             : activeCount > 0

@@ -150,25 +150,11 @@ export default async function AnalyticsPage({
         <CategoryDistribution data={categoryDist} />
 
         {/* Exportar datos */}
-        <div style={{ padding: '0 8px' }}>
+        <div className="px-2">
           <a
             href="/api/export"
             download
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              width: '100%',
-              padding: '14px',
-              borderRadius: 9999,
-              background: 'rgba(148,210,255,0.05)',
-              border: '1px solid rgba(148,210,255,0.15)',
-              fontSize: 13,
-              fontWeight: 600,
-              color: '#38bdf8',
-              textDecoration: 'none',
-            }}
+            className="flex w-full items-center justify-center gap-2 rounded-full border border-[rgba(148,210,255,0.15)] bg-[rgba(148,210,255,0.05)] py-[14px] text-[13px] font-semibold text-primary no-underline"
           >
             Exportar gastos (CSV)
           </a>

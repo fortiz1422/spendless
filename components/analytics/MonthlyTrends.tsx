@@ -17,25 +17,22 @@ const W = 375
 const H = 120
 const PAD_Y = 16
 
+// SVG presentation attributes can't use Tailwind — resolved from design tokens
+const COLORS = {
+  primary:    '#38bdf8',
+  success:    '#4ade80',
+  bgPrimary:  '#050A14',
+  textDim:    '#4B6472',
+} as const
+
 export function MonthlyTrends({ data, currency }: Props) {
   const hasData = data.some((d) => d.expenses > 0 || d.income > 0)
 
   if (!hasData) {
     return (
       <div className="px-2 py-4">
-        <p
-          style={{
-            fontSize: 10,
-            fontWeight: 600,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color: '#7B98B8',
-            marginBottom: 8,
-          }}
-        >
-          Tendencias
-        </p>
-        <p style={{ fontSize: 13, color: '#4B6472' }}>
+        <p className="type-label text-text-label mb-2">Tendencias</p>
+        <p className="text-[13px] text-text-dim">
           Cargá gastos en varios meses para ver la evolución.
         </p>
       </div>
@@ -68,54 +65,42 @@ export function MonthlyTrends({ data, currency }: Props) {
   const expValues = data.map((d) => d.expenses)
   const incValues = data.map((d) => d.income)
 
+  const legends = [
+    { dotClass: 'bg-primary',  label: 'Gastos'   },
+    { dotClass: 'bg-success',  label: 'Ingresos' },
+  ]
+
   return (
     <div>
       {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '0 16px 12px',
-        }}
-      >
-        <div style={{ display: 'flex', gap: 16 }}>
-          {[
-            { color: '#38bdf8', label: 'Gastos' },
-            { color: '#4ade80', label: 'Ingresos' },
-          ].map((l) => (
-            <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span
-                style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: '50%',
-                  background: l.color,
-                  display: 'inline-block',
-                }}
-              />
-              <span style={{ fontSize: 10, color: '#7B98B8' }}>{l.label}</span>
+      <div className="flex justify-between items-center px-4 pb-3">
+        <div className="flex gap-4">
+          {legends.map((l) => (
+            <div key={l.label} className="flex items-center gap-1.5">
+              <span className={`w-[7px] h-[7px] rounded-full shrink-0 ${l.dotClass}`} />
+              <span className="text-[10px] text-text-label">{l.label}</span>
             </div>
           ))}
         </div>
+
         {/* Selected month summary */}
         {(() => {
           const sel = data.find((d) => d.isSelected)
           const prev = data[data.findIndex((d) => d.isSelected) - 1]
           if (!sel) return null
           return (
-            <div style={{ display: 'flex', gap: 12, fontSize: 11 }}>
+            <div className="flex gap-3 text-[11px]">
               {prev && prev.expenses > 0 && (
-                <span style={{ color: '#4B6472' }}>
+                <span className="text-text-dim">
                   {prev.label}{' '}
-                  <span style={{ color: '#f0f9ff', fontWeight: 600 }}>
+                  <span className="text-text-primary font-semibold">
                     {formatCompact(prev.expenses, currency)}
                   </span>
                 </span>
               )}
-              <span style={{ color: '#38bdf8' }}>
+              <span className="text-primary">
                 {sel.label}{' '}
-                <span style={{ color: '#f0f9ff', fontWeight: 600 }}>
+                <span className="text-text-primary font-semibold">
                   {formatCompact(sel.expenses, currency)}
                 </span>
               </span>
@@ -133,12 +118,12 @@ export function MonthlyTrends({ data, currency }: Props) {
       >
         <defs>
           <linearGradient id="tg-inc" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#4ade80" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#4ade80" stopOpacity="0" />
+            <stop offset="0%"   stopColor={COLORS.success} stopOpacity="0.3" />
+            <stop offset="100%" stopColor={COLORS.success} stopOpacity="0" />
           </linearGradient>
           <linearGradient id="tg-exp" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+            <stop offset="0%"   stopColor={COLORS.primary} stopOpacity="0.25" />
+            <stop offset="100%" stopColor={COLORS.primary} stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -155,7 +140,7 @@ export function MonthlyTrends({ data, currency }: Props) {
           <path
             d={wave(incValues, maxAll, false)}
             fill="none"
-            stroke="#4ade80"
+            stroke={COLORS.success}
             strokeWidth="1.8"
             strokeLinecap="round"
           />
@@ -164,7 +149,7 @@ export function MonthlyTrends({ data, currency }: Props) {
           <path
             d={wave(expValues, maxAll, false)}
             fill="none"
-            stroke="#38bdf8"
+            stroke={COLORS.primary}
             strokeWidth="1.8"
             strokeLinecap="round"
           />
@@ -174,13 +159,13 @@ export function MonthlyTrends({ data, currency }: Props) {
         {data.map((d, i) =>
           d.expenses > 0 ? (
             <g key={`e-${i}`}>
-              <circle cx={px(i)} cy={py(d.expenses, maxAll)} r="5" fill="#38bdf8" fillOpacity="0.12" />
+              <circle cx={px(i)} cy={py(d.expenses, maxAll)} r="5" fill={COLORS.primary} fillOpacity="0.12" />
               <circle
                 cx={px(i)}
                 cy={py(d.expenses, maxAll)}
                 r={d.isSelected ? 3.5 : 2.5}
-                fill="#38bdf8"
-                stroke="#050A14"
+                fill={COLORS.primary}
+                stroke={COLORS.bgPrimary}
                 strokeWidth="1.5"
               />
             </g>
@@ -191,13 +176,13 @@ export function MonthlyTrends({ data, currency }: Props) {
         {data.map((d, i) =>
           d.income > 0 ? (
             <g key={`inc-${i}`}>
-              <circle cx={px(i)} cy={py(d.income, maxAll)} r="5" fill="#4ade80" fillOpacity="0.12" />
+              <circle cx={px(i)} cy={py(d.income, maxAll)} r="5" fill={COLORS.success} fillOpacity="0.12" />
               <circle
                 cx={px(i)}
                 cy={py(d.income, maxAll)}
                 r={d.isSelected ? 3.5 : 2.5}
-                fill="#4ade80"
-                stroke="#050A14"
+                fill={COLORS.success}
+                stroke={COLORS.bgPrimary}
                 strokeWidth="1.5"
               />
             </g>
@@ -213,7 +198,7 @@ export function MonthlyTrends({ data, currency }: Props) {
             textAnchor={i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}
             fontSize="9"
             fontFamily="monospace"
-            fill={d.isSelected ? '#38bdf8' : '#4B6472'}
+            fill={d.isSelected ? COLORS.primary : COLORS.textDim}
             fontWeight={d.isSelected ? '700' : '400'}
           >
             {d.label}

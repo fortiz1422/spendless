@@ -25,55 +25,20 @@ export function MonthSelectorSheet({
   if (!isOpen) return null
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 60,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-      }}
-    >
+    <div className="fixed inset-0 z-[60] flex flex-col justify-end items-center">
       {/* Backdrop */}
       <div
         onClick={onClose}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'rgba(3,8,16,0.75)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
-        }}
+        className="absolute inset-0 bg-backdrop backdrop-blur-sm"
       />
 
-      {/* Sheet — constrained to app max-width */}
+      {/* Sheet */}
       <div
-        className="slide-up"
-        style={{
-          position: 'relative',
-          width: '100%',
-          maxWidth: 448,
-          background: '#050A14',
-          borderRadius: '2rem 2rem 0 0',
-          borderTop: '1px solid rgba(148,210,255,0.15)',
-          maxHeight: '70vh',
-          overflowY: 'auto',
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',
-        }}
+        className="slide-up relative w-full max-w-[448px] bg-bg-primary rounded-t-[2rem] border-t border-border-ocean max-h-[70vh] overflow-y-auto"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}
       >
         {/* Handle */}
-        <div
-          style={{
-            width: 48,
-            height: 4,
-            background: '#334155',
-            borderRadius: 9999,
-            margin: '16px auto 8px',
-            flexShrink: 0,
-          }}
-        />
+        <div className="w-12 h-1 bg-border-strong rounded-full mx-auto mt-4 mb-2 shrink-0" />
 
         {/* Month list */}
         {months.map(({ value, label }) => {
@@ -85,30 +50,14 @@ export function MonthSelectorSheet({
                 onSelectMonth(value)
                 onClose()
               }}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '16px 24px',
-                background: isSelected ? 'rgba(148,210,255,0.10)' : 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                textAlign: 'left',
-              }}
+              className={`w-full flex items-center justify-between px-6 py-4 border-0 cursor-pointer text-left transition-all duration-150 active:scale-[0.98] ${
+                isSelected ? 'bg-primary/10 hover:bg-primary/15' : 'bg-transparent hover:bg-primary/5'
+              }`}
             >
-              <span
-                style={{
-                  fontSize: 16,
-                  fontWeight: isSelected ? 600 : 400,
-                  color: isSelected ? '#38bdf8' : '#ffffff',
-                }}
-              >
+              <span className={`text-base ${isSelected ? 'font-semibold text-primary' : 'font-normal text-text-primary'}`}>
                 {label}
               </span>
-              {isSelected && (
-                <Check size={16} style={{ color: '#38bdf8', flexShrink: 0 }} />
-              )}
+              {isSelected && <Check size={16} className="text-primary shrink-0" />}
             </button>
           )
         })}

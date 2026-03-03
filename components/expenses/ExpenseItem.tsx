@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { CATEGORY_ICONS } from '@/lib/categories'
+import { CategoryIcon } from '@/components/ui/CategoryIcon'
 import { CATEGORIES } from '@/lib/validation/schemas'
 import { formatAmount, formatDate } from '@/lib/format'
 import type { Expense, Card } from '@/types/database'
@@ -74,6 +74,7 @@ export function ExpenseItem({ expense, cards }: Props) {
       })
       if (!res.ok) throw new Error()
       setExpanded(false)
+      setIsSaving(false)
       router.refresh()
     } catch {
       setError('Error al guardar. Intentá de nuevo.')
@@ -116,11 +117,13 @@ export function ExpenseItem({ expense, cards }: Props) {
   const isPagoTarjetas = expense.category === 'Pago de Tarjetas'
 
   return (
-    <div ref={containerRef} className="overflow-hidden rounded-input">
+    <div ref={containerRef} className="overflow-hidden rounded-card">
       {/* Collapsed row */}
       <div
         onClick={() => {
-          if (!expanded) {
+          if (expanded) {
+            handleSave()
+          } else {
             setExpanded(true)
             setError(null)
           }
@@ -129,8 +132,8 @@ export function ExpenseItem({ expense, cards }: Props) {
           isPagoTarjetas ? 'bg-primary/10' : 'bg-bg-tertiary'
         } ${expanded ? 'rounded-b-none' : ''}`}
       >
-        <span className="text-lg leading-none">
-          {CATEGORY_ICONS[expense.category] ?? '📦'}
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/6 shrink-0">
+          <CategoryIcon category={expense.category} size={16} />
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm text-text-primary">
@@ -296,7 +299,7 @@ export function ExpenseItem({ expense, cards }: Props) {
                 <p className="flex-1 text-xs text-text-secondary">¿Eliminar este gasto?</p>
                 <button
                   onClick={() => setConfirmDelete(false)}
-                  className="rounded-button px-3 py-1.5 text-xs text-text-secondary hover:bg-white/5"
+                  className="rounded-button px-3 py-1.5 text-xs text-text-secondary transition-colors hover:bg-primary/5"
                 >
                   Cancelar
                 </button>
@@ -320,7 +323,7 @@ export function ExpenseItem({ expense, cards }: Props) {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="rounded-button bg-primary px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                  className="rounded-button bg-primary px-4 py-1.5 text-xs font-semibold text-bg-primary disabled:opacity-50"
                 >
                   {isSaving ? <span className="spinner" /> : 'Guardar'}
                 </button>

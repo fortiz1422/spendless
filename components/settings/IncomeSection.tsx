@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 function getCurrentMonth(): string {
   const now = new Date()
@@ -73,25 +74,25 @@ export function IncomeSection({ defaultMonth }: { defaultMonth: string }) {
 
   return (
     <div>
-      <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+      <p className="mb-2 type-label text-text-label">
         Ingresos mensuales
       </p>
 
-      <div className="mb-3 flex items-center justify-between rounded-input bg-bg-tertiary px-3 py-2">
+      <div className="mb-3 flex items-center justify-between rounded-card bg-bg-tertiary border border-border-ocean px-3 py-2">
         <button
           onClick={() => setMonth((m) => addMonths(m, -1))}
           disabled={month <= minMonth}
-          className="text-xl text-text-secondary disabled:opacity-30"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-primary/5 disabled:opacity-30"
         >
-          ‹
+          <ChevronLeft size={16} />
         </button>
         <span className="text-sm text-text-primary">{getMonthLabel(month)}</span>
         <button
           onClick={() => setMonth((m) => addMonths(m, 1))}
           disabled={month >= currentMonth}
-          className="text-xl text-text-secondary disabled:opacity-30"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-primary/5 disabled:opacity-30"
         >
-          ›
+          <ChevronRight size={16} />
         </button>
       </div>
 
@@ -154,7 +155,7 @@ export function IncomeSection({ defaultMonth }: { defaultMonth: string }) {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="w-full rounded-button bg-primary py-2 text-sm font-semibold text-white disabled:opacity-50"
+            className="w-full rounded-button bg-primary py-2 text-sm font-semibold text-bg-primary transition-all duration-150 hover:brightness-110 active:scale-95 disabled:opacity-50"
           >
             {isSaving ? 'Guardando...' : 'Guardar ingreso'}
           </button>

@@ -31,7 +31,7 @@ export function CurrencySection({ currency }: { currency: 'ARS' | 'USD' }) {
 
   return (
     <div>
-      <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+      <p className="mb-2 type-label text-text-label">
         Moneda predeterminada
       </p>
       <div className="flex gap-2">
@@ -44,7 +44,7 @@ export function CurrencySection({ currency }: { currency: 'ARS' | 'USD' }) {
               else setConfirmChange(false)
             }}
             className={`flex-1 rounded-button py-2 text-sm font-medium transition-colors ${
-              selected === c ? 'bg-primary text-white' : 'bg-bg-tertiary text-text-secondary'
+              selected === c ? 'bg-primary text-bg-primary' : 'bg-bg-tertiary text-text-secondary hover:bg-primary/5'
             }`}
           >
             {c}
@@ -52,7 +52,7 @@ export function CurrencySection({ currency }: { currency: 'ARS' | 'USD' }) {
         ))}
       </div>
       {confirmChange && (
-        <div className="mt-2 space-y-2 rounded-input bg-bg-tertiary p-3">
+        <div className="mt-2 space-y-2 rounded-card bg-bg-tertiary p-3">
           <p className="text-xs text-text-secondary">
             Cambiar la moneda afecta cómo se muestra el Saldo Vivo. ¿Continuar?
           </p>
@@ -62,14 +62,14 @@ export function CurrencySection({ currency }: { currency: 'ARS' | 'USD' }) {
                 setSelected(currency)
                 setConfirmChange(false)
               }}
-              className="flex-1 rounded-button py-1.5 text-xs text-text-secondary hover:bg-white/5"
+              className="flex-1 rounded-button py-1.5 text-xs text-text-secondary transition-colors hover:bg-primary/5"
             >
               Cancelar
             </button>
             <button
               onClick={() => handleSave(selected)}
               disabled={isSaving}
-              className="flex-1 rounded-button bg-primary py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+              className="flex-1 rounded-button bg-primary py-1.5 text-xs font-semibold text-bg-primary disabled:opacity-50"
             >
               {isSaving ? '...' : 'Confirmar'}
             </button>

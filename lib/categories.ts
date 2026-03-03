@@ -1,23 +1,3 @@
-export const CATEGORY_ICONS: Record<string, string> = {
-  'Supermercado': '🛒',
-  'Alimentos': '🥖',
-  'Restaurantes': '🍽️',
-  'Delivery': '🛵',
-  'Kiosco y Varios': '🍫',
-  'Casa/Mantenimiento': '🔧',
-  'Muebles y Hogar': '🛋️',
-  'Servicios del Hogar': '🏠',
-  'Auto/Combustible': '⛽',
-  'Auto/Mantenimiento': '🚗',
-  'Transporte': '🚕',
-  'Salud': '💊',
-  'Farmacia': '💉',
-  'Educación': '📚',
-  'Ropa e Indumentaria': '👔',
-  'Cuidado Personal': '💇',
-  'Suscripciones': '📱',
-  'Regalos': '🎁',
-  'Transferencias Familiares': '👨‍👩‍👧',
-  'Otros': '🎯',
-  'Pago de Tarjetas': '💳',
-}
+// Category icon mapping has moved to components/ui/CategoryIcon.tsx
+// This file is kept as a placeholder.
+export {}

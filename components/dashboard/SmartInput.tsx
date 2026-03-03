@@ -66,66 +66,45 @@ export function SmartInput({ cards }: SmartInputProps) {
     inputRef.current?.focus()
   }
 
+  const hasInput = Boolean(input.trim())
+
   return (
     <>
       <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          borderRadius: 9999,
-          background: 'rgba(11,18,33,0.92)',
-          border: `1px solid ${input ? 'rgba(56,189,248,0.35)' : 'rgba(148,210,255,0.15)'}`,
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          padding: '10px 10px 10px 18px',
-          transition: 'border-color 200ms',
-        }}
+        className={`flex items-center gap-2.5 rounded-full bg-bg-secondary/[0.92] backdrop-blur-[20px] py-2.5 pr-2.5 pl-[18px] border transition-colors duration-200 ${
+          hasInput ? 'border-primary/35' : 'border-border-ocean'
+        }`}
       >
         <input
           ref={inputRef}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSubmit()
-          }}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit() }}
           placeholder="café 2500"
           disabled={isParsing}
-          style={{
-            flex: 1,
-            background: 'transparent',
-            border: 'none',
-            outline: 'none',
-            fontSize: 14,
-            color: '#f0f9ff',
-            caretColor: '#38bdf8',
-            opacity: isParsing ? 0.5 : 1,
-          }}
+          className={`flex-1 bg-transparent border-none outline-none type-body text-text-primary caret-primary placeholder:text-text-dim transition-opacity duration-200 ${
+            isParsing ? 'opacity-50' : 'opacity-100'
+          }`}
         />
-        <style>{`input::placeholder { color: #4B6472; }`}</style>
         <button
           onClick={handleSubmit}
-          disabled={!input.trim() || isParsing}
+          disabled={!hasInput || isParsing}
           aria-label="Agregar gasto"
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            flexShrink: 0,
-            background: input.trim() ? '#38bdf8' : 'rgba(148,210,255,0.08)',
-            border: input.trim() ? 'none' : '1px solid rgba(148,210,255,0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'background 200ms, border 200ms',
-            cursor: input.trim() && !isParsing ? 'pointer' : 'default',
-          }}
+          className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center transition-all duration-200 ${
+            hasInput
+              ? 'bg-primary border-0 cursor-pointer'
+              : 'bg-primary/8 border border-border-ocean cursor-default'
+          }`}
         >
           {isParsing ? (
             <span className="spinner" style={{ width: 16, height: 16 }} />
           ) : (
-            <ArrowRight size={15} style={{ color: input.trim() ? '#050A14' : '#7B98B8', transition: 'color 200ms' }} strokeWidth={2.5} />
+            <ArrowRight
+              size={15}
+              strokeWidth={2.5}
+              className={`transition-colors duration-200 ${hasInput ? 'text-bg-primary' : 'text-text-label'}`}
+            />
           )}
         </button>
       </div>

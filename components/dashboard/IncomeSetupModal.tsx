@@ -134,14 +134,14 @@ export function IncomeSetupModal({ month, currency }: Props) {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="w-full rounded-button bg-gradient-to-r from-primary to-purple-500 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/30 transition-transform active:scale-95 hover:scale-[1.02] disabled:opacity-50"
+          className="w-full rounded-button bg-primary py-3 text-sm font-semibold text-bg-primary transition-all duration-150 hover:brightness-110 active:scale-95 disabled:opacity-50"
         >
           {isSaving ? 'Guardando...' : 'Guardar ingreso'}
         </button>
         <button
           onClick={handleSkip}
           disabled={isSaving}
-          className="w-full rounded-button py-3 text-sm text-text-secondary transition-colors hover:bg-white/5"
+          className="w-full rounded-button py-3 text-sm text-text-secondary transition-all duration-150 hover:bg-primary/5 active:scale-95"
         >
           Omitir por ahora
         </button>

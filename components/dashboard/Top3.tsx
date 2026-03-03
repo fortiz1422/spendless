@@ -1,5 +1,5 @@
 import { formatAmount } from '@/lib/format'
-import { CATEGORY_ICONS } from '@/lib/categories'
+import { CategoryIcon } from '@/components/ui/CategoryIcon'
 import type { DashboardData } from '@/types/database'
 
 interface Props {
@@ -28,9 +28,7 @@ export function Top3({ data, currency }: Props) {
           <div key={item.category}>
             <div className="mb-1.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-base leading-none">
-                  {CATEGORY_ICONS[item.category] ?? '📦'}
-                </span>
+                <CategoryIcon category={item.category} size={16} />
                 <span className="text-sm text-text-primary">{item.category}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -40,9 +38,9 @@ export function Top3({ data, currency }: Props) {
                 <span className="text-xs text-text-tertiary">{item.count}x</span>
               </div>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-[rgba(56,189,248,0.12)]">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-primary/12">
               <div
-                className="h-full rounded-full bg-[rgba(56,189,248,0.65)]"
+                className="h-full rounded-full bg-primary/65 bar-grow"
                 style={{ width: `${(item.total / maxTotal) * 100}%` }}
               />
             </div>

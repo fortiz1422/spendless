@@ -156,7 +156,7 @@ export function ParsePreview({
                 <button
                   key={c}
                   onClick={() => set('currency', c)}
-                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  className={`rounded-button px-3 py-1.5 text-sm font-medium transition-colors ${
                     form.currency === c
                       ? 'bg-primary text-white'
                       : 'text-text-secondary'
@@ -271,7 +271,7 @@ export function ParsePreview({
             <div className="flex rounded-input bg-bg-tertiary p-1">
               <button
                 onClick={() => set('is_want', false)}
-                className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+                className={`flex-1 rounded-button py-2 text-sm font-medium transition-colors ${
                   form.is_want === false
                     ? 'bg-success text-white'
                     : 'text-text-secondary'
@@ -281,7 +281,7 @@ export function ParsePreview({
               </button>
               <button
                 onClick={() => set('is_want', true)}
-                className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+                className={`flex-1 rounded-button py-2 text-sm font-medium transition-colors ${
                   form.is_want === true
                     ? 'bg-want text-white'
                     : 'text-text-secondary'
@@ -332,7 +332,7 @@ export function ParsePreview({
         <button
           onClick={onCancel}
           disabled={isSaving}
-          className="w-full rounded-button py-3 text-sm text-text-secondary transition-colors hover:bg-white/5 hover:text-text-primary"
+          className="w-full rounded-button py-3 text-sm text-text-secondary transition-colors hover:bg-[rgba(148,210,255,0.05)] hover:text-text-primary"
         >
           Cancelar
         </button>
