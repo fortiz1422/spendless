@@ -1,46 +1,36 @@
 export default function AnalyticsLoading() {
   return (
     <div className="min-h-screen bg-bg-primary">
-      <div className="mx-auto max-w-md px-4 pt-safe pb-6" style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-
+      <div className="mx-auto max-w-md pt-safe pb-tab-bar">
         {/* DashboardHeader */}
-        <div className="px-6 pt-5">
+        <div className="px-8 pb-2 pt-2">
           <div className="skeleton h-8 w-32 rounded-full" />
         </div>
 
-        {/* MonthlyTrends */}
-        <div className="px-2">
-          <div className="skeleton h-[160px] w-full rounded-card" />
+        {/* TitularHero skeleton */}
+        <div className="px-5 pt-4 pb-2">
+          <div className="skeleton h-7 w-full rounded-lg mb-2" />
+          <div className="skeleton h-7 w-2/3 rounded-lg" />
         </div>
 
-        {/* NeedWantBreakdown */}
-        <div className="px-2">
-          <div className="skeleton h-3 w-28 rounded-full mb-5" />
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="mb-[18px]">
-              <div className="flex justify-between items-center mb-2">
-                <div className="skeleton h-3 w-28 rounded-full" />
-                <div className="skeleton h-3 w-12 rounded-full" />
-              </div>
-              <div className="skeleton h-[5px] w-full rounded-full" />
-            </div>
-          ))}
+        {/* InsightChips skeleton */}
+        <div className="flex gap-2 px-5 py-3">
+          <div className="skeleton h-7 w-32 rounded-full shrink-0" />
+          <div className="skeleton h-7 w-24 rounded-full shrink-0" />
+          <div className="skeleton h-7 w-28 rounded-full shrink-0" />
         </div>
 
-        {/* CategoryDistribution */}
-        <div className="px-2">
-          <div className="skeleton h-3 w-24 rounded-full mb-5" />
+        {/* Section label */}
+        <div className="px-5 mt-2 mb-3">
+          <div className="skeleton h-3 w-40 rounded-full" />
+        </div>
+
+        {/* CategoriaRow skeletons × 5 */}
+        <div className="px-5">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="mb-[18px]">
-              <div className="flex justify-between items-center mb-2">
-                <div className="skeleton h-3 w-32 rounded-full" />
-                <div className="skeleton h-3 w-8 rounded-full" />
-              </div>
-              <div className="skeleton h-[5px] w-full rounded-full" />
-            </div>
+            <div key={i} className="skeleton h-[72px] rounded-card mb-2" />
           ))}
         </div>
-
       </div>
     </div>
   )

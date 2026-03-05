@@ -54,7 +54,7 @@ export function SaldoVivo({ data, currency, gastosTarjeta = 0 }: Props) {
                 Percibidos
               </p>
               <p className="type-amount text-text-primary tabular-nums">
-                {formatCompact(data.gastos_percibidos, currency)}
+                {formatCompact(data.gastos_percibidos + data.pago_tarjetas, currency)}
               </p>
             </div>
           </div>
