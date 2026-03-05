@@ -9,6 +9,7 @@ export type InsightResult = {
 
 type InsightKey =
   | 'F1'
+  | 'F2'
   | 'A1'
   | 'A2'
   | 'A3'
@@ -29,6 +30,8 @@ function buildTitular(key: InsightKey, m: Metrics): string {
   switch (key) {
     case 'F1':
       return 'Mes recién arranca. Volvé a fin de mes para ver cómo te fue.'
+    case 'F2':
+      return 'El mes sigue. Seguí cargando para ver el panorama completo.'
     case 'A1':
       return `Guardaste el ${pctAhorro}% de lo que ganaste este mes. Uno de tus mejores cierres.`
     case 'A2':
@@ -64,6 +67,8 @@ function buildChip(key: InsightKey, m: Metrics): string {
   switch (key) {
     case 'F1':
       return ''
+    case 'F2':
+      return ''
     case 'A1':
       return `Ahorraste el ${pctAhorro}% de tus ingresos`
     case 'A2':
@@ -95,6 +100,7 @@ function buildChip(key: InsightKey, m: Metrics): string {
 
 const RULE_SENTIMENT: Record<InsightKey, 'positive' | 'alert' | 'neutral'> = {
   F1: 'neutral',
+  F2: 'neutral',
   A1: 'positive',
   A2: 'alert',
   A3: 'positive',
@@ -116,8 +122,13 @@ function getMatchingRules(m: Metrics): InsightKey[] {
   const rules: InsightKey[] = []
   const topConc = m.categoryConcentration[0]
 
-  // 1. E1 — cierre en rojo (más urgente)
-  if (m.hasIngreso && m.ahorroProyectado !== null && m.ahorroProyectado < 0)
+  // 1. E1 — cierre en rojo (más urgente, solo con suficientes datos)
+  if (
+    m.hasIngreso &&
+    m.ahorroProyectado !== null &&
+    m.ahorroProyectado < 0 &&
+    m.dayOfMonth >= 10
+  )
     rules.push('E1')
 
   // 2. A2 — casi sin ingreso disponible
@@ -126,11 +137,12 @@ function getMatchingRules(m: Metrics): InsightKey[] {
   // 3. B1 — concentración extrema (≥25%)
   if (topConc?.pctDelTotal >= 25) rules.push('B1')
 
-  // 4. C1 — primera semana muy pesada
-  if (m.pctSemana1DelTotal > 50) rules.push('C1')
+  // 4. C1 — primera semana muy pesada (solo tiene sentido pasada la semana 1)
+  if (m.pctSemana1DelTotal > 50 && m.dayOfMonth > 7) rules.push('C1')
 
-  // 5. A4 — muchos gustos
-  if (m.pctDeseo > 60) rules.push('A4')
+  // 5. A4 — muchos gustos (threshold ajustado por momento del mes)
+  const a4Threshold = m.dayOfMonth <= 10 ? 40 : 50
+  if (m.pctDeseo > a4Threshold) rules.push('A4')
 
   // 6. A1 — ahorraste bien (solo desde día 15)
   if (m.hasIngreso && (m.pctGastadoDelIngreso ?? 0) <= 30 && m.dayOfMonth >= 15)
@@ -139,9 +151,10 @@ function getMatchingRules(m: Metrics): InsightKey[] {
   // 7. B2 — concentración moderada (15–24%)
   if (topConc?.pctDelTotal >= 15 && topConc?.pctDelTotal < 25) rules.push('B2')
 
-  // 8. B3 — frecuencia alta en want/mixed
+  // 8. B3 — frecuencia alta en want/mixed (threshold ajustado por momento del mes)
+  const b3Threshold = m.dayOfMonth <= 10 ? 3 : 5
   if (
-    m.topCategoriaFrecuencia.cantidad >= 5 &&
+    m.topCategoriaFrecuencia.cantidad >= b3Threshold &&
     m.topCategoriaFrecuencia.tipo !== 'need'
   )
     rules.push('B3')
@@ -156,8 +169,8 @@ function getMatchingRules(m: Metrics): InsightKey[] {
       rules.push('B4')
   }
 
-  // 10. C2 — racha sin deseos
-  if (m.diasSinDeseo >= 7) rules.push('C2')
+  // 10. C2 — racha sin deseos (desde la 3ª semana tiene contexto real)
+  if (m.diasSinDeseo >= 7 && m.dayOfMonth > 15) rules.push('C2')
 
   // 11. D1 — mucho crédito
   if (m.pctCredito > 40) rules.push('D1')
@@ -168,7 +181,7 @@ function getMatchingRules(m: Metrics): InsightKey[] {
   // 13. A3 — mes tranquilo (también es fallback)
   if (m.pctDeseo < 20) rules.push('A3')
 
-  if (rules.length === 0) rules.push('A3')
+  if (rules.length === 0) rules.push('F2')
 
   return rules
 }
