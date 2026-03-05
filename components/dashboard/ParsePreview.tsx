@@ -54,6 +54,7 @@ export function ParsePreview({
   const [form, setForm] = useState<ParsedData>({
     ...data,
     date: toDateInput(data.date),
+    is_want: data.is_want ?? false,
   })
   const [isSaving, setIsSaving] = useState(false)
   const [isChecking, setIsChecking] = useState(false)
@@ -107,7 +108,7 @@ export function ParsePreview({
       const payload = {
         ...form,
         date: fromDateInput(form.date),
-        is_want: isPagoTarjetas ? null : form.is_want,
+        is_want: form.is_want,
       }
 
       const res = await fetch('/api/expenses', {
@@ -262,36 +263,34 @@ export function ParsePreview({
           />
         </div>
 
-        {/* Need / Want (oculto para Pago de Tarjetas) */}
-        {!isPagoTarjetas && (
-          <div>
-            <label className="mb-2 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
-              ¿Necesidad o deseo?
-            </label>
-            <div className="flex rounded-input bg-bg-tertiary p-1">
-              <button
-                onClick={() => set('is_want', false)}
-                className={`flex-1 rounded-button py-2 text-sm font-medium transition-colors ${
-                  form.is_want === false
-                    ? 'bg-success text-bg-primary'
-                    : 'text-text-secondary'
-                }`}
-              >
-                Necesidad
-              </button>
-              <button
-                onClick={() => set('is_want', true)}
-                className={`flex-1 rounded-button py-2 text-sm font-medium transition-colors ${
-                  form.is_want === true
-                    ? 'bg-want text-bg-primary'
-                    : 'text-text-secondary'
-                }`}
-              >
-                Deseo
-              </button>
-            </div>
+        {/* Need / Want */}
+        <div>
+          <label className="mb-2 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+            ¿Necesidad o deseo?
+          </label>
+          <div className="flex rounded-input bg-bg-tertiary p-1">
+            <button
+              onClick={() => set('is_want', false)}
+              className={`flex-1 rounded-button py-2 text-sm font-medium transition-colors ${
+                form.is_want === false
+                  ? 'bg-success text-bg-primary'
+                  : 'text-text-secondary'
+              }`}
+            >
+              Necesidad
+            </button>
+            <button
+              onClick={() => set('is_want', true)}
+              className={`flex-1 rounded-button py-2 text-sm font-medium transition-colors ${
+                form.is_want === true
+                  ? 'bg-want text-bg-primary'
+                  : 'text-text-secondary'
+              }`}
+            >
+              Deseo
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Duplicate warning */}

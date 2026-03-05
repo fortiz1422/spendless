@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { ArrowLineDown } from '@phosphor-icons/react'
 import { TitularHero } from './TitularHero'
 import { InsightChips } from './InsightChips'
 import { CategoriaRow } from './CategoriaRow'
@@ -74,6 +75,17 @@ export function AnalyticsClient({ metrics, insight }: Props) {
           )}
         </>
       )}
+
+      <div className="px-5 pt-2 pb-2">
+        <a
+          href="/api/export"
+          download
+          className="flex w-full items-center justify-center gap-2 rounded-button py-3 type-meta text-text-tertiary hover:text-text-secondary transition-colors"
+        >
+          <ArrowLineDown weight="duotone" size={14} />
+          Exportar gastos (CSV)
+        </a>
+      </div>
     </div>
   )
 }

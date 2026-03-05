@@ -48,6 +48,7 @@ export default async function AnalyticsPage({
         .select('*')
         .eq('user_id', user.id)
         .eq('currency', currency)
+        .neq('category', 'Pago de Tarjetas')
         .gte('date', startOfMonth)
         .lt('date', endOfMonth),
       supabase
