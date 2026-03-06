@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 
 function getCurrentMonth(): string {
   const now = new Date()
@@ -84,7 +84,7 @@ export function IncomeSection({ defaultMonth }: { defaultMonth: string }) {
           disabled={month <= minMonth}
           className="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-primary/5 disabled:opacity-30"
         >
-          <ChevronLeft size={16} />
+          <CaretLeft weight="duotone" size={16} />
         </button>
         <span className="text-sm text-text-primary">{getMonthLabel(month)}</span>
         <button
@@ -92,7 +92,7 @@ export function IncomeSection({ defaultMonth }: { defaultMonth: string }) {
           disabled={month >= currentMonth}
           className="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-primary/5 disabled:opacity-30"
         >
-          <ChevronRight size={16} />
+          <CaretRight weight="duotone" size={16} />
         </button>
       </div>
 

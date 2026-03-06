@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronDown } from 'lucide-react'
+import { CaretDown } from '@phosphor-icons/react'
 import type { Card } from '@/types/database'
 
 export function CardsSection({ cards: initialCards }: { cards: Card[] }) {
@@ -60,7 +60,8 @@ export function CardsSection({ cards: initialCards }: { cards: Card[] }) {
             </span>
           )}
         </p>
-        <ChevronDown
+        <CaretDown
+          weight="duotone"
           size={14}
           className={`text-text-tertiary transition-transform ${expanded ? 'rotate-180' : ''}`}
         />
