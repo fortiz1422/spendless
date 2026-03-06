@@ -175,6 +175,7 @@ export type Card = {
   id: string
   name: string
   archived?: boolean
+  closing_day?: number // día del mes de cierre (1–31)
 }
 
 export type Currency = 'ARS' | 'USD'
