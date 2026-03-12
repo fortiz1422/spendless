@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { CATEGORIES } from '@/lib/validation/schemas'
 
 const PAYMENT_OPTIONS = [
@@ -63,7 +63,7 @@ export function ExpenseFilters({ month, category, paymentMethod }: Props) {
           aria-label="Mes anterior"
           className="flex h-9 w-9 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-primary/5 disabled:opacity-30"
         >
-          <ChevronLeft size={18} />
+          <CaretLeft size={18} />
         </button>
         <span className="text-sm font-semibold text-text-primary">{monthLabelCap}</span>
         <button
@@ -72,7 +72,7 @@ export function ExpenseFilters({ month, category, paymentMethod }: Props) {
           aria-label="Mes siguiente"
           className="flex h-9 w-9 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-primary/5 disabled:opacity-30"
         >
-          <ChevronRight size={18} />
+          <CaretRight size={18} />
         </button>
       </div>
 

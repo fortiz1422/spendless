@@ -1,5 +1,7 @@
+'use client'
+
 import { formatAmount, formatCompact } from '@/lib/format'
-import { Wallet, CreditCard } from 'lucide-react'
+import { Wallet, CreditCard } from '@phosphor-icons/react'
 import type { DashboardData } from '@/types/database'
 
 interface Props {
@@ -47,7 +49,7 @@ export function SaldoVivo({ data, currency, gastosTarjeta = 0 }: Props) {
           {/* Percibidos */}
           <div className="flex-1 flex items-center gap-3 px-3.5 py-3 rounded-full bg-surface border border-border-ocean">
             <div className="w-[30px] h-[30px] rounded-full shrink-0 bg-primary/8 border border-border-ocean flex items-center justify-center">
-              <Wallet size={13} className="text-text-label" />
+              <Wallet size={13} weight="duotone" className="text-text-label" />
             </div>
             <div className="min-w-0">
               <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-text-label leading-none mb-1">
@@ -63,7 +65,7 @@ export function SaldoVivo({ data, currency, gastosTarjeta = 0 }: Props) {
           {gastosTarjeta > 0 && (
             <div className="flex-1 flex items-center gap-3 px-3.5 py-3 rounded-full bg-surface border border-border-ocean">
               <div className="w-[30px] h-[30px] rounded-full shrink-0 bg-primary/8 border border-border-ocean flex items-center justify-center">
-                <CreditCard size={13} className="text-text-label" />
+                <CreditCard size={13} weight="duotone" className="text-text-label" />
               </div>
               <div className="min-w-0">
                 <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-text-label leading-none mb-1">

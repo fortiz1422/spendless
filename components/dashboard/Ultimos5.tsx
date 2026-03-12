@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowCircleUp } from '@phosphor-icons/react'
+import { ArrowCircleUp, X, ArrowRight } from '@phosphor-icons/react'
 import { formatAmount, formatDate } from '@/lib/format'
 import { CategoryIcon } from '@/components/ui/CategoryIcon'
 import type { Expense, IncomeEntry } from '@/types/database'
@@ -63,9 +63,9 @@ export function Ultimos5({ expenses, incomeEntries, month }: Props) {
         <p className="type-label text-text-label">Últimos movimientos</p>
         <Link
           href={`/expenses?month=${month}`}
-          className="text-[11px] font-medium text-primary no-underline"
+          className="flex items-center gap-1 text-[11px] font-medium text-primary no-underline"
         >
-          Ver todos →
+          Ver todos <ArrowRight size={11} weight="bold" />
         </Link>
       </div>
 
@@ -101,9 +101,9 @@ export function Ultimos5({ expenses, incomeEntries, month }: Props) {
                     <button
                       onClick={() => handleDeleteIncome(entry.id)}
                       aria-label="Eliminar ingreso"
-                      className="text-lg leading-none text-text-disabled transition-colors hover:text-danger"
+                      className="flex items-center justify-center text-text-disabled transition-colors hover:text-danger"
                     >
-                      ×
+                      <X size={14} weight="bold" />
                     </button>
                   </div>
                 </div>
@@ -128,6 +128,11 @@ export function Ultimos5({ expenses, incomeEntries, month }: Props) {
                     <span className="text-[11px] text-text-label">
                       {expense.category} · {formatDate(expense.date)}
                     </span>
+                    {expense.installment_number != null && expense.installment_total != null && (
+                      <span className="text-[10px] text-text-tertiary">
+                        · Cuota {expense.installment_number}/{expense.installment_total}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <p

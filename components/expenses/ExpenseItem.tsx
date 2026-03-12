@@ -141,6 +141,11 @@ export function ExpenseItem({ expense, cards }: Props) {
           </p>
           <p className="text-xs text-text-tertiary">
             {expense.category} · {formatDate(expense.date)}
+            {expense.installment_number != null && expense.installment_total != null && (
+              <span className="ml-1 text-[10px] text-text-disabled">
+                · Cuota {expense.installment_number}/{expense.installment_total}
+              </span>
+            )}
           </p>
         </div>
         <div className="text-right">
@@ -296,7 +301,11 @@ export function ExpenseItem({ expense, cards }: Props) {
           <div className="flex items-center gap-2 pt-1">
             {confirmDelete ? (
               <>
-                <p className="flex-1 text-xs text-text-secondary">¿Eliminar este gasto?</p>
+                <p className="flex-1 text-xs text-text-secondary">
+                  {expense.installment_group_id
+                    ? `¿Eliminar las ${expense.installment_total} cuotas?`
+                    : '¿Eliminar este gasto?'}
+                </p>
                 <button
                   onClick={() => setConfirmDelete(false)}
                   className="rounded-button px-3 py-1.5 text-xs text-text-secondary transition-colors hover:bg-primary/5"

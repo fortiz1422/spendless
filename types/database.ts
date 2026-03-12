@@ -9,6 +9,71 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          description: string
+          category: string
+          amount: number
+          currency: 'ARS' | 'USD'
+          payment_method: 'DEBIT' | 'CREDIT'
+          card_id: string | null
+          account_id: string | null
+          day_of_month: number
+          is_active: boolean
+          created_at: string
+          last_reviewed_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          description: string
+          category: string
+          amount: number
+          currency?: 'ARS' | 'USD'
+          payment_method?: 'DEBIT' | 'CREDIT'
+          card_id?: string | null
+          account_id?: string | null
+          day_of_month?: number
+          is_active?: boolean
+          created_at?: string
+          last_reviewed_at?: string
+        }
+        Update: {
+          description?: string
+          category?: string
+          amount?: number
+          currency?: 'ARS' | 'USD'
+          payment_method?: 'DEBIT' | 'CREDIT'
+          card_id?: string | null
+          account_id?: string | null
+          day_of_month?: number
+          is_active?: boolean
+          last_reviewed_at?: string
+        }
+        Relationships: []
+      }
+      subscription_insertions: {
+        Row: {
+          id: string
+          subscription_id: string
+          month: string
+          expense_id: string | null
+          inserted_at: string
+        }
+        Insert: {
+          id?: string
+          subscription_id: string
+          month: string
+          expense_id?: string | null
+          inserted_at?: string
+        }
+        Update: {
+          expense_id?: string | null
+        }
+        Relationships: []
+      }
       income_entries: {
         Row: {
           id: string
@@ -82,6 +147,9 @@ export type Database = {
           date: string
           created_at: string
           updated_at: string
+          installment_group_id: string | null
+          installment_number: number | null
+          installment_total: number | null
         }
         Insert: {
           id?: string
@@ -97,6 +165,9 @@ export type Database = {
           date?: string
           created_at?: string
           updated_at?: string
+          installment_group_id?: string | null
+          installment_number?: number | null
+          installment_total?: number | null
         }
         Update: {
           id?: string
@@ -112,6 +183,9 @@ export type Database = {
           date?: string
           created_at?: string
           updated_at?: string
+          installment_group_id?: string | null
+          installment_number?: number | null
+          installment_total?: number | null
         }
         Relationships: []
       }
@@ -321,6 +395,30 @@ export type AccountPeriodBalance = {
   balance_usd: number
   source: 'opening' | 'rollover_auto' | 'manual'
   updated_at: string
+}
+
+export type Subscription = {
+  id: string
+  user_id: string
+  description: string
+  category: string
+  amount: number
+  currency: 'ARS' | 'USD'
+  payment_method: 'DEBIT' | 'CREDIT'
+  card_id: string | null
+  account_id: string | null
+  day_of_month: number
+  is_active: boolean
+  created_at: string
+  last_reviewed_at: string
+}
+
+export type SubscriptionInsertion = {
+  id: string
+  subscription_id: string
+  month: string
+  expense_id: string | null
+  inserted_at: string
 }
 
 export type Card = {

@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarDots, CaretRight } from '@phosphor-icons/react'
+import { CalendarDots, CaretRight, Pulse } from '@phosphor-icons/react'
 import { CategoryIcon } from '@/components/ui/CategoryIcon'
 import { formatAmount } from '@/lib/format'
 import type { HabitosDayEntry } from '@/lib/analytics/computeMetrics'
@@ -11,16 +11,16 @@ interface CardProps {
   onClick: () => void
 }
 
-function getCellColor(amount: number, max: number): string {
-  if (amount === 0 || max === 0) return 'bg-bg-tertiary'
-  const ratio = amount / max
+function getCellColor(count: number, max: number): string {
+  if (count === 0 || max === 0) return 'bg-bg-tertiary'
+  const ratio = count / max
   if (ratio < 0.25) return 'bg-primary/20'
   if (ratio < 0.6) return 'bg-primary/50'
   return 'bg-warning/70'
 }
 
 export function MapaHabitosCard({ habitosMap, currency: _currency, onClick }: CardProps) {
-  const maxAmount = Math.max(...habitosMap.map((d) => d.amount), 0)
+  const maxCount = Math.max(...habitosMap.map((d) => d.txs.length), 0)
   // Mini preview: show first 28 days max
   const preview = habitosMap.slice(0, 28)
 
@@ -43,7 +43,7 @@ export function MapaHabitosCard({ habitosMap, currency: _currency, onClick }: Ca
         {preview.map((d) => (
           <div
             key={d.day}
-            className={`h-4 rounded-sm ${getCellColor(d.amount, maxAmount)}`}
+            className={`h-4 rounded-sm ${getCellColor(d.txs.length, maxCount)}`}
           />
         ))}
       </div>
@@ -62,7 +62,7 @@ interface DrillProps {
 const DAY_LABELS = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
 
 export function DrillMapaHabitos({ habitosMap, selDay, setSelDay, currency, selectedMonth }: DrillProps) {
-  const maxAmount = Math.max(...habitosMap.map((d) => d.amount), 0)
+  const maxCount = Math.max(...habitosMap.map((d) => d.txs.length), 0)
   const [year, month] = selectedMonth.split('-').map(Number)
   // getDay() returns 0=Sun..6=Sat; offset so Monday=0
   const firstDayRaw = new Date(year, month - 1, 1).getDay() // 0=Sun
@@ -78,6 +78,17 @@ export function DrillMapaHabitos({ habitosMap, selDay, setSelDay, currency, sele
     <div className="px-5 space-y-4">
       {/* Calendar grid */}
       <div className="bg-bg-secondary border border-border-ocean rounded-card p-4">
+        {/* Heatmap legend */}
+        <div className="flex justify-between items-center px-1 mb-4">
+          <span className="type-micro text-text-label uppercase tracking-wider">Nivel de actividad</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm bg-bg-tertiary" />
+            <div className="w-2.5 h-2.5 rounded-sm bg-primary/20" />
+            <div className="w-2.5 h-2.5 rounded-sm bg-primary/50" />
+            <div className="w-2.5 h-2.5 rounded-sm bg-warning/70" />
+          </div>
+        </div>
+
         {/* Day headers */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {DAY_LABELS.map((l, i) => (
@@ -95,7 +106,7 @@ export function DrillMapaHabitos({ habitosMap, selDay, setSelDay, currency, sele
           ))}
           {habitosMap.map((d) => {
             const isSelected = selDay?.day === d.day
-            const colorClass = getCellColor(d.amount, maxAmount)
+            const colorClass = getCellColor(d.txs.length, maxCount)
             return (
               <button
                 key={d.day}
@@ -114,10 +125,16 @@ export function DrillMapaHabitos({ habitosMap, selDay, setSelDay, currency, sele
       {/* Day detail panel */}
       {selDay ? (
         <div className="bg-bg-secondary border border-border-ocean rounded-card px-4 pt-4 pb-1">
-          <div className="flex items-center justify-between mb-1">
+          <div className="flex justify-between items-start mb-1">
             <p className="text-[13px] font-semibold text-text-secondary">
               {selDay.day} de {monthNames[month - 1]}
             </p>
+            {selDay.txs.length > 0 && (
+              <div className="flex items-center gap-1.5 bg-bg-tertiary border border-border-ocean rounded-full px-3 py-1">
+                <Pulse size={12} weight="bold" className="text-text-tertiary" />
+                <span className="text-xs font-semibold text-text-tertiary">{selDay.txs.length} operaciones</span>
+              </div>
+            )}
           </div>
           <p className="text-[28px] font-extrabold text-text-primary leading-tight mb-3">
             {formatAmount(selDay.amount, currency)}

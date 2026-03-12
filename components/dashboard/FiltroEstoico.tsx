@@ -16,6 +16,7 @@ export function FiltroEstoico({ data }: Props) {
 
   return (
     <div className="px-2">
+      <p className="type-label text-text-label mb-3">Tipo de gasto</p>
       {/* Labels */}
       <div className="flex justify-between mb-2">
         <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-text-label">Necesidad · {necesidadPct}%</span>

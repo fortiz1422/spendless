@@ -5,6 +5,7 @@ import { z } from 'zod'
 const CardSchema = z.object({
   id: z.string(),
   name: z.string().min(1),
+  closing_day: z.number().int().min(1).max(31).optional(),
   archived: z.boolean().optional(),
 })
 

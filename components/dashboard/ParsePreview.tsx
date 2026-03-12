@@ -84,6 +84,8 @@ export function ParsePreview({ data, cards, accounts, onSave, onCancel }: ParseP
     is_want: data.is_want ?? false,
   })
   const [source, setSource] = useState<SourceKey>(() => getDefaultSource(data, accounts))
+  const [installments, setInstallments] = useState(1)
+  const [installmentsInput, setInstallmentsInput] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isChecking, setIsChecking] = useState(false)
   const [cardError, setCardError] = useState(false)
@@ -142,12 +144,13 @@ export function ParsePreview({ data, cards, accounts, onSave, onCancel }: ParseP
 
     setIsSaving(true)
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         ...form,
         payment_method: derivePaymentMethod(source, accounts),
         account_id: deriveAccountId(source, accounts),
         date: fromDateInput(form.date),
       }
+      if (installments > 1) payload.installments = installments
 
       const res = await fetch('/api/expenses', {
         method: 'POST',
@@ -272,6 +275,59 @@ export function ParsePreview({ data, cards, accounts, onSave, onCancel }: ParseP
             </select>
             {cardError && (
               <p className="mt-1 text-[11px] text-danger">⚠️ Seleccioná una tarjeta</p>
+            )}
+          </div>
+        )}
+
+        {/* Cuotas (solo tarjeta de crédito) */}
+        {source === 'credit' && !isPagoTarjetas && (
+          <div>
+            <label className="mb-2 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+              Cuotas
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {[1, 3, 6, 12, 18, 24].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => {
+                    setInstallments(n)
+                    setInstallmentsInput('')
+                  }}
+                  className={`${chipBase} ${installments === n && installmentsInput === '' ? chipActive : chipInactive}`}
+                >
+                  {n === 1 ? 'Sin cuotas' : `${n}x`}
+                </button>
+              ))}
+              <input
+                type="number"
+                inputMode="numeric"
+                min={2}
+                max={72}
+                placeholder="Otro"
+                value={installmentsInput}
+                onChange={(e) => {
+                  const v = e.target.value
+                  setInstallmentsInput(v)
+                  const n = parseInt(v)
+                  if (!isNaN(n) && n >= 2 && n <= 72) setInstallments(n)
+                }}
+                className="w-16 rounded-input border border-transparent bg-bg-tertiary px-2 py-1.5 text-xs text-text-primary focus:border-primary focus:outline-none placeholder:text-text-disabled"
+              />
+            </div>
+            {installments > 1 && (
+              <p className="mt-1.5 text-[11px] text-text-tertiary">
+                {new Intl.NumberFormat('es-AR', {
+                  style: 'currency',
+                  currency: form.currency === 'USD' ? 'USD' : 'ARS',
+                  maximumFractionDigits: 2,
+                }).format(Math.round((form.amount / installments) * 100) / 100)}
+                /mes × {installments} ={' '}
+                {new Intl.NumberFormat('es-AR', {
+                  style: 'currency',
+                  currency: form.currency === 'USD' ? 'USD' : 'ARS',
+                  maximumFractionDigits: 2,
+                }).format(form.amount)}
+              </p>
             )}
           </div>
         )}

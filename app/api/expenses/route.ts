@@ -59,6 +59,18 @@ export async function GET(request: Request) {
   })
 }
 
+function addMonths(dateStr: string, n: number): string {
+  // dateStr is YYYY-MM-DD
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const targetMonth = month - 1 + n // 0-indexed month
+  const targetYear = year + Math.floor(targetMonth / 12)
+  const normalizedMonth = ((targetMonth % 12) + 12) % 12 // handle negative
+  // Cap day to last day of target month
+  const lastDay = new Date(targetYear, normalizedMonth + 1, 0).getDate()
+  const targetDay = Math.min(day, lastDay)
+  return `${targetYear}-${String(normalizedMonth + 1).padStart(2, '0')}-${String(targetDay).padStart(2, '0')}`
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient()
   const {
@@ -73,15 +85,43 @@ export async function POST(request: Request) {
     const body = await request.json()
     const validated = ExpenseSchema.parse(body)
 
-    const { data, error } = await supabase
-      .from('expenses')
-      .insert({ user_id: user.id, ...validated })
-      .select()
-      .single()
+    const { installments, installment_start, installment_grand_total, ...expenseFields } = validated
+    const numInstallments = installments ?? 1
 
+    if (numInstallments === 1) {
+      const { data, error } = await supabase
+        .from('expenses')
+        .insert({ user_id: user.id, ...expenseFields })
+        .select()
+        .single()
+      if (error) throw error
+      return NextResponse.json(data, { status: 201 })
+    }
+
+    // Multi-row insert for installments
+    const baseDate = expenseFields.date.split('T')[0] // YYYY-MM-DD
+    // If installment_start is provided, amount is already per-installment (cuotas en curso)
+    const perInstallment = installment_start != null
+      ? expenseFields.amount
+      : Math.round((expenseFields.amount / numInstallments) * 100) / 100
+    const startNumber = installment_start ?? 1
+    const grandTotal = installment_grand_total ?? numInstallments
+    const groupId = crypto.randomUUID()
+
+    const rows = Array.from({ length: numInstallments }, (_, i) => ({
+      user_id: user.id,
+      ...expenseFields,
+      amount: perInstallment,
+      date: addMonths(baseDate, i),
+      installment_group_id: groupId,
+      installment_number: startNumber + i,
+      installment_total: grandTotal,
+    }))
+
+    const { data, error } = await supabase.from('expenses').insert(rows).select()
     if (error) throw error
 
-    return NextResponse.json(data, { status: 201 })
+    return NextResponse.json(data?.[0] ?? {}, { status: 201 })
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(

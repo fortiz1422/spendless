@@ -34,7 +34,7 @@ function buildMonthList(
       : defaultStart
 
   const months: { value: string; label: string }[] = []
-  let m = current
+  let m = addMonths(current, 3)
   while (m >= start) {
     const raw = new Date(m + '-15').toLocaleDateString('es-AR', {
       month: 'long',

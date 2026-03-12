@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight } from '@phosphor-icons/react'
 import { ParsePreview } from './ParsePreview'
 import type { Account, Card } from '@/types/database'
 
@@ -108,7 +108,7 @@ export function SmartInput({ cards, accounts, onAfterSave }: SmartInputProps) {
           ) : (
             <ArrowRight
               size={15}
-              strokeWidth={2.5}
+              weight="bold"
               className={`transition-colors duration-200 ${hasInput ? 'text-bg-primary' : 'text-text-label'}`}
             />
           )}

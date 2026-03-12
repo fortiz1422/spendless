@@ -57,14 +57,39 @@ export async function DELETE(
 
   const { id } = await params
 
-  const { error } = await supabase
+  // Fetch the expense to check for installment group
+  const { data: expense, error: fetchError } = await supabase
     .from('expenses')
-    .delete()
+    .select('installment_group_id')
     .eq('id', id)
     .eq('user_id', user.id)
+    .single()
 
-  if (error) {
-    console.error('Delete expense error:', error)
+  if (fetchError) {
+    console.error('Delete expense fetch error:', fetchError)
+    return NextResponse.json({ error: 'Error al eliminar' }, { status: 500 })
+  }
+
+  let deleteError
+  if (expense?.installment_group_id) {
+    // Delete all rows in the installment group
+    const { error } = await supabase
+      .from('expenses')
+      .delete()
+      .eq('installment_group_id', expense.installment_group_id)
+      .eq('user_id', user.id)
+    deleteError = error
+  } else {
+    const { error } = await supabase
+      .from('expenses')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id)
+    deleteError = error
+  }
+
+  if (deleteError) {
+    console.error('Delete expense error:', deleteError)
     return NextResponse.json({ error: 'Error al eliminar' }, { status: 500 })
   }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { Bug, CaretRight } from '@phosphor-icons/react'
+import { Coins, CaretRight } from '@phosphor-icons/react'
 import { CategoryIcon } from '@/components/ui/CategoryIcon'
 import { formatAmount } from '@/lib/format'
 import type { FugaSilenciosaData } from '@/lib/analytics/computeMetrics'
@@ -22,7 +22,7 @@ export function FugaSilenciosaCard({ data, currency, onClick }: CardProps) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-bg-tertiary flex items-center justify-center">
-            <Bug weight="duotone" size={16} className="icon-duotone" style={{ color: 'var(--color-warning)' }} />
+            <Coins weight="duotone" size={16} className="icon-duotone" style={{ color: 'var(--color-warning)' }} />
           </div>
           <span className="type-label text-warning">FUGA SILENCIOSA</span>
         </div>
@@ -35,7 +35,7 @@ export function FugaSilenciosaCard({ data, currency, onClick }: CardProps) {
         </div>
       ) : (
         <>
-          <p className="type-amount text-text-primary mb-0.5">
+          <p className="type-amount mb-0.5" style={{ color: 'var(--color-warning)' }}>
             {formatAmount(data.total, currency)}
           </p>
           <p className="type-meta text-text-tertiary mb-3">
@@ -77,10 +77,10 @@ export function DrillFugaSilenciosa({ data, currency }: DrillProps) {
       {/* Hero */}
       <div className="bg-bg-secondary border border-border-ocean rounded-card p-6 flex flex-col items-center text-center">
         <div className="w-10 h-10 rounded-full bg-bg-tertiary flex items-center justify-center mb-3">
-          <Bug weight="duotone" size={20} className="icon-duotone" style={{ color: 'var(--color-warning)' }} />
+          <Coins weight="duotone" size={20} className="icon-duotone" style={{ color: 'var(--color-warning)' }} />
         </div>
         <p className="text-[13px] font-semibold text-text-secondary mb-1">Total fuga silenciosa</p>
-        <p className="text-[36px] font-extrabold text-text-primary leading-tight">
+        <p className="text-[36px] font-extrabold leading-tight" style={{ color: 'var(--color-warning)' }}>
           {formatAmount(data.total, currency)}
         </p>
         <p className="text-xs text-text-tertiary mt-1">

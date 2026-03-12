@@ -40,7 +40,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <div className="mx-auto max-w-md px-6 pt-safe pb-6">
+      <div className="mx-auto max-w-md px-5 pt-safe pb-tab-bar">
         <SettingsPreferences
           currentMonth={currentMonth}
           currency={currency}

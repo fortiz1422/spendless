@@ -8,9 +8,10 @@ import { Ultimos5 } from '@/components/dashboard/Ultimos5'
 import { IncomeSetupModal } from '@/components/dashboard/IncomeSetupModal'
 import { RolloverBanner } from '@/components/dashboard/RolloverBanner'
 import { CierreMesModal } from '@/components/dashboard/CierreMesModal'
-import { IncomeButton } from '@/components/dashboard/IncomeButton'
+import { HomePlusButton } from '@/components/dashboard/HomePlusButton'
+import { SubscriptionReviewBanner } from '@/components/subscriptions/SubscriptionReviewBanner'
 import { buildPrevMonthSummary, buildPerAccountBalances } from '@/lib/rollover'
-import type { Account, Card, DashboardData, IncomeEntry, RolloverMode } from '@/types/database'
+import type { Account, Card, DashboardData, IncomeEntry, RolloverMode, Subscription } from '@/types/database'
 import type { PrevMonthSummary } from '@/lib/rollover'
 
 function getCurrentMonth(): string {
@@ -22,6 +23,55 @@ function addMonths(ym: string, delta: number): string {
   const [y, m] = ym.split('-').map(Number)
   const d = new Date(y, m - 1 + delta, 1)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+async function processSubscriptions(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  userId: string,
+  currentMonth: string,
+  currentDay: number,
+) {
+  const { data: subs } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('is_active', true)
+
+  if (!subs?.length) return
+
+  const { data: insertions } = await supabase
+    .from('subscription_insertions')
+    .select('subscription_id')
+    .eq('month', currentMonth + '-01')
+
+  const inserted = new Set((insertions ?? []).map((i: { subscription_id: string }) => i.subscription_id))
+
+  for (const sub of subs) {
+    if (inserted.has(sub.id) || currentDay < sub.day_of_month) continue
+    const expDate = `${currentMonth}-${String(sub.day_of_month).padStart(2, '0')}`
+    const { data: expense } = await supabase
+      .from('expenses')
+      .insert({
+        user_id: userId,
+        description: sub.description,
+        category: sub.category,
+        amount: sub.amount,
+        currency: sub.currency,
+        payment_method: sub.payment_method,
+        card_id: sub.card_id,
+        account_id: sub.account_id ?? null,
+        date: expDate,
+      })
+      .select('id')
+      .single()
+    if (expense) {
+      await supabase.from('subscription_insertions').upsert(
+        { subscription_id: sub.id, month: currentMonth + '-01', expense_id: expense.id },
+        { onConflict: 'subscription_id,month', ignoreDuplicates: true },
+      )
+    }
+  }
 }
 
 export default async function DashboardPage({
@@ -65,6 +115,20 @@ export default async function DashboardPage({
   const accounts: Account[] = (accountsData ?? []) as Account[]
   const isCurrentMonth = selectedMonth === currentMonth
   const accountIds = accounts.map((a) => a.id)
+
+  // Process subscriptions (auto-insert for current month, real date)
+  const now = new Date()
+  const currentDay = now.getDate()
+  await processSubscriptions(supabase, user.id, currentMonth, currentDay)
+
+  // Fetch active subscriptions for banner
+  const { data: subscriptionsData } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .order('created_at', { ascending: true })
+  const activeSubscriptions = (subscriptionsData ?? []) as Subscription[]
 
   // Check income from all sources (legacy + new)
   const [legacyIncomeResult, incomeEntriesResult, periodBalancesResult, { data: oldestExpense }] =
@@ -224,7 +288,19 @@ export default async function DashboardPage({
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 180px)',
         }}
       >
-        <DashboardHeader month={selectedMonth} earliestDataMonth={earliestDataMonth} />
+        <div className="flex items-center justify-between pt-5">
+          <DashboardHeader
+            month={selectedMonth}
+            earliestDataMonth={earliestDataMonth}
+            className=""
+          />
+          <HomePlusButton
+            accounts={accounts}
+            currency={currency}
+            cards={cards}
+            month={selectedMonth}
+          />
+        </div>
 
         {!hasIncomeAfterRollover && isCurrentMonth && !manualRolloverSummary && (
           <IncomeSetupModal month={selectedMonth} currency={currency} />
@@ -242,6 +318,14 @@ export default async function DashboardPage({
 
         {(dashboardData?.ultimos_5?.length ?? 0) > 0 && (
           <FiltroEstoico data={dashboardData!.filtro_estoico} />
+        )}
+
+        {activeSubscriptions.length > 0 && (
+          <SubscriptionReviewBanner
+            subscriptions={activeSubscriptions}
+            currency={currency}
+            cards={cards}
+          />
         )}
 
         <Ultimos5
@@ -282,7 +366,6 @@ export default async function DashboardPage({
         }}
       >
         <div style={{ width: '100%', maxWidth: 448, padding: '0 16px', pointerEvents: 'auto' }}>
-          <IncomeButton accounts={accounts} currency={currency} />
           <SmartInput cards={cards} accounts={accounts} />
         </div>
       </div>

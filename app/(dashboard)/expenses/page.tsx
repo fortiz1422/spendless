@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { CaretLeft, CaretRight } from '@phosphor-icons/react/dist/ssr'
 import { ExpenseItem } from '@/components/expenses/ExpenseItem'
 import { IncomeItem } from '@/components/expenses/IncomeItem'
 import { ExpenseFilters } from '@/components/expenses/ExpenseFilters'
@@ -86,7 +86,7 @@ export default async function ExpensesPage({
             className="flex h-9 w-9 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-primary/5"
             aria-label="Volver"
           >
-            <ChevronLeft size={20} />
+            <CaretLeft size={20} />
           </Link>
           <h1 className="text-base font-semibold text-text-primary">Movimientos</h1>
         </div>
@@ -148,7 +148,7 @@ export default async function ExpensesPage({
                 }).toString()}`}
                 className="flex items-center gap-1.5 rounded-button border border-border-ocean bg-bg-secondary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-primary/5"
               >
-                <ChevronLeft size={14} />
+                <CaretLeft size={14} />
                 Anterior
               </Link>
             ) : (
@@ -168,7 +168,7 @@ export default async function ExpensesPage({
                 className="flex items-center gap-1.5 rounded-button border border-border-ocean bg-bg-secondary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-primary/5"
               >
                 Siguiente
-                <ChevronRight size={14} />
+                <CaretRight size={14} />
               </Link>
             ) : (
               <div />

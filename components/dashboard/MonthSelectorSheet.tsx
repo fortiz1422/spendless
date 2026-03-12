@@ -1,6 +1,6 @@
 'use client'
 
-import { Check } from 'lucide-react'
+import { Check } from '@phosphor-icons/react'
 
 interface MonthOption {
   value: string  // YYYY-MM
@@ -57,7 +57,7 @@ export function MonthSelectorSheet({
               <span className={`text-base ${isSelected ? 'font-semibold text-primary' : 'font-normal text-text-primary'}`}>
                 {label}
               </span>
-              {isSelected && <Check size={16} className="text-primary shrink-0" />}
+              {isSelected && <Check size={16} weight="bold" className="text-primary shrink-0" />}
             </button>
           )
         })}
