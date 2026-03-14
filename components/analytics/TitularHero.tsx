@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { colors } from '@/lib/colors'
 
 interface Props {
   titular: string
@@ -8,9 +9,9 @@ interface Props {
 }
 
 const SENTIMENT_COLOR = {
-  positive: '#4ade80',
-  alert: '#f59e0b',
-  neutral: '#38bdf8',
+  positive: colors.success,
+  alert:    colors.danger,
+  neutral:  colors.primary,
 } as const
 
 // Matches: percentages (30%), $ amounts ($ 1.234), USD amounts (USD 1.234)

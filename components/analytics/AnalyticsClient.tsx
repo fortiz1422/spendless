@@ -37,6 +37,9 @@ export function AnalyticsClient({ metrics, insight, compromisos, selectedMonth, 
 
   const { currency } = metrics
   const visibleCategorias = expanded ? metrics.categorias : metrics.categorias.slice(0, 5)
+  const maxCatTotal = metrics.categorias.length > 0
+    ? Math.max(...metrics.categorias.map((c) => c.total))
+    : 0
 
   function handleSetDrill(d: Drill | null) {
     setDrill(d)
@@ -56,7 +59,13 @@ export function AnalyticsClient({ metrics, insight, compromisos, selectedMonth, 
         <div className="flex items-center gap-3 px-5 pt-5 mb-4">
           <button
             onClick={() => handleSetDrill(null)}
-            className="w-10 h-10 rounded-full bg-bg-tertiary border border-border-ocean flex items-center justify-center shrink-0"
+            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+            style={{
+              background: 'rgba(255,255,255,0.38)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.70)',
+            }}
           >
             <CaretLeft weight="bold" size={18} className="text-text-primary" />
           </button>
@@ -70,24 +79,33 @@ export function AnalyticsClient({ metrics, insight, compromisos, selectedMonth, 
             earliestDataMonth={earliestDataMonth}
             className=""
           />
-          <div className="bg-bg-tertiary rounded-full p-[3px] flex border border-border-ocean">
+          <div
+            className="p-1 flex"
+            style={{
+              background: 'rgba(255,255,255,0.50)',
+              border: '1px solid rgba(255,255,255,0.70)',
+              borderRadius: 12,
+            }}
+          >
             <button
               onClick={() => handleTabChange('diario')}
-              className={`rounded-full px-3 py-1.5 type-meta transition-colors ${
+              className={`px-3 py-1.5 type-meta transition-colors ${
                 activeTab === 'diario'
-                  ? 'bg-bg-secondary font-semibold text-text-primary'
-                  : 'bg-transparent text-text-tertiary'
+                  ? 'font-semibold text-white'
+                  : 'bg-transparent text-[#4A6070]'
               }`}
+              style={activeTab === 'diario' ? { background: '#0D1829', borderRadius: 9 } : undefined}
             >
               Diario
             </button>
             <button
               onClick={() => handleTabChange('analisis')}
-              className={`rounded-full px-3 py-1.5 type-meta transition-colors ${
+              className={`px-3 py-1.5 type-meta transition-colors ${
                 activeTab === 'analisis'
-                  ? 'bg-bg-secondary font-semibold text-text-primary'
-                  : 'bg-transparent text-text-tertiary'
+                  ? 'font-semibold text-white'
+                  : 'bg-transparent text-[#4A6070]'
               }`}
+              style={activeTab === 'analisis' ? { background: '#0D1829', borderRadius: 9 } : undefined}
             >
               Análisis
             </button>
@@ -127,7 +145,7 @@ export function AnalyticsClient({ metrics, insight, compromisos, selectedMonth, 
                         idx >= 5 ? { animationDelay: `${(idx - 5) * 40}ms` } : undefined
                       }
                     >
-                      <CategoriaRow cat={cat} currency={currency} />
+                      <CategoriaRow cat={cat} currency={currency} maxTotal={maxCatTotal} />
                     </div>
                   ))}
 

@@ -2,44 +2,61 @@
 @plugin "@tailwindcss/forms";
 
 /* ============================================
-   DESIGN SYSTEM TOKENS
+   DESIGN SYSTEM TOKENS — Paleta "Fría" (Light Mode)
    ============================================ */
 
 @theme {
   /* Backgrounds */
-  --color-bg-primary:   #050A14;
-  --color-bg-secondary: #0b1221;
-  --color-bg-tertiary:  #0f1c30;
-  --color-bg-elevated:  #1a2d42;
+  --color-bg-primary:   #F0F4F8;
+  --color-bg-secondary: #E6ECF2;
+  --color-bg-tertiary:  #DCE3EA;
+  --color-bg-elevated:  #F0F4F8;
 
   /* Surface overlay for pills / floating elements */
-  --color-surface: rgba(148,210,255,0.05);
+  --color-surface: rgba(255,255,255,0.38);
 
   /* Text */
-  --color-text-primary:   #f0f9ff;
-  --color-text-secondary: #bae6fd;
-  --color-text-tertiary:  #94a3b8;
-  --color-text-disabled:  #64748b;
-  --color-text-label:     #7B98B8;
-  --color-text-dim:       #4B6472;
+  --color-text-primary:   #0D1829;
+  --color-text-secondary: #4A6070;
+  --color-text-tertiary:  #90A4B0;
+  --color-text-disabled:  #B8C9D4;
+  --color-text-label:     #90A4B0;
+  --color-text-dim:       #90A4B0;
+  --color-text-muted:     #B8C9D4;
 
   /* Borders */
-  --color-border-subtle: #132030;
-  --color-border-strong: #334155;
-  --color-border-ocean:  rgba(148,210,255,0.15);
+  --color-border-subtle: rgba(15,30,60,0.06);
+  --color-border-strong: rgba(15,30,60,0.10);
+  --color-border-ocean:  rgba(255,255,255,0.70);
 
   /* Accents */
-  --color-primary:      #38bdf8;
-  --color-success:      #4ade80;
-  --color-warning:      #f59e0b;
-  --color-danger:       #ef4444;
-  --color-danger-light: #f87171;
-  --color-necessity:    #4ade80;
-  --color-want:         #fdba74;
+  --color-primary:      #2178A8;
+  --color-success:      #1A7A42;
+  --color-warning:      #B84A12;
+  --color-danger:       #A61E1E;
+  --color-danger-light: rgba(166,30,30,0.09);
+  --color-necessity:    #1A7A42;
+  --color-want:         #B84A12;
+
+  /* Data */
+  --color-data:      #1B7E9E;
+  --color-data-soft: rgba(27,126,158,0.10);
+
+  /* Soft variants */
+  --color-primary-soft: rgba(33,120,168,0.09);
+  --color-success-soft: rgba(26,122,66,0.10);
+  --color-warning-soft: rgba(184,74,18,0.10);
+  --color-danger-soft:  rgba(166,30,30,0.09);
+
+  /* Ocean — base para transparencias */
+  --color-ocean: #1B7E9E;
+
+  /* Card border (alias explícito) */
+  --color-card-border: rgba(255,255,255,0.70);
 
   /* Overlays */
-  --color-nav-bg:   rgba(5,12,28,0.92);
-  --color-backdrop: rgba(3,8,16,0.75);
+  --color-nav-bg:   rgba(255,255,255,0.38);
+  --color-backdrop: rgba(0,0,0,0.40);
 
   /* Border Radius */
   --radius-card:    20px;
@@ -47,8 +64,8 @@
   --radius-input:   9999px;
   --radius-button:  9999px;
 
-  /* Font */
-  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont,
+  /* Font — DM Sans primary, Geist as fallback */
+  --font-sans: var(--font-dm-sans), var(--font-geist-sans), -apple-system, BlinkMacSystemFont,
     "SF Pro Text", "Segoe UI", Roboto, sans-serif;
 }
 
@@ -57,7 +74,8 @@
    ============================================ */
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+  --shadow-tab-bar: 0 2px 10px rgba(15,30,60,0.05);
 }
 
 body {
@@ -98,76 +116,92 @@ body {
 
 /* Capa 1 — Superficies base: pills, tags, rows */
 @utility glass-1 {
-  background: rgba(148,210,255,0.05);
+  background: rgba(255,255,255,0.38);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.70);
 }
 
 /* Capa 2 — Cards y panels */
 @utility glass-2 {
-  background: rgba(148,210,255,0.08);
+  background: rgba(255,255,255,0.38);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 0 rgba(148,210,255,0.10);
+  border: 1px solid rgba(255,255,255,0.70);
 }
 
 /* Capa 3 — Elementos flotantes: modales, nav, sheets */
 @utility glass-3 {
-  background: rgba(148,210,255,0.15);
+  background: rgba(255,255,255,0.38);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: inset 0 1px 0 rgba(148,210,255,0.14);
+  border: 1px solid rgba(255,255,255,0.70);
 }
 
 /* Fallback para navegadores sin soporte de backdrop-filter */
 @supports not (backdrop-filter: blur(1px)) {
   .glass-1 { background: var(--color-bg-secondary); }
   .glass-2 { background: var(--color-bg-tertiary); }
-  .glass-3 { background: var(--color-bg-elevated); }
+  .glass-3 { background: var(--color-bg-secondary); }
 }
 
 /* ============================================
-   GLOW UTILITIES (bioluminiscencia de SaldoVivo)
+   GLOW UTILITIES
    ============================================ */
 
 @utility glow-positive {
-  background: radial-gradient(ellipse, rgba(56,189,248,0.14) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(26,122,66,0.10) 0%, transparent 70%);
 }
 
 @utility glow-negative {
-  background: radial-gradient(ellipse, rgba(239,68,68,0.14) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(166,30,30,0.09) 0%, transparent 70%);
 }
 
 /* ============================================
    TYPOGRAPHIC SCALE
    ============================================ */
 
-/* 9px — sublabels extremos */
+/* 10px — sublabels, micro-copy */
 @utility type-micro {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
+  letter-spacing: 0.09em;
   line-height: 1;
 }
 
 /* 10px — headers de sección con tracking amplio */
 @utility type-label {
   font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* 10px — alias for section headers */
+@utility type-section {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
 /* 11px — fechas, categorías, valores auxiliares */
 @utility type-meta {
   font-size: 11px;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 /* 14px — body text: inputs, descripciones, rows */
 @utility type-body {
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.4;
+}
+
+/* 15px — emphasized body */
+@utility type-body-lg {
+  font-size: 15px;
+  font-weight: 600;
 }
 
 /* 20px — sub-montos, pills de tarjeta */
@@ -181,23 +215,31 @@ body {
 /* 22px — título de mes en DashboardHeader */
 @utility type-month {
   font-size: 22px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 
-/* 30px — títulos de página (Settings) */
+/* 24px — títulos de página */
 @utility type-title {
-  font-size: 30px;
-  font-weight: 900;
-  letter-spacing: -0.03em;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
   line-height: 1;
 }
 
-/* 46px — saldo principal (SaldoVivo hero) */
+/* 32px — hero secundario */
+@utility type-hero-sm {
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* 42px — saldo principal (SaldoVivo hero) */
 @utility type-hero {
-  font-size: 46px;
-  font-weight: 900;
-  letter-spacing: -0.04em;
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -1.5px;
   line-height: 1;
 }
 
@@ -258,8 +300,13 @@ body {
   animation: growBar 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Phosphor duotone icon: primary fill at 15% (color comes from sibling text-* utility) */
+/* Phosphor duotone icon — fill at 15% opacity (prefer explicit colors per CategoryIcon) */
 .icon-duotone [opacity] {
   fill: var(--color-primary) !important;
   opacity: 0.15 !important;
+}
+
+/* TabBar pill shadow */
+@utility shadow-tab-bar {
+  box-shadow: var(--shadow-tab-bar);
 }

@@ -24,7 +24,7 @@ export function FiltroEstoico({ data }: Props) {
       </div>
 
       {/* Battery bar */}
-      <div className="h-1.5 rounded-full overflow-hidden bg-surface flex">
+      <div className="h-1 rounded-full overflow-hidden bg-border-subtle flex">
         <div className="bg-success rounded-l-full bar-grow" style={{ width: `${necesidadPct}%` }} />
         <div className="w-px bg-bg-primary shrink-0" />
         <div className="flex-1 bg-want rounded-r-full" />

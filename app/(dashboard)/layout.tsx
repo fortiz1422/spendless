@@ -32,7 +32,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           height: 80,
           zIndex: 45,
           pointerEvents: 'none',
-          background: 'linear-gradient(to bottom, transparent, #050A14)',
+          background: 'linear-gradient(to bottom, transparent, var(--color-bg-primary))',
           backdropFilter: 'blur(6px)',
           WebkitBackdropFilter: 'blur(6px)',
         }}

@@ -132,9 +132,7 @@ export function ExpenseItem({ expense, cards }: Props) {
           isPagoTarjetas ? 'bg-primary/10' : 'bg-bg-tertiary'
         } ${expanded ? 'rounded-b-none' : ''}`}
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/6 shrink-0">
-          <CategoryIcon category={expense.category} size={16} />
-        </span>
+        <CategoryIcon category={expense.category} size={16} container />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm text-text-primary">
             {expense.description || expense.category}

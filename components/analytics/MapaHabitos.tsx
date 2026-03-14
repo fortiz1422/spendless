@@ -31,8 +31,11 @@ export function MapaHabitosCard({ habitosMap, currency: _currency, onClick }: Ca
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-bg-tertiary flex items-center justify-center">
-            <CalendarDots weight="duotone" size={16} className="icon-duotone" style={{ color: 'var(--color-primary)' }} />
+          <div
+            className="w-8 h-8 flex items-center justify-center"
+            style={{ borderRadius: 10, backgroundColor: 'rgba(33,120,168,0.09)' }}
+          >
+            <CalendarDots weight="regular" size={16} style={{ color: 'var(--color-primary)' }} />
           </div>
           <span className="type-label text-primary">MAPA DE HÁBITOS</span>
         </div>
@@ -149,11 +152,9 @@ export function DrillMapaHabitos({ habitosMap, selDay, setSelDay, currency, sele
                 return (
                   <div
                     key={tx.id}
-                    className={`flex items-center gap-3.5 py-3.5 ${!isLast ? 'border-b border-primary/12' : ''}`}
+                    className={`flex items-center gap-3.5 py-3.5 ${!isLast ? 'border-b border-border-subtle' : ''}`}
                   >
-                    <div className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full border border-border-ocean bg-primary/6">
-                      <CategoryIcon category={tx.category} size={18} />
-                    </div>
+                    <CategoryIcon category={tx.category} size={18} container />
                     <div className="flex-1 min-w-0">
                       <p className="truncate text-[13px] font-medium text-text-primary">
                         {tx.description || tx.category}

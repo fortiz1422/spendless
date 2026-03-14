@@ -38,8 +38,13 @@ function TabBarInner() {
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
     >
       <div
-        className="flex items-center gap-1 px-2 py-1.5 rounded-full w-fit bg-nav-bg border border-border-ocean backdrop-blur-2xl"
-        style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(148,210,255,0.06)' }}
+        className="flex items-center gap-1 px-2 py-1.5 rounded-full w-fit shadow-tab-bar"
+        style={{
+          background: 'rgba(255,255,255,0.38)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.70)',
+        }}
       >
         {tabs.map(({ href, icon: Icon, label, isActive }) => (
           <Link
@@ -47,17 +52,18 @@ function TabBarInner() {
             href={href}
             className={`flex items-center rounded-full overflow-hidden transition-all duration-200 ${
               isActive
-                ? 'gap-2 px-[18px] py-2 bg-primary/[0.13]'
+                ? 'gap-1.5 px-5 py-2'
                 : 'gap-0 px-[14px] py-2 bg-transparent'
             }`}
+            style={isActive ? { background: '#0D1829' } : undefined}
           >
             <Icon
               size={18}
-              weight={isActive ? 'duotone' : 'regular'}
-              className={`shrink-0 ${isActive ? 'text-text-primary icon-duotone' : 'text-text-label'}`}
+              weight="regular"
+              className={`shrink-0 ${isActive ? 'text-white' : 'text-[#90A4B0]'}`}
             />
             {isActive && (
-              <span className="text-[12px] font-semibold text-text-primary whitespace-nowrap tracking-[-0.01em]">
+              <span className="text-[13px] font-semibold text-white whitespace-nowrap tracking-[-0.01em]">
                 {label}
               </span>
             )}
@@ -73,7 +79,13 @@ export function TabBar() {
     <Suspense
       fallback={
         <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-5">
-          <div className="w-40 h-12 rounded-full bg-nav-bg border border-border-ocean" />
+          <div
+            className="w-40 h-12 rounded-full"
+            style={{
+              background: 'rgba(255,255,255,0.38)',
+              border: '1px solid rgba(255,255,255,0.70)',
+            }}
+          />
         </div>
       }
     >

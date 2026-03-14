@@ -77,7 +77,7 @@ export function Ultimos5({ expenses, incomeEntries, month }: Props) {
         <div>
           {movements.map((mv, idx) => {
             const isLast = idx === movements.length - 1
-            const divider = !isLast ? 'border-b border-primary/12' : ''
+            const divider = !isLast ? 'border-b border-border-subtle' : ''
 
             if (mv.kind === 'income') {
               const entry = mv.data
@@ -114,9 +114,7 @@ export function Ultimos5({ expenses, incomeEntries, month }: Props) {
             const isPagoTarjetas = expense.category === 'Pago de Tarjetas'
             return (
               <div key={`e-${expense.id}`} className={`flex items-center gap-3.5 py-3.5 ${divider}`}>
-                <div className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full border border-border-ocean bg-primary/6">
-                  <CategoryIcon category={expense.category} size={18} />
-                </div>
+                <CategoryIcon category={expense.category} size={18} container />
                 <div className="flex-1 min-w-0">
                   <p className="m-0 truncate text-[13px] font-medium text-text-primary">
                     {expense.description || expense.category}

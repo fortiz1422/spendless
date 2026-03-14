@@ -346,7 +346,7 @@ export default async function DashboardPage({
           height: 180,
           zIndex: 46,
           pointerEvents: 'none',
-          background: 'linear-gradient(to bottom, transparent, #050A14)',
+          background: 'linear-gradient(to bottom, transparent, var(--color-bg-primary))',
           backdropFilter: 'blur(6px)',
           WebkitBackdropFilter: 'blur(6px)',
         }}

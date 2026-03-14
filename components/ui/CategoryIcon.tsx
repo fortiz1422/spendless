@@ -3,20 +3,20 @@
 import {
   ShoppingCart,
   Basket,
-  ChefHat,
+  ForkKnife,
   Motorcycle,
   Storefront,
-  House,
-  Couch,
-  Plug,
+  Wrench,
+  Armchair,
+  Lightning,
   GasPump,
-  Car,
+  Gear,
   Bus,
-  FirstAidKit,
+  Heart,
   Pill,
   BookOpen,
   TShirt,
-  HandHeart,
+  Sparkle,
   ArrowsClockwise,
   Gift,
   Users,
@@ -25,37 +25,74 @@ import {
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 
-const CATEGORY_ICONS: Record<string, Icon> = {
-  'Supermercado':              ShoppingCart,
-  'Alimentos':                 Basket,
-  'Restaurantes':              ChefHat,
-  'Delivery':                  Motorcycle,
-  'Kiosco y Varios':           Storefront,
-  'Casa/Mantenimiento':        House,
-  'Muebles y Hogar':           Couch,
-  'Servicios del Hogar':       Plug,
-  'Auto/Combustible':          GasPump,
-  'Auto/Mantenimiento':        Car,
-  'Transporte':                Bus,
-  'Salud':                     FirstAidKit,
-  'Farmacia':                  Pill,
-  'Educación':                 BookOpen,
-  'Ropa e Indumentaria':       TShirt,
-  'Cuidado Personal':          HandHeart,
-  'Suscripciones':             ArrowsClockwise,
-  'Regalos':                   Gift,
-  'Transferencias Familiares': Users,
-  'Otros':                     Tag,
-  'Pago de Tarjetas':          CreditCard,
+interface CategoryColors {
+  color: string
+  colorSoft: string
+}
+
+const CATEGORY_MAP: Record<string, { icon: Icon } & CategoryColors> = {
+  'Supermercado':              { icon: ShoppingCart,    color: '#1A7A42', colorSoft: 'rgba(26,122,66,0.10)' },
+  'Alimentos':                 { icon: Basket,          color: '#1A7A42', colorSoft: 'rgba(26,122,66,0.10)' },
+  'Restaurantes':              { icon: ForkKnife,       color: '#2D8B5A', colorSoft: 'rgba(45,139,90,0.10)' },
+  'Delivery':                  { icon: Motorcycle,      color: '#2D8B5A', colorSoft: 'rgba(45,139,90,0.10)' },
+  'Kiosco y Varios':           { icon: Storefront,      color: '#3D9668', colorSoft: 'rgba(61,150,104,0.10)' },
+  'Casa/Mantenimiento':        { icon: Wrench,          color: '#2178A8', colorSoft: 'rgba(33,120,168,0.10)' },
+  'Muebles y Hogar':           { icon: Armchair,        color: '#2178A8', colorSoft: 'rgba(33,120,168,0.10)' },
+  'Servicios del Hogar':       { icon: Lightning,       color: '#1B7E9E', colorSoft: 'rgba(27,126,158,0.10)' },
+  'Auto/Combustible':          { icon: GasPump,         color: '#B84A12', colorSoft: 'rgba(184,74,18,0.10)' },
+  'Auto/Mantenimiento':        { icon: Gear,            color: '#B84A12', colorSoft: 'rgba(184,74,18,0.10)' },
+  'Transporte':                { icon: Bus,             color: '#C4601A', colorSoft: 'rgba(196,96,26,0.10)' },
+  'Salud':                     { icon: Heart,           color: '#1B7E9E', colorSoft: 'rgba(27,126,158,0.10)' },
+  'Farmacia':                  { icon: Pill,            color: '#0E8A7A', colorSoft: 'rgba(14,138,122,0.10)' },
+  'Educación':                 { icon: BookOpen,        color: '#6D3DB5', colorSoft: 'rgba(109,61,181,0.10)' },
+  'Ropa e Indumentaria':       { icon: TShirt,          color: '#7D4EC0', colorSoft: 'rgba(125,78,192,0.10)' },
+  'Cuidado Personal':          { icon: Sparkle,         color: '#8B60C8', colorSoft: 'rgba(139,96,200,0.10)' },
+  'Suscripciones':             { icon: ArrowsClockwise, color: '#2178A8', colorSoft: 'rgba(33,120,168,0.09)' },
+  'Regalos':                   { icon: Gift,            color: '#A0367A', colorSoft: 'rgba(160,54,122,0.10)' },
+  'Transferencias Familiares': { icon: Users,           color: '#4A6070', colorSoft: 'rgba(74,96,112,0.10)' },
+  'Otros':                     { icon: Tag,             color: '#4A6070', colorSoft: 'rgba(74,96,112,0.10)' },
+  'Pago de Tarjetas':          { icon: CreditCard,      color: '#A61E1E', colorSoft: 'rgba(166,30,30,0.10)' },
 }
 
 interface Props {
   category: string
   size?: number
+  /** When true, wraps the icon in a 36×36 colored container (borderRadius 10px) */
+  container?: boolean
 }
 
-export function CategoryIcon({ category, size = 16 }: Props) {
-  const Icon = CATEGORY_ICONS[category]
-  if (!Icon) return null
-  return <Icon weight="duotone" size={size} className="text-text-primary icon-duotone shrink-0" />
+export function CategoryIcon({ category, size = 16, container = false }: Props) {
+  const entry = CATEGORY_MAP[category]
+  if (!entry) return null
+
+  const { icon: Icon, color, colorSoft } = entry
+
+  if (container) {
+    return (
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          backgroundColor: colorSoft,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        <Icon weight="regular" size={size} style={{ color }} />
+      </div>
+    )
+  }
+
+  return <Icon weight="regular" size={size} style={{ color }} className="shrink-0" />
+}
+
+/** Returns the color and colorSoft for a given category (for custom containers) */
+export function getCategoryColors(category: string): CategoryColors {
+  const entry = CATEGORY_MAP[category]
+  return entry
+    ? { color: entry.color, colorSoft: entry.colorSoft }
+    : { color: '#4A6070', colorSoft: 'rgba(74,96,112,0.10)' }
 }

@@ -77,9 +77,14 @@ export function SmartInput({ cards, accounts, onAfterSave }: SmartInputProps) {
   return (
     <>
       <div
-        className={`flex items-center gap-2.5 rounded-full bg-bg-secondary/[0.92] backdrop-blur-[20px] py-2.5 pr-2.5 pl-[18px] border transition-colors duration-200 ${
-          hasInput ? 'border-primary/35' : 'border-border-ocean'
+        className={`flex items-center gap-2.5 rounded-full py-[11px] pr-2.5 pl-[18px] border transition-colors duration-200 ${
+          hasInput ? 'border-primary/35' : 'border-[rgba(255,255,255,0.70)]'
         }`}
+        style={{
+          background: 'rgba(255,255,255,0.38)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        }}
       >
         <input
           ref={inputRef}
@@ -97,11 +102,11 @@ export function SmartInput({ cards, accounts, onAfterSave }: SmartInputProps) {
           onClick={handleSubmit}
           disabled={!hasInput || isParsing}
           aria-label="Agregar gasto"
-          className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center transition-all duration-200 ${
-            hasInput
-              ? 'bg-primary border-0 cursor-pointer'
-              : 'bg-primary/8 border border-border-ocean cursor-default'
-          }`}
+          className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center transition-all duration-200 cursor-pointer"
+          style={hasInput
+            ? { background: '#2178A8' }
+            : { background: 'rgba(15,30,60,0.06)' }
+          }
         >
           {isParsing ? (
             <span className="spinner" style={{ width: 16, height: 16 }} />

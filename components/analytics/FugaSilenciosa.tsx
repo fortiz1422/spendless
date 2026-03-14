@@ -21,8 +21,11 @@ export function FugaSilenciosaCard({ data, currency, onClick }: CardProps) {
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-bg-tertiary flex items-center justify-center">
-            <Coins weight="duotone" size={16} className="icon-duotone" style={{ color: 'var(--color-warning)' }} />
+          <div
+            className="w-8 h-8 flex items-center justify-center"
+            style={{ borderRadius: 10, backgroundColor: 'rgba(184,74,18,0.10)' }}
+          >
+            <Coins weight="regular" size={16} style={{ color: 'var(--color-warning)' }} />
           </div>
           <span className="type-label text-warning">FUGA SILENCIOSA</span>
         </div>
@@ -76,8 +79,11 @@ export function DrillFugaSilenciosa({ data, currency }: DrillProps) {
     <div className="px-5 space-y-4">
       {/* Hero */}
       <div className="bg-bg-secondary border border-border-ocean rounded-card p-6 flex flex-col items-center text-center">
-        <div className="w-10 h-10 rounded-full bg-bg-tertiary flex items-center justify-center mb-3">
-          <Coins weight="duotone" size={20} className="icon-duotone" style={{ color: 'var(--color-warning)' }} />
+        <div
+          className="w-10 h-10 flex items-center justify-center mb-3"
+          style={{ borderRadius: 12, backgroundColor: 'rgba(184,74,18,0.10)' }}
+        >
+          <Coins weight="regular" size={20} style={{ color: 'var(--color-warning)' }} />
         </div>
         <p className="text-[13px] font-semibold text-text-secondary mb-1">Total fuga silenciosa</p>
         <p className="text-[36px] font-extrabold leading-tight" style={{ color: 'var(--color-warning)' }}>
@@ -101,11 +107,9 @@ export function DrillFugaSilenciosa({ data, currency }: DrillProps) {
           {data.byCategory.map((cat) => (
             <div
               key={cat.category}
-              className="bg-bg-secondary border border-border-ocean rounded-card px-4 py-3 mb-2 flex items-center gap-3"
+              className="py-3 mb-1 flex items-center gap-3"
             >
-              <div className="w-10 h-10 rounded-full bg-bg-tertiary flex items-center justify-center shrink-0">
-                <CategoryIcon category={cat.category} size={22} />
-              </div>
+              <CategoryIcon category={cat.category} size={20} container />
               <div className="flex-1 min-w-0">
                 <p className="type-body font-medium text-text-primary truncate">{cat.category}</p>
                 <p className="type-meta text-text-tertiary">{cat.count} operaciones · {formatAmount(cat.amount / cat.count, currency)} promedio</p>

@@ -2,22 +2,23 @@
 
 import { CreditCard, CaretRight, Warning } from '@phosphor-icons/react'
 import { formatAmount } from '@/lib/format'
+import { colors } from '@/lib/colors'
 import type { CompromisosData } from '@/lib/analytics/computeCompromisos'
 
-const CARD_COLORS = ['#38bdf8', '#4ade80', '#fdba74', '#a78bfa', '#f87171']
+const CARD_COLORS = [colors.primary, colors.success, colors.warning, colors.purple, colors.danger]
 
 function arcColor(pct: number | null): string {
-  if (pct === null) return '#38bdf8'
-  if (pct < 35) return '#38bdf8'
-  if (pct < 60) return '#f59e0b'
-  return '#ef4444'
+  if (pct === null) return colors.primary
+  if (pct < 35) return colors.primary
+  if (pct < 60) return colors.warning
+  return colors.danger
 }
 
 function statusLabel(pct: number | null): { text: string; cls: string } {
   if (pct === null) return { text: 'Sin referencia', cls: 'bg-primary/10 text-primary border border-primary/20' }
   if (pct < 35) return { text: 'Saludable', cls: 'bg-success/10 text-success border border-success/20' }
   if (pct < 60) return { text: 'Moderado', cls: 'bg-warning/10 text-warning border border-warning/20' }
-  return { text: 'Alto', cls: 'bg-danger/10 text-danger-light border border-danger/20' }
+  return { text: 'Alto', cls: 'bg-danger/10 text-danger border border-danger/20' }
 }
 
 interface ArcProps {
@@ -41,7 +42,7 @@ function ArcGauge({ pct, size = 72 }: ArcProps) {
         cy={cy}
         r={r}
         fill="none"
-        stroke="rgba(148,210,255,0.10)"
+        stroke="rgba(27,126,158,0.12)"
         strokeWidth={8}
       />
       {pct !== null && (
@@ -80,8 +81,11 @@ export function CompromisosCard({ data, currency, onClick }: CardProps) {
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-bg-tertiary flex items-center justify-center">
-            <CreditCard weight="duotone" size={16} className="icon-duotone" style={{ color }} />
+          <div
+            className="w-8 h-8 flex items-center justify-center"
+            style={{ borderRadius: 10, backgroundColor: `${color}1a` }}
+          >
+            <CreditCard weight="regular" size={16} style={{ color }} />
           </div>
           <span className="type-label" style={{ color }}>COMPROMISOS</span>
         </div>
@@ -151,7 +155,7 @@ export function DrillCompromisos({ data, currency, selectedMonth }: DrillProps) 
     return (
       <div className="px-5">
         <div className="flex flex-col items-center justify-center gap-3 py-12 border-2 border-dashed border-border-ocean rounded-card">
-          <CreditCard weight="duotone" size={32} className="text-text-tertiary icon-duotone" />
+          <CreditCard weight="regular" size={32} className="text-text-tertiary" />
           <p className="type-body text-text-tertiary text-center">Sin tarjetas configuradas</p>
           <a
             href="/settings"

@@ -1,5 +1,5 @@
 import { formatAmount } from '@/lib/format'
-import { CategoryIcon } from '@/components/ui/CategoryIcon'
+import { CategoryIcon, getCategoryColors } from '@/components/ui/CategoryIcon'
 import type { DashboardData } from '@/types/database'
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 export function Top3({ data, currency }: Props) {
   if (!data || data.length === 0) {
     return (
-      <div className="rounded-card bg-bg-secondary p-4">
+      <div className="px-2">
         <p className="type-label text-text-label">Top Categorías</p>
         <p className="mt-2 text-sm text-text-tertiary">Sin gastos registrados este mes.</p>
       </div>
@@ -20,32 +20,35 @@ export function Top3({ data, currency }: Props) {
   const maxTotal = Math.max(...data.map((d) => d.total))
 
   return (
-    <div className="rounded-card bg-bg-secondary p-4">
+    <div className="px-2">
       <p className="mb-3 type-label text-text-label">Top Categorías</p>
 
       <div className="space-y-3">
-        {data.map((item) => (
-          <div key={item.category}>
-            <div className="mb-1.5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CategoryIcon category={item.category} size={16} />
-                <span className="text-sm text-text-primary">{item.category}</span>
+        {data.map((item) => {
+          const { color } = getCategoryColors(item.category)
+          return (
+            <div key={item.category}>
+              <div className="mb-1.5 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CategoryIcon category={item.category} size={16} />
+                  <span className="text-sm text-text-primary">{item.category}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-text-primary">
+                    {formatAmount(item.total, currency)}
+                  </span>
+                  <span className="text-xs text-text-tertiary">{item.count}x</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-text-primary">
-                  {formatAmount(item.total, currency)}
-                </span>
-                <span className="text-xs text-text-tertiary">{item.count}x</span>
+              <div className="h-[3px] w-full overflow-hidden rounded-full bg-border-subtle">
+                <div
+                  className="h-full rounded-full bar-grow"
+                  style={{ width: `${(item.total / maxTotal) * 100}%`, backgroundColor: color }}
+                />
               </div>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-primary/12">
-              <div
-                className="h-full rounded-full bg-primary/65 bar-grow"
-                style={{ width: `${(item.total / maxTotal) * 100}%` }}
-              />
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

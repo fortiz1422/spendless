@@ -39,7 +39,7 @@ export function SaldoVivo({ data, currency, gastosTarjeta = 0 }: Props) {
       {/* Hero number */}
       <div className="relative z-10">
         <p className="type-label text-text-label mb-1.5">Disponible</p>
-        <p className={`type-hero tabular-nums m-0 ${isNegative ? 'text-danger-light' : 'text-text-primary'}`}>
+        <p className={`type-hero tabular-nums m-0 ${isNegative ? 'text-danger' : 'text-text-primary'}`}>
           {isNegative ? '−' : ''}
           {formatAmount(Math.abs(disponible), currency)}
         </p>
