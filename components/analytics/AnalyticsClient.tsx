@@ -83,6 +83,8 @@ export function AnalyticsClient({ metrics, insight, compromisos, selectedMonth, 
             className="p-1 flex"
             style={{
               background: 'rgba(255,255,255,0.50)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
               border: '1px solid rgba(255,255,255,0.70)',
               borderRadius: 12,
             }}

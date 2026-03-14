@@ -47,7 +47,13 @@ export function SaldoVivo({ data, currency, gastosTarjeta = 0 }: Props) {
         {/* Twin Pills */}
         <div className="flex gap-2.5 mt-5">
           {/* Percibidos */}
-          <div className="flex-1 flex items-center gap-3 px-3.5 py-3 rounded-full bg-surface border border-border-ocean">
+          <div className="flex-1 flex items-center gap-3 px-3.5 py-3 rounded-full"
+            style={{
+              background: 'rgba(255,255,255,0.38)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.70)',
+            }}>
             <div className="w-[30px] h-[30px] rounded-full shrink-0 bg-primary/8 border border-border-ocean flex items-center justify-center">
               <Wallet size={13} weight="duotone" className="text-text-label" />
             </div>
@@ -63,7 +69,13 @@ export function SaldoVivo({ data, currency, gastosTarjeta = 0 }: Props) {
 
           {/* Tarjeta */}
           {gastosTarjeta > 0 && (
-            <div className="flex-1 flex items-center gap-3 px-3.5 py-3 rounded-full bg-surface border border-border-ocean">
+            <div className="flex-1 flex items-center gap-3 px-3.5 py-3 rounded-full"
+            style={{
+              background: 'rgba(255,255,255,0.38)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.70)',
+            }}>
               <div className="w-[30px] h-[30px] rounded-full shrink-0 bg-primary/8 border border-border-ocean flex items-center justify-center">
                 <CreditCard size={13} weight="duotone" className="text-text-label" />
               </div>

@@ -33,7 +33,15 @@ export function AccountSection({ email }: { email: string }) {
   }
 
   return (
-    <div className="space-y-3 rounded-card bg-bg-secondary border border-border-ocean p-4">
+    <div
+      className="space-y-3 rounded-card p-4"
+      style={{
+        background: 'rgba(255,255,255,0.38)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255,255,255,0.70)',
+      }}
+    >
       {/* Email */}
       <p className="rounded-input bg-bg-tertiary px-3 py-2.5 text-sm text-text-primary">
         {email}
@@ -43,7 +51,7 @@ export function AccountSection({ email }: { email: string }) {
       <button
         onClick={handleLogout}
         disabled={isLoggingOut}
-        className="w-full rounded-button py-2.5 text-sm font-medium text-danger transition-colors hover:bg-primary/5 disabled:opacity-50"
+        className="w-full rounded-button py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-primary/5 disabled:opacity-50"
       >
         {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
       </button>

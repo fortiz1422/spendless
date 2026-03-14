@@ -40,7 +40,7 @@ export function CashSection({ initialCash, month }: Props) {
           {cash ? (
             <button
               onClick={() => setOpen(true)}
-              className="flex w-full items-center gap-3 rounded-card bg-bg-tertiary border border-border-ocean px-3 py-2.5 text-left hover:bg-bg-elevated transition-colors"
+              className="flex w-full items-center gap-3 py-[13px] border-b border-border-subtle text-left transition-colors"
             >
               <div className="flex-1 min-w-0">
                 <span className="text-sm text-text-primary">{cash.name}</span>

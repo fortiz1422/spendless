@@ -61,7 +61,7 @@ export function AccountsSection({ initialAccounts, month }: Props) {
   return (
     <>
       <CollapsibleSection icon={<Bank weight="duotone" size={18} className="text-text-primary icon-duotone" />} title="Cuentas" summary={summary}>
-        <div className="space-y-1.5">
+        <div>
           {bankDigital.length === 0 && (
             <p className="text-xs text-text-disabled py-1">Sin cuentas bancarias o digitales.</p>
           )}
@@ -73,7 +73,7 @@ export function AccountsSection({ initialAccounts, month }: Props) {
               <button
                 key={acc.id}
                 onClick={() => setEditing(acc)}
-                className="flex w-full items-center gap-3 rounded-card bg-bg-tertiary border border-border-ocean px-3 py-2.5 text-left hover:bg-bg-elevated transition-colors"
+                className="flex w-full items-center gap-3 py-[13px] border-b border-border-subtle text-left transition-colors"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
@@ -97,7 +97,7 @@ export function AccountsSection({ initialAccounts, month }: Props) {
             )
           })}
 
-          <div className="flex gap-2 mt-2">
+          <div className="flex gap-2 mt-3">
             <button
               onClick={() => { setCreatingType('bank'); setEditing(null) }}
               className="flex-1 rounded-button border border-border-ocean py-2 text-xs text-text-tertiary hover:text-text-secondary hover:border-primary/30 transition-colors"

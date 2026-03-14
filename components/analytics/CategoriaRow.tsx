@@ -14,7 +14,7 @@ const TIPO_ICON_COLOR = {
 const TAG_CLASS = {
   need:  'bg-success/10 text-success border border-success/20',
   want:  'bg-warning/10 text-warning border border-warning/20',
-  mixed: 'bg-primary/10 text-primary border border-primary/20',
+  mixed: 'bg-[rgba(74,96,112,0.09)] text-[#4A6070] border border-[rgba(74,96,112,0.12)]',
 } as const
 
 const TAG_LABEL = {

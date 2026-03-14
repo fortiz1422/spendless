@@ -205,7 +205,7 @@ export function IncomeModal({ accounts, defaultCurrency, onClose }: Props) {
         <button
           onClick={handleSave}
           disabled={!amount || Number(amount) <= 0 || isSaving}
-          className="w-full rounded-button bg-success py-3 text-sm font-semibold text-bg-primary transition-transform active:scale-95 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-button bg-primary py-3 text-sm font-semibold text-white transition-transform active:scale-95 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSaving ? 'Guardando...' : 'Guardar ingreso ✓'}
         </button>

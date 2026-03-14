@@ -34,7 +34,16 @@ export function CurrencySection({ currency }: { currency: 'ARS' | 'USD' }) {
       <p className="mb-2 type-label text-text-label">
         Moneda predeterminada
       </p>
-      <div className="flex gap-2">
+      <div
+        className="flex p-1"
+        style={{
+          background: 'rgba(255,255,255,0.50)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255,255,255,0.70)',
+          borderRadius: 12,
+        }}
+      >
         {(['ARS', 'USD'] as const).map((c) => (
           <button
             key={c}
@@ -43,9 +52,12 @@ export function CurrencySection({ currency }: { currency: 'ARS' | 'USD' }) {
               if (c !== currency) setConfirmChange(true)
               else setConfirmChange(false)
             }}
-            className={`flex-1 rounded-button py-2 text-sm font-medium transition-colors ${
-              selected === c ? 'bg-primary text-bg-primary' : 'bg-bg-tertiary text-text-secondary hover:bg-primary/5'
-            }`}
+            className="flex-1 py-2 text-sm font-medium transition-colors"
+            style={
+              selected === c
+                ? { background: '#0D1829', color: 'white', borderRadius: 9 }
+                : { color: '#4A6070' }
+            }
           >
             {c}
           </button>

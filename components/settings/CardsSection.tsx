@@ -108,18 +108,34 @@ export function CardsSection({ cards: initialCards, month }: { cards: Card[]; mo
 
   return (
     <CollapsibleSection icon={<CreditCard weight="duotone" size={18} className="text-text-primary icon-duotone" />} title="Tarjetas" summary={summary}>
-      <div className="space-y-1.5">
         {cards.map((card) => {
           const info = card.closing_day ? closingInfo(card.closing_day, month) : null
 
           return (
             <div
               key={card.id}
-              className="rounded-card bg-bg-tertiary border border-border-ocean"
+              className="py-2.5 border-b border-border-subtle"
             >
-              <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-sm text-text-primary">{card.name}</span>
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-sm text-text-primary truncate">{card.name}</span>
+                  {info !== null && (
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 ${
+                        info.diff === 0
+                          ? 'bg-warning/10 text-warning'
+                          : info.diff > 0 && info.diff <= 5
+                            ? 'bg-warning/10 text-warning'
+                            : info.diff < 0
+                              ? 'bg-bg-tertiary text-text-disabled'
+                              : 'bg-bg-tertiary text-text-tertiary'
+                      }`}
+                    >
+                      {info.label}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
                   <ClosingDayInput card={card} onUpdate={updateClosingDay} disabled={isSaving} />
                   <button
                     onClick={() => deleteCard(card.id)}
@@ -130,24 +146,6 @@ export function CardsSection({ cards: initialCards, month }: { cards: Card[]; mo
                   </button>
                 </div>
               </div>
-
-              {info !== null && (
-                <div className="px-3 pb-2">
-                  <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                      info.diff === 0
-                        ? 'bg-warning/10 text-warning'
-                        : info.diff > 0 && info.diff <= 5
-                          ? 'bg-warning/10 text-warning'
-                          : info.diff < 0
-                            ? 'bg-bg-elevated text-text-disabled'
-                            : 'bg-bg-elevated text-text-tertiary'
-                    }`}
-                  >
-                    {info.label}
-                  </span>
-                </div>
-              )}
             </div>
           )
         })}
@@ -164,12 +162,11 @@ export function CardsSection({ cards: initialCards, month }: { cards: Card[]; mo
           <button
             onClick={addCard}
             disabled={!newName.trim() || isSaving}
-            className="rounded-button bg-primary px-3 py-2 text-sm font-semibold text-bg-primary disabled:opacity-50"
+            className="rounded-button bg-primary px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
           >
             +
           </button>
         </div>
-      </div>
     </CollapsibleSection>
   )
 }

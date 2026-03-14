@@ -14,9 +14,9 @@ interface CardProps {
 function getCellColor(count: number, max: number): string {
   if (count === 0 || max === 0) return 'bg-bg-tertiary'
   const ratio = count / max
-  if (ratio < 0.25) return 'bg-primary/20'
-  if (ratio < 0.6) return 'bg-primary/50'
-  return 'bg-warning/70'
+  if (ratio < 0.25) return 'bg-data/20'
+  if (ratio < 0.6) return 'bg-data/50'
+  return 'bg-data'
 }
 
 export function MapaHabitosCard({ habitosMap, currency: _currency, onClick }: CardProps) {
@@ -27,7 +27,13 @@ export function MapaHabitosCard({ habitosMap, currency: _currency, onClick }: Ca
   return (
     <button
       onClick={onClick}
-      className="w-full text-left bg-bg-secondary border border-border-ocean rounded-card p-4 hover:border-border-strong transition-colors cursor-pointer"
+      className="w-full text-left rounded-card p-4 hover:opacity-90 transition-opacity cursor-pointer"
+      style={{
+        background: 'rgba(255,255,255,0.38)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255,255,255,0.70)',
+      }}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -80,15 +86,23 @@ export function DrillMapaHabitos({ habitosMap, selDay, setSelDay, currency, sele
   return (
     <div className="px-5 space-y-4">
       {/* Calendar grid */}
-      <div className="bg-bg-secondary border border-border-ocean rounded-card p-4">
+      <div
+        className="rounded-card p-4"
+        style={{
+          background: 'rgba(255,255,255,0.38)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.70)',
+        }}
+      >
         {/* Heatmap legend */}
         <div className="flex justify-between items-center px-1 mb-4">
           <span className="type-micro text-text-label uppercase tracking-wider">Nivel de actividad</span>
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-sm bg-bg-tertiary" />
-            <div className="w-2.5 h-2.5 rounded-sm bg-primary/20" />
-            <div className="w-2.5 h-2.5 rounded-sm bg-primary/50" />
-            <div className="w-2.5 h-2.5 rounded-sm bg-warning/70" />
+            <div className="w-2.5 h-2.5 rounded-sm bg-data/20" />
+            <div className="w-2.5 h-2.5 rounded-sm bg-data/50" />
+            <div className="w-2.5 h-2.5 rounded-sm bg-data" />
           </div>
         </div>
 
@@ -127,7 +141,15 @@ export function DrillMapaHabitos({ habitosMap, selDay, setSelDay, currency, sele
 
       {/* Day detail panel */}
       {selDay ? (
-        <div className="bg-bg-secondary border border-border-ocean rounded-card px-4 pt-4 pb-1">
+        <div
+          className="rounded-card px-4 pt-4 pb-1"
+          style={{
+            background: 'rgba(255,255,255,0.38)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.70)',
+          }}
+        >
           <div className="flex justify-between items-start mb-1">
             <p className="text-[13px] font-semibold text-text-secondary">
               {selDay.day} de {monthNames[month - 1]}

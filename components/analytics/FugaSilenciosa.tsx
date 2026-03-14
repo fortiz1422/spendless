@@ -17,7 +17,13 @@ export function FugaSilenciosaCard({ data, currency, onClick }: CardProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left bg-bg-secondary border border-border-ocean rounded-card p-4 hover:border-border-strong transition-colors cursor-pointer"
+      className="w-full text-left rounded-card p-4 hover:opacity-90 transition-opacity cursor-pointer"
+      style={{
+        background: 'rgba(255,255,255,0.38)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255,255,255,0.70)',
+      }}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -78,7 +84,15 @@ export function DrillFugaSilenciosa({ data, currency }: DrillProps) {
   return (
     <div className="px-5 space-y-4">
       {/* Hero */}
-      <div className="bg-bg-secondary border border-border-ocean rounded-card p-6 flex flex-col items-center text-center">
+      <div
+        className="rounded-card p-6 flex flex-col items-center text-center"
+        style={{
+          background: 'rgba(255,255,255,0.38)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.70)',
+        }}
+      >
         <div
           className="w-10 h-10 flex items-center justify-center mb-3"
           style={{ borderRadius: 12, backgroundColor: 'rgba(184,74,18,0.10)' }}

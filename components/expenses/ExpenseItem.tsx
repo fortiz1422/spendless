@@ -26,7 +26,6 @@ export function ExpenseItem({ expense, cards }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Edit state (mirrors expense fields)
   const [description, setDescription] = useState(expense.description)
   const [amount, setAmount] = useState(String(expense.amount))
   const [currency, setCurrency] = useState(expense.currency)
@@ -82,13 +81,9 @@ export function ExpenseItem({ expense, cards }: Props) {
     }
   }, [isSaving, isDirty, expense.id, description, amount, currency, category, paymentMethod, cardId, date, isWant, router])
 
-  // Save ref so click-outside handler always calls the latest version
   const saveRef = useRef(handleSave)
-  useEffect(() => {
-    saveRef.current = handleSave
-  }, [handleSave])
+  useEffect(() => { saveRef.current = handleSave }, [handleSave])
 
-  // Click outside = auto-save when expanded
   useEffect(() => {
     if (!expanded) return
     const handler = (e: MouseEvent) => {
@@ -117,8 +112,8 @@ export function ExpenseItem({ expense, cards }: Props) {
   const isPagoTarjetas = expense.category === 'Pago de Tarjetas'
 
   return (
-    <div ref={containerRef} className="overflow-hidden rounded-card">
-      {/* Collapsed row */}
+    <div ref={containerRef}>
+      {/* Collapsed row — cardless */}
       <div
         onClick={() => {
           if (expanded) {
@@ -128,9 +123,7 @@ export function ExpenseItem({ expense, cards }: Props) {
             setError(null)
           }
         }}
-        className={`flex cursor-pointer items-center gap-3 p-2.5 transition-colors ${
-          isPagoTarjetas ? 'bg-primary/10' : 'bg-bg-tertiary'
-        } ${expanded ? 'rounded-b-none' : ''}`}
+        className="flex cursor-pointer items-center gap-3 py-[13px] border-b border-border-subtle transition-colors"
       >
         <CategoryIcon category={expense.category} size={16} container />
         <div className="min-w-0 flex-1">
@@ -147,9 +140,7 @@ export function ExpenseItem({ expense, cards }: Props) {
           </p>
         </div>
         <div className="text-right">
-          <p
-            className={`text-sm font-medium ${isPagoTarjetas ? 'text-primary' : 'text-text-primary'}`}
-          >
+          <p className={`text-sm font-medium ${isPagoTarjetas ? 'text-primary' : 'text-text-primary'}`}>
             {formatAmount(expense.amount, expense.currency)}
           </p>
           {expense.currency === 'USD' && (
@@ -160,7 +151,7 @@ export function ExpenseItem({ expense, cards }: Props) {
 
       {/* Expanded edit form */}
       {expanded && (
-        <div className="space-y-3 rounded-b-card border-t border-border-subtle bg-bg-secondary p-3">
+        <div className="space-y-3 border-b border-border-subtle bg-bg-secondary p-3">
           {error && <p className="text-xs text-danger">{error}</p>}
 
           <div className="grid grid-cols-2 gap-2">
@@ -207,9 +198,7 @@ export function ExpenseItem({ expense, cards }: Props) {
                 className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none"
               >
                 {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </div>
@@ -219,17 +208,11 @@ export function ExpenseItem({ expense, cards }: Props) {
               </label>
               <select
                 value={paymentMethod}
-                onChange={(e) =>
-                  setPaymentMethod(
-                    e.target.value as 'CASH' | 'DEBIT' | 'TRANSFER' | 'CREDIT'
-                  )
-                }
+                onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'DEBIT' | 'TRANSFER' | 'CREDIT')}
                 className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none"
               >
                 {Object.entries(PAYMENT_LABELS).map(([val, label]) => (
-                  <option key={val} value={val}>
-                    {label}
-                  </option>
+                  <option key={val} value={val}>{label}</option>
                 ))}
               </select>
             </div>
@@ -247,9 +230,7 @@ export function ExpenseItem({ expense, cards }: Props) {
               >
                 <option value="">— seleccioná —</option>
                 {cards.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
+                  <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
             </div>
@@ -275,9 +256,7 @@ export function ExpenseItem({ expense, cards }: Props) {
                 <button
                   onClick={() => setIsWant(false)}
                   className={`rounded-button px-3 py-1.5 text-xs font-medium transition-colors ${
-                    isWant === false
-                      ? 'bg-success/20 text-success'
-                      : 'bg-bg-tertiary text-text-secondary'
+                    isWant === false ? 'bg-success/20 text-success' : 'bg-bg-tertiary text-text-secondary'
                   }`}
                 >
                   Necesidad
@@ -285,9 +264,7 @@ export function ExpenseItem({ expense, cards }: Props) {
                 <button
                   onClick={() => setIsWant(true)}
                   className={`rounded-button px-3 py-1.5 text-xs font-medium transition-colors ${
-                    isWant === true
-                      ? 'bg-want/20 text-want'
-                      : 'bg-bg-tertiary text-text-secondary'
+                    isWant === true ? 'bg-want/20 text-want' : 'bg-bg-tertiary text-text-secondary'
                   }`}
                 >
                   Deseo
@@ -330,7 +307,7 @@ export function ExpenseItem({ expense, cards }: Props) {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="rounded-button bg-primary px-4 py-1.5 text-xs font-semibold text-bg-primary disabled:opacity-50"
+                  className="rounded-button bg-primary px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
                 >
                   {isSaving ? <span className="spinner" /> : 'Guardar'}
                 </button>

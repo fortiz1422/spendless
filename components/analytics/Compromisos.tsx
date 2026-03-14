@@ -77,7 +77,13 @@ export function CompromisosCard({ data, currency, onClick }: CardProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left bg-bg-secondary border border-border-ocean rounded-card p-4 hover:border-border-strong transition-colors cursor-pointer"
+      className="w-full text-left rounded-card p-4 hover:opacity-90 transition-opacity cursor-pointer"
+      style={{
+        background: 'rgba(255,255,255,0.38)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255,255,255,0.70)',
+      }}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -171,7 +177,15 @@ export function DrillCompromisos({ data, currency, selectedMonth }: DrillProps) 
   return (
     <div className="px-5 space-y-4">
       {/* Hero */}
-      <div className="bg-bg-secondary border border-border-ocean rounded-card p-4">
+      <div
+        className="rounded-card p-4"
+        style={{
+          background: 'rgba(255,255,255,0.38)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.70)',
+        }}
+      >
         <div className="flex items-center gap-4">
           <div className="relative flex-shrink-0">
             <ArcGauge pct={pctComprometido} size={80} />
@@ -197,11 +211,11 @@ export function DrillCompromisos({ data, currency, selectedMonth }: DrillProps) 
 
       {/* Cards breakdown */}
       {tarjetas.length > 0 && (
-        <div className="space-y-2">
-          <p className="type-label text-text-label">POR TARJETA</p>
+        <div>
+          <p className="type-label text-text-label mb-3">POR TARJETA</p>
           {tarjetas.map((t, i) => (
-            <div key={t.id} className="bg-bg-secondary border border-border-ocean rounded-card p-3">
-              <div className="flex items-center justify-between mb-1">
+            <div key={t.id} className="py-3 border-b border-border-subtle last:border-0">
+              <div className="flex items-center justify-between mb-0.5">
                 <div className="flex items-center gap-2">
                   <div
                     className="w-2 h-2 rounded-full"
@@ -224,17 +238,13 @@ export function DrillCompromisos({ data, currency, selectedMonth }: DrillProps) 
               )}
 
               {t.nextCycleSpend > 0 && (
-                <>
-                  <div className="border-t border-border-ocean mt-2 pt-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <Warning size={12} className="text-warning" />
-                        <span className="type-micro text-warning">PRÓXIMO RESUMEN</span>
-                      </div>
-                      <span className="type-micro text-warning">{formatAmount(t.nextCycleSpend, currency)}</span>
-                    </div>
+                <div className="flex items-center justify-between mt-1.5 pl-4">
+                  <div className="flex items-center gap-1">
+                    <Warning size={12} className="text-warning" />
+                    <span className="type-micro text-warning">PRÓXIMO RESUMEN</span>
                   </div>
-                </>
+                  <span className="type-micro text-warning">{formatAmount(t.nextCycleSpend, currency)}</span>
+                </div>
               )}
             </div>
           ))}
@@ -243,16 +253,26 @@ export function DrillCompromisos({ data, currency, selectedMonth }: DrillProps) 
 
       {/* Unassigned credit */}
       {unassignedCreditSpend > 0 && (
-        <div className="bg-bg-secondary border border-border-ocean rounded-card p-3 flex items-center justify-between">
+        <div className="py-3 border-b border-border-subtle flex items-center justify-between">
           <span className="type-meta text-text-tertiary">Gastos sin tarjeta asignada</span>
           <span className="type-meta text-text-primary">{formatAmount(unassignedCreditSpend, currency)}</span>
         </div>
       )}
 
       {/* Footer note */}
-      <p className="type-micro text-text-tertiary text-center pb-2">
-        Los montos reflejan gastos del mes cargados como crédito. Las cuotas se contabilizan en el mes en que se registran.
-      </p>
+      <div
+        className="rounded-card px-4 py-3 text-center"
+        style={{
+          background: 'rgba(255,255,255,0.38)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.70)',
+        }}
+      >
+        <p className="type-micro text-text-tertiary">
+          Los montos reflejan gastos del mes cargados como crédito. Las cuotas se contabilizan en el mes en que se registran.
+        </p>
+      </div>
     </div>
   )
 }

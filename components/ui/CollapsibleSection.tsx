@@ -15,7 +15,15 @@ export function CollapsibleSection({ icon, title, summary, defaultExpanded = fal
   const [expanded, setExpanded] = useState(defaultExpanded)
 
   return (
-    <div className="rounded-card bg-bg-secondary border border-border-subtle overflow-hidden">
+    <div
+      className="rounded-card overflow-hidden"
+      style={{
+        background: 'rgba(255,255,255,0.38)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255,255,255,0.70)',
+      }}
+    >
       <button
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-center gap-3 px-4 py-3 text-left"

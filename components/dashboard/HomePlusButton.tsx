@@ -43,13 +43,16 @@ export function HomePlusButton({ accounts, currency, cards, month }: Props) {
               <X weight="bold" size={16} />
             </button>
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col">
             <button
               onClick={() => setSheet('income')}
-              className="flex w-full items-center gap-4 rounded-card border border-border-strong bg-bg-tertiary px-4 py-4 text-left transition-colors hover:border-success/40 hover:bg-success/5"
+              className="flex w-full items-center gap-4 py-[13px] border-b border-border-subtle text-left transition-colors"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success/15">
-                <ArrowFatLineUp weight="duotone" size={20} className="text-success" />
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center"
+                style={{ borderRadius: 12, backgroundColor: 'rgba(26,122,66,0.10)' }}
+              >
+                <ArrowFatLineUp weight="regular" size={20} className="text-success" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-text-primary">Ingreso</p>
@@ -59,10 +62,13 @@ export function HomePlusButton({ accounts, currency, cards, month }: Props) {
 
             <button
               onClick={() => setSheet('subscription')}
-              className="flex w-full items-center gap-4 rounded-card border border-border-strong bg-bg-tertiary px-4 py-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/5"
+              className="flex w-full items-center gap-4 py-[13px] border-b border-border-subtle text-left transition-colors"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15">
-                <ArrowsClockwise weight="duotone" size={20} className="text-primary" />
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center"
+                style={{ borderRadius: 12, backgroundColor: 'rgba(33,120,168,0.09)' }}
+              >
+                <ArrowsClockwise weight="regular" size={20} className="text-primary" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-text-primary">Suscripción</p>
@@ -74,10 +80,13 @@ export function HomePlusButton({ accounts, currency, cards, month }: Props) {
 
             <button
               onClick={() => setSheet('cuotas')}
-              className="flex w-full items-center gap-4 rounded-card border border-border-strong bg-bg-tertiary px-4 py-4 text-left transition-colors hover:border-warning/40 hover:bg-warning/5"
+              className="flex w-full items-center gap-4 py-[13px] text-left transition-colors"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/15">
-                <CreditCard weight="duotone" size={20} className="text-warning" />
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center"
+                style={{ borderRadius: 12, backgroundColor: 'rgba(184,74,18,0.10)' }}
+              >
+                <CreditCard weight="regular" size={20} className="text-warning" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-text-primary">Cuotas en curso</p>

@@ -263,7 +263,7 @@ export function SubscriptionSheet({ onClose, currency: defaultCurrency, cards, a
         <button
           onClick={handleSave}
           disabled={!canSave || isSaving}
-          className="w-full rounded-button bg-success py-3 text-sm font-semibold text-bg-primary transition-transform active:scale-95 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-button bg-primary py-3 text-sm font-semibold text-white transition-transform active:scale-95 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSaving ? 'Guardando...' : 'Guardar suscripción ✓'}
         </button>
