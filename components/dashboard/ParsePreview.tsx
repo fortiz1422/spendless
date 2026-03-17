@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Bank, Wallet, CreditCard, DeviceMobileSpeaker, Star } from '@phosphor-icons/react'
 import { Modal } from '@/components/ui/Modal'
 import { CATEGORIES } from '@/lib/validation/schemas'
-import { formatDate } from '@/lib/format'
+import { formatDate, todayAR, dateInputToISO } from '@/lib/format'
 import type { Account, Card } from '@/types/database'
 
 type Duplicate = { id: string; description: string; created_at: string }
@@ -69,12 +69,12 @@ function toDateInput(isoString: string): string {
   try {
     return isoString.split('T')[0]
   } catch {
-    return new Date().toISOString().split('T')[0]
+    return todayAR()
   }
 }
 
 function fromDateInput(dateStr: string): string {
-  return new Date(dateStr + 'T12:00:00').toISOString()
+  return dateInputToISO(dateStr)
 }
 
 export function ParsePreview({ data, cards, accounts, onSave, onCancel }: ParsePreviewProps) {

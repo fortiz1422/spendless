@@ -24,7 +24,10 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'Gota',
   },
-  icons: { apple: '/apple-touch-icon.png' },
+  icons: {
+    icon: [{ url: '/favicon-32.png', sizes: '32x32', type: 'image/png' }],
+    apple: '/apple-touch-icon.png',
+  },
 }
 
 export const viewport: Viewport = {

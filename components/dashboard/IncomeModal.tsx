@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bank, Wallet, DeviceMobileSpeaker, Star } from '@phosphor-icons/react'
 import { Modal } from '@/components/ui/Modal'
+import { todayAR, dateInputToISO } from '@/lib/format'
 import type { Account, IncomeCategory } from '@/types/database'
 
 interface Props {
@@ -30,7 +31,7 @@ export function IncomeModal({ accounts, defaultCurrency, onClose }: Props) {
   const [currency, setCurrency] = useState<'ARS' | 'USD'>(defaultCurrency)
   const [category, setCategory] = useState<IncomeCategory>('salary')
   const [description, setDescription] = useState('')
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [date, setDate] = useState(() => todayAR())
   const [isSaving, setIsSaving] = useState(false)
 
   const bankDigital = accounts.filter((a) => a.type !== 'cash')
@@ -58,7 +59,7 @@ export function IncomeModal({ accounts, defaultCurrency, onClose }: Props) {
           currency,
           description: description.trim(),
           category,
-          date: new Date(date + 'T12:00:00').toISOString(),
+          date: dateInputToISO(date),
         }),
       })
       if (!res.ok) throw new Error()

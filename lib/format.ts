@@ -16,3 +16,15 @@ export function formatCompact(amount: number, currency: 'ARS' | 'USD'): string {
 export function formatDate(isoString: string): string {
   return new Date(isoString).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
 }
+
+const TZ = 'America/Buenos_Aires'
+
+/** Hoy en formato YYYY-MM-DD según timezone Argentina */
+export function todayAR(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: TZ })
+}
+
+/** Convierte un date input (YYYY-MM-DD) a ISO string con mediodía AR (UTC-3) */
+export function dateInputToISO(dateStr: string): string {
+  return new Date(dateStr + 'T12:00:00-03:00').toISOString()
+}

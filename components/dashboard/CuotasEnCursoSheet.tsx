@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CreditCard } from '@phosphor-icons/react'
 import { Modal } from '@/components/ui/Modal'
+import { todayAR } from '@/lib/format'
 import { CATEGORIES } from '@/lib/validation/schemas'
 import type { Card } from '@/types/database'
 
@@ -42,7 +43,7 @@ export function CuotasEnCursoSheet({ onClose, currency: defaultCurrency, cards }
     if (!canSave) return
     setIsSaving(true)
     try {
-      const today = new Date().toISOString().split('T')[0]
+      const today = todayAR()
       const res = await fetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
