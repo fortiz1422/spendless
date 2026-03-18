@@ -6,7 +6,7 @@ export function createExpensePrompt(input: string): string {
 Input: "${input}"
 
 Categorías válidas (elegí la más apropiada):
-Supermercado, Alimentos, Restaurantes, Delivery, Kiosco y Varios, Casa/Mantenimiento, Muebles y Hogar, Servicios del Hogar, Auto/Combustible, Auto/Mantenimiento, Transporte, Salud, Farmacia, Educación, Ropa e Indumentaria, Cuidado Personal, Suscripciones, Regalos, Transferencias Familiares, Otros, Pago de Tarjetas
+Supermercado, Alimentos, Restaurantes, Delivery, Kiosco y Varios, Casa/Mantenimiento, Muebles y Hogar, Servicios del Hogar, Auto/Combustible, Auto/Mantenimiento, Transporte, Salud, Farmacia, Educación, Ropa e Indumentaria, Cuidado Personal, Suscripciones, Regalos, Transferencias Familiares, Entretenimiento, Mascotas, Hijos, Otros, Pago de Tarjetas
 
 Reglas:
 - currency: ARS por default, USD si dice "dólares/usd"

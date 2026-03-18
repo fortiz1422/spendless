@@ -20,6 +20,9 @@ export const CATEGORIES = [
   'Suscripciones',
   'Regalos',
   'Transferencias Familiares',
+  'Entretenimiento',
+  'Mascotas',
+  'Hijos',
   'Otros',
   'Pago de Tarjetas',
 ] as const

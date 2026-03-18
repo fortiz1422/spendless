@@ -6,7 +6,7 @@ const SOURCE = path.join(__dirname, '..', 'gota-newlogo.png')
 const PUBLIC_DIR = path.join(__dirname, '..', 'public')
 
 const BG = '#F0F4F8'
-const PADDING_RATIO = 0.15
+const PADDING_RATIO = 0.08
 const RADIUS_RATIO = 0.225
 
 /** Remove near-white background → transparent */
@@ -29,7 +29,7 @@ async function removeWhiteBg(inputPath) {
     .toBuffer()
 }
 
-/** Icon with #F0F4F8 background, rounded corners, centered logo with 15% padding */
+/** Icon with #F0F4F8 background, rounded corners, centered logo with 8% padding */
 async function generateIconWithBg(size, outFile) {
   const radius = Math.round(size * RADIUS_RATIO)
   const padding = Math.round(size * PADDING_RATIO)
@@ -56,7 +56,7 @@ async function generateIconWithBg(size, outFile) {
   console.log(`✓ ${outFile}`)
 }
 
-/** Logo on transparent background with 15% padding on all sides */
+/** Logo on transparent background with 8% padding on all sides */
 async function generateTransparentLogo(size, outFile) {
   const padding = Math.round(size * PADDING_RATIO)
   const logoSize = size - padding * 2

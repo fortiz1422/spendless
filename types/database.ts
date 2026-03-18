@@ -451,6 +451,9 @@ export type Category =
   | 'Suscripciones'
   | 'Regalos'
   | 'Transferencias Familiares'
+  | 'Entretenimiento'
+  | 'Mascotas'
+  | 'Hijos'
   | 'Otros'
   | 'Pago de Tarjetas'
 
