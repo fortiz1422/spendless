@@ -88,6 +88,14 @@ export type Metrics = {
   hasIngreso: boolean
   esPrimerosDias: boolean
   dayOfMonth: number
+  daysInMonth: number
+
+  // Hero Engine signals (computed here for efficiency)
+  weeklyAvg: number           // avg daily spend last 7 days
+  creditRatioThisWeek: number // % credit last 7 days (0–100)
+  bigExpenseToday: boolean
+  bigExpenseAmount: number
+  bigExpenseCategory: string
 }
 
 function weekOf(day: number): number {
@@ -169,6 +177,12 @@ export function computeMetrics(
       hasIngreso,
       esPrimerosDias: true,
       dayOfMonth,
+      daysInMonth,
+      weeklyAvg: 0,
+      creditRatioThisWeek: 0,
+      bigExpenseToday: false,
+      bigExpenseAmount: 0,
+      bigExpenseCategory: '',
     }
   }
 
@@ -364,6 +378,45 @@ export function computeMetrics(
     txs: dayMap[i + 1]?.txs ?? [],
   }))
 
+  // — HERO ENGINE SIGNALS —
+
+  // Weekly avg: avg daily spend over the last 7 days (days dayOfMonth-6 to dayOfMonth)
+  const weekStart = Math.max(1, dayOfMonth - 6)
+  const recentExpenses = expenses.filter((e) => {
+    const d = new Date(e.date).getDate()
+    return d >= weekStart && d <= dayOfMonth
+  })
+  const recentTotal = recentExpenses.reduce((s, e) => s + e.amount, 0)
+  const recentDays = dayOfMonth - weekStart + 1
+  const weeklyAvg = recentDays > 0 ? recentTotal / recentDays : 0
+
+  // Credit ratio this week
+  const recentCredit = recentExpenses
+    .filter((e) => e.payment_method === 'CREDIT')
+    .reduce((s, e) => s + e.amount, 0)
+  const creditRatioThisWeek =
+    recentTotal > 0 ? Math.round((recentCredit / recentTotal) * 100) : 0
+
+  // Big expense today (only meaningful for current month)
+  let bigExpenseToday = false
+  let bigExpenseAmount = 0
+  let bigExpenseCategory = ''
+  if (isCurrentMonth) {
+    const todayStr =
+      `${year}-${String(month).padStart(2, '0')}-` +
+      `${String(today.getDate()).padStart(2, '0')}`
+    const todayExpenses = expenses.filter((e) => e.date === todayStr)
+    if (todayExpenses.length > 0) {
+      const biggest = todayExpenses.reduce(
+        (max, e) => (e.amount > max.amount ? e : max),
+        todayExpenses[0],
+      )
+      bigExpenseToday = true
+      bigExpenseAmount = biggest.amount
+      bigExpenseCategory = biggest.category
+    }
+  }
+
   // — NIVEL 2: PROYECCIONES —
   let pctGastadoDelIngreso: number | null = null
   let ahorroActual: number | null = null
@@ -415,5 +468,11 @@ export function computeMetrics(
     hasIngreso,
     esPrimerosDias: cantidadTransacciones < 3,
     dayOfMonth,
+    daysInMonth,
+    weeklyAvg,
+    creditRatioThisWeek,
+    bigExpenseToday,
+    bigExpenseAmount,
+    bigExpenseCategory,
   }
 }

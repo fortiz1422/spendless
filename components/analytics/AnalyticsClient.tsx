@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ArrowLineDown, CaretLeft } from '@phosphor-icons/react'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
@@ -8,9 +8,11 @@ import { TitularHero } from './TitularHero'
 import { InsightChips } from './InsightChips'
 import { CategoriaRow } from './CategoriaRow'
 import { AnalysisView } from './AnalysisView'
+import { buildHeroOutput } from '@/lib/heroEngine'
+import type { InsightResult } from '@/lib/heroEngine'
 import type { Metrics, HabitosDayEntry } from '@/lib/analytics/computeMetrics'
-import type { InsightResult } from '@/lib/analytics/insights'
 import type { CompromisosData } from '@/lib/analytics/computeCompromisos'
+import type { Expense, Card, Subscription } from '@/types/database'
 
 type Tab = 'diario' | 'analisis'
 type Drill = 'fuga' | 'habitos' | 'compromisos'
@@ -23,23 +25,41 @@ const drillTitles: Record<Drill, string> = {
 
 interface Props {
   metrics: Metrics
-  insight: InsightResult
   compromisos: CompromisosData
+  rawExpenses: Expense[]
+  subscriptions: Subscription[]
+  cards: Card[]
   selectedMonth: string
   earliestDataMonth?: string
 }
 
-export function AnalyticsClient({ metrics, insight, compromisos, selectedMonth, earliestDataMonth }: Props) {
+export function AnalyticsClient({
+  metrics,
+  compromisos,
+  rawExpenses,
+  subscriptions,
+  cards,
+  selectedMonth,
+  earliestDataMonth,
+}: Props) {
   const [expanded, setExpanded] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('diario')
   const [drill, setDrill] = useState<Drill | null>(null)
   const [selDay, setSelDay] = useState<HabitosDayEntry | null>(null)
+  const [hero, setHero] = useState<InsightResult | null>(null)
+
+  useEffect(() => {
+    const result = buildHeroOutput(metrics, rawExpenses, cards, subscriptions, compromisos)
+    setHero(result)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMonth])
 
   const { currency } = metrics
   const visibleCategorias = expanded ? metrics.categorias : metrics.categorias.slice(0, 5)
-  const maxCatTotal = metrics.categorias.length > 0
-    ? Math.max(...metrics.categorias.map((c) => c.total))
-    : 0
+  const maxCatTotal =
+    metrics.categorias.length > 0
+      ? Math.max(...metrics.categorias.map((c) => c.total))
+      : 0
 
   function handleSetDrill(d: Drill | null) {
     setDrill(d)
@@ -96,7 +116,11 @@ export function AnalyticsClient({ metrics, insight, compromisos, selectedMonth, 
                   ? 'font-semibold text-white'
                   : 'bg-transparent text-[#4A6070]'
               }`}
-              style={activeTab === 'diario' ? { background: '#0D1829', borderRadius: 9 } : undefined}
+              style={
+                activeTab === 'diario'
+                  ? { background: '#0D1829', borderRadius: 9 }
+                  : undefined
+              }
             >
               Diario
             </button>
@@ -107,7 +131,11 @@ export function AnalyticsClient({ metrics, insight, compromisos, selectedMonth, 
                   ? 'font-semibold text-white'
                   : 'bg-transparent text-[#4A6070]'
               }`}
-              style={activeTab === 'analisis' ? { background: '#0D1829', borderRadius: 9 } : undefined}
+              style={
+                activeTab === 'analisis'
+                  ? { background: '#0D1829', borderRadius: 9 }
+                  : undefined
+              }
             >
               Análisis
             </button>
@@ -118,11 +146,19 @@ export function AnalyticsClient({ metrics, insight, compromisos, selectedMonth, 
       {/* Content */}
       {activeTab === 'diario' ? (
         <>
-          <TitularHero titular={insight.titular} sentiment={insight.sentiment} />
+          {hero ? (
+            <TitularHero titular={hero.titular} sentiment={hero.sentiment} />
+          ) : (
+            /* Skeleton while engine initializes */
+            <div className="px-5 pt-4 pb-2">
+              <div className="h-7 w-3/4 rounded-lg bg-bg-tertiary animate-pulse" />
+              <div className="h-7 w-1/2 rounded-lg bg-bg-tertiary animate-pulse mt-2" />
+            </div>
+          )}
 
           {!metrics.esPrimerosDias && (
             <>
-              <InsightChips chips={insight.chips} />
+              {hero && <InsightChips chips={hero.chips} />}
 
               {!metrics.hasIngreso && (
                 <div className="bg-warning/10 border border-warning/20 rounded-card px-4 py-3 mx-5 mb-3">
