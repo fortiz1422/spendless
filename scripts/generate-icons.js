@@ -6,7 +6,7 @@ const SOURCE = path.join(__dirname, '..', 'gota-newlogo.png')
 const PUBLIC_DIR = path.join(__dirname, '..', 'public')
 
 const BG = '#F0F4F8'
-const PADDING_RATIO = 0.08
+const PADDING_RATIO = 0.06
 const RADIUS_RATIO = 0.225
 
 /** Remove near-white background → transparent */
