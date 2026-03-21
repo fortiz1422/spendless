@@ -5,8 +5,9 @@ import { Suspense } from 'react'
 import { CaretLeft, CaretRight } from '@phosphor-icons/react/dist/ssr'
 import { ExpenseItem } from '@/components/expenses/ExpenseItem'
 import { IncomeItem } from '@/components/expenses/IncomeItem'
+import { TransferItem } from '@/components/expenses/TransferItem'
 import { ExpenseFilters } from '@/components/expenses/ExpenseFilters'
-import type { Card, Expense, IncomeEntry } from '@/types/database'
+import type { Account, Card, Expense, IncomeEntry, Transfer } from '@/types/database'
 
 function getCurrentMonth(): string {
   const now = new Date()
@@ -41,7 +42,7 @@ export default async function ExpensesPage({
   const [y, m] = month.split('-').map(Number)
   const nextMonthDate = new Date(y, m, 1).toISOString().split('T')[0]
 
-  const [{ data: config }, incomeResult, expensesResult] = await Promise.all([
+  const [{ data: config }, incomeResult, transfersResult, accountsResult, expensesResult] = await Promise.all([
     supabase.from('user_config').select('cards').eq('user_id', user.id).single(),
     supabase
       .from('income_entries')
@@ -50,6 +51,18 @@ export default async function ExpensesPage({
       .gte('date', `${month}-01`)
       .lt('date', nextMonthDate)
       .order('date', { ascending: false }),
+    supabase
+      .from('transfers')
+      .select('*')
+      .eq('user_id', user.id)
+      .gte('date', `${month}-01`)
+      .lt('date', nextMonthDate)
+      .order('date', { ascending: false }),
+    supabase
+      .from('accounts')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('archived', false),
     (() => {
       let q = supabase
         .from('expenses')
@@ -69,12 +82,28 @@ export default async function ExpensesPage({
 
   const cards: Card[] = ((config?.cards as Card[]) ?? []).filter((c: Card) => !c.archived)
   const incomeEntries = (incomeResult.data ?? []) as IncomeEntry[]
+  const transfers = (transfersResult.data ?? []) as Transfer[]
+  const accounts = (accountsResult.data ?? []) as Account[]
   const expenses = (expensesResult.data ?? []) as Expense[]
   const total = expensesResult.count ?? 0
   const totalPages = Math.ceil(total / pageSize)
 
-  // Only show income entries on first page when no filters active
-  const showIncome = page === 1 && !category && !paymentMethod && incomeEntries.length > 0
+  // Only show income/transfer entries on first page when no filters active
+  const showExtras = page === 1 && !category && !paymentMethod
+
+  // Merge income + transfers + expenses into a sorted list for page 1 (no filters)
+  type Row =
+    | { kind: 'income'; data: IncomeEntry }
+    | { kind: 'transfer'; data: Transfer }
+    | { kind: 'expense'; data: Expense }
+
+  const rows: Row[] = showExtras
+    ? [
+        ...incomeEntries.map((e) => ({ kind: 'income' as const, data: e })),
+        ...transfers.map((t) => ({ kind: 'transfer' as const, data: t })),
+        ...expenses.map((e) => ({ kind: 'expense' as const, data: e })),
+      ].sort((a, b) => b.data.date.localeCompare(a.data.date))
+    : expenses.map((e) => ({ kind: 'expense' as const, data: e }))
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -98,28 +127,22 @@ export default async function ExpensesPage({
           </Suspense>
         </div>
 
-        {/* Income entries */}
-        {showIncome && (
-          <div className="mb-4 space-y-2">
-            {incomeEntries.map((entry) => (
-              <IncomeItem key={entry.id} entry={entry} />
-            ))}
-          </div>
-        )}
-
         {/* Results count */}
         {total > 0 && (
           <p className="mb-3 text-xs text-text-tertiary">
             {total} gasto{total !== 1 ? 's' : ''}
+            {showExtras && transfers.length > 0 && ` · ${transfers.length} transferencia${transfers.length !== 1 ? 's' : ''}`}
           </p>
         )}
 
-        {/* Expense list */}
-        {expenses.length > 0 ? (
+        {/* Merged movement list */}
+        {rows.length > 0 ? (
           <div className="space-y-2">
-            {expenses.map((expense) => (
-              <ExpenseItem key={expense.id} expense={expense} cards={cards} />
-            ))}
+            {rows.map((row) => {
+              if (row.kind === 'income') return <IncomeItem key={`i-${row.data.id}`} entry={row.data} />
+              if (row.kind === 'transfer') return <TransferItem key={`t-${row.data.id}`} transfer={row.data} accounts={accounts} />
+              return <ExpenseItem key={`e-${row.data.id}`} expense={row.data} cards={cards} />
+            })}
           </div>
         ) : (
           <div className="rounded-card bg-bg-secondary px-4 py-10 text-center">
@@ -127,7 +150,7 @@ export default async function ExpensesPage({
             <p className="text-sm font-medium text-text-secondary">
               {category || paymentMethod
                 ? 'Sin gastos con estos filtros'
-                : 'Sin gastos este mes'}
+                : 'Sin movimientos este mes'}
             </p>
             {!category && !paymentMethod && (
               <p className="mt-1 text-xs text-text-tertiary">Registrá gastos desde Home</p>
