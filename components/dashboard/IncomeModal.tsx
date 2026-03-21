@@ -101,7 +101,6 @@ export function IncomeModal({ accounts, defaultCurrency, onClose }: Props) {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               onFocus={scrollOnFocus}
-              autoFocus
               className="flex-1 rounded-input border border-transparent bg-bg-tertiary px-4 py-3 text-sm text-text-primary focus:border-primary focus:outline-none"
             />
             <div className="flex rounded-input bg-bg-tertiary p-1">

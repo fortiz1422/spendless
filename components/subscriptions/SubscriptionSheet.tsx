@@ -111,7 +111,6 @@ export function SubscriptionSheet({ onClose, currency: defaultCurrency, cards, a
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             onFocus={scrollOnFocus}
-            autoFocus
             maxLength={100}
             className="w-full rounded-input border border-transparent bg-bg-tertiary px-4 py-3 text-sm text-text-primary placeholder:text-text-disabled focus:border-primary focus:outline-none"
           />
