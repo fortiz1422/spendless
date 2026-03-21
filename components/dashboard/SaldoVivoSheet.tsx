@@ -1,0 +1,107 @@
+'use client'
+
+import { useQuery } from '@tanstack/react-query'
+import { Modal } from '@/components/ui/Modal'
+import { formatAmount } from '@/lib/format'
+
+interface AccountRow {
+  id: string
+  name: string
+  type: string
+  is_primary: boolean
+  saldo: number
+}
+
+interface BreakdownData {
+  breakdown: AccountRow[]
+  total: number
+  currency: 'ARS' | 'USD'
+}
+
+interface Props {
+  open: boolean
+  onClose: () => void
+  selectedMonth: string // YYYY-MM
+  currency: 'ARS' | 'USD'
+}
+
+const MESES = [
+  'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+  'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE',
+]
+
+export function SaldoVivoSheet({ open, onClose, selectedMonth, currency }: Props) {
+  const monthName = MESES[parseInt(selectedMonth.split('-')[1], 10) - 1] ?? ''
+
+  const { data, isLoading } = useQuery<BreakdownData>({
+    queryKey: ['account-breakdown', selectedMonth, currency],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/dashboard/account-breakdown?month=${selectedMonth}&currency=${currency}`,
+      )
+      if (!res.ok) throw new Error('breakdown fetch failed')
+      return res.json()
+    },
+    enabled: open,
+    staleTime: 0,
+  })
+
+  return (
+    <Modal open={open} onClose={onClose}>
+      {/* Handle */}
+      <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-text-disabled sm:hidden" />
+
+      {/* Header */}
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-tertiary">
+        SALDO VIVO · {monthName}
+      </p>
+      <p className="mt-1 mb-6 text-[36px] font-extrabold leading-none tabular-nums text-text-primary">
+        {data ? formatAmount(data.total, currency) : '—'}
+      </p>
+
+      {/* Account list */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2].map((i) => (
+            <div key={i} className="flex justify-between py-3">
+              <div className="h-4 w-32 animate-pulse rounded bg-bg-tertiary" />
+              <div className="h-4 w-24 animate-pulse rounded bg-bg-tertiary" />
+            </div>
+          ))}
+        </div>
+      ) : data && data.breakdown.length > 0 ? (
+        <div>
+          {data.breakdown.map((acc, idx) => {
+            const isLast = idx === data.breakdown.length - 1
+            const isNeg = acc.saldo < 0
+            return (
+              <div
+                key={acc.id}
+                className={`flex items-center justify-between py-3.5 ${!isLast ? 'border-b border-border-subtle' : ''}`}
+              >
+                <span className="text-sm text-text-secondary">{acc.name}</span>
+                <span
+                  className={`text-sm font-semibold tabular-nums ${isNeg ? 'text-danger' : 'text-text-primary'}`}
+                >
+                  {isNeg ? '−' : ''}{formatAmount(Math.abs(acc.saldo), currency)}
+                </span>
+              </div>
+            )
+          })}
+
+          {/* Footer total */}
+          <div className="mt-1 flex items-center justify-between border-t border-border-strong pt-3.5">
+            <span className="text-sm font-semibold text-text-primary">Total</span>
+            <span
+              className={`text-sm font-bold tabular-nums ${data.total < 0 ? 'text-danger' : 'text-text-primary'}`}
+            >
+              {data.total < 0 ? '−' : ''}{formatAmount(Math.abs(data.total), currency)}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <p className="py-4 text-sm text-text-tertiary">Sin datos para este mes.</p>
+      )}
+    </Modal>
+  )
+}

@@ -9,9 +9,10 @@ interface Props {
   currency: 'ARS' | 'USD'
   gastosTarjeta?: number
   transferAdjustment?: number
+  onBreakdownOpen?: () => void
 }
 
-export function SaldoVivo({ data, currency, gastosTarjeta = 0, transferAdjustment = 0 }: Props) {
+export function SaldoVivo({ data, currency, gastosTarjeta = 0, transferAdjustment = 0, onBreakdownOpen }: Props) {
   if (!data) {
     return (
       <div className="px-2 py-6">
@@ -40,7 +41,10 @@ export function SaldoVivo({ data, currency, gastosTarjeta = 0, transferAdjustmen
       {/* Hero number */}
       <div className="relative z-10">
         <p className="type-label text-text-label mb-1.5">Disponible</p>
-        <p className={`type-hero tabular-nums m-0 ${isNegative ? 'text-danger' : 'text-text-primary'}`}>
+        <p
+          onClick={onBreakdownOpen}
+          className={`type-hero tabular-nums m-0 ${isNegative ? 'text-danger' : 'text-text-primary'} ${onBreakdownOpen ? 'cursor-pointer select-none active:opacity-70' : ''}`}
+        >
           {isNegative ? '−' : ''}
           {formatAmount(Math.abs(disponible), currency)}
         </p>

@@ -1,7 +1,8 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { SaldoVivoSheet } from '@/components/dashboard/SaldoVivoSheet'
 import { SmartInput } from '@/components/dashboard/SmartInput'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { CurrencyToggle } from '@/components/dashboard/CurrencyToggle'
@@ -62,6 +63,7 @@ function DashboardSkeleton() {
 
 export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
   const queryClient = useQueryClient()
+  const [breakdownOpen, setBreakdownOpen] = useState(false)
 
   const { data, isLoading } = useQuery<DashboardApiData>({
     queryKey: ['dashboard', selectedMonth, viewCurrency],
@@ -153,7 +155,17 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
           currency={viewCurrency}
           gastosTarjeta={dashboardData?.gastos_tarjeta ?? 0}
           transferAdjustment={transferCurrencyAdjustment}
+          onBreakdownOpen={accounts.length > 1 ? () => setBreakdownOpen(true) : undefined}
         />
+
+        {accounts.length > 1 && (
+          <SaldoVivoSheet
+            open={breakdownOpen}
+            onClose={() => setBreakdownOpen(false)}
+            selectedMonth={selectedMonth}
+            currency={viewCurrency}
+          />
+        )}
 
         {(allUltimos.length > 0 || (dashboardData?.ultimos_5?.length ?? 0) > 0) && (
           <FiltroEstoico data={dashboardData!.filtro_estoico} />
