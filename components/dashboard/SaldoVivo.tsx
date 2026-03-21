@@ -8,9 +8,10 @@ interface Props {
   data: DashboardData['saldo_vivo']
   currency: 'ARS' | 'USD'
   gastosTarjeta?: number
+  transferAdjustment?: number
 }
 
-export function SaldoVivo({ data, currency, gastosTarjeta = 0 }: Props) {
+export function SaldoVivo({ data, currency, gastosTarjeta = 0, transferAdjustment = 0 }: Props) {
   if (!data) {
     return (
       <div className="px-2 py-6">
@@ -25,7 +26,7 @@ export function SaldoVivo({ data, currency, gastosTarjeta = 0 }: Props) {
   }
 
   const saldoInicial = (data.saldo_inicial as number | undefined) ?? 0
-  const disponible = saldoInicial + data.ingresos - data.gastos_percibidos - data.pago_tarjetas
+  const disponible = saldoInicial + data.ingresos - data.gastos_percibidos - data.pago_tarjetas + transferAdjustment
   const isNegative = disponible < 0
 
   return (

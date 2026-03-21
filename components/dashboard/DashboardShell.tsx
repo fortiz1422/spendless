@@ -102,6 +102,16 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
     isCurrentMonth,
   } = data
 
+  // Cross-currency transfers shift per-currency balance
+  // e.g. ARS→USD: reduces ARS saldo, increases USD saldo
+  const transferCurrencyAdjustment = transfers
+    .filter((t) => t.currency_from !== t.currency_to)
+    .reduce((sum, t) => {
+      if (t.currency_from === viewCurrency) return sum - t.amount_from
+      if (t.currency_to === viewCurrency) return sum + t.amount_to
+      return sum
+    }, 0)
+
   return (
     <div className="min-h-screen bg-bg-primary">
       <div
@@ -142,6 +152,7 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
           data={dashboardData?.saldo_vivo ?? null}
           currency={viewCurrency}
           gastosTarjeta={dashboardData?.gastos_tarjeta ?? 0}
+          transferAdjustment={transferCurrencyAdjustment}
         />
 
         {(allUltimos.length > 0 || (dashboardData?.ultimos_5?.length ?? 0) > 0) && (
