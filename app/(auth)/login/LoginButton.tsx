@@ -1,8 +1,27 @@
 'use client'
 
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { signInAnonymously } from '@/lib/auth'
 
 export function LoginButton() {
+  const [exploring, setExploring] = useState(false)
+  const [exploreError, setExploreError] = useState<string | null>(null)
+
+  const handleExplore = async () => {
+    setExploring(true)
+    setExploreError(null)
+    const { error } = await signInAnonymously()
+    if (error) {
+      console.error('Anonymous sign-in error:', error)
+      setExploreError(error.message)
+      setExploring(false)
+    } else {
+      // Hard reload para que el server component lea la nueva sesión
+      window.location.href = '/'
+    }
+  }
+
   const handleLogin = async () => {
     console.log('Login button clicked')
     try {
@@ -33,6 +52,7 @@ export function LoginButton() {
   }
 
   return (
+    <>
     <button
       onClick={handleLogin}
       className="flex w-full items-center justify-center gap-3 rounded-button bg-white px-6 py-3 text-sm font-semibold text-gray-900 shadow-sm transition-transform active:scale-95 hover:scale-[1.02]"
@@ -57,5 +77,32 @@ export function LoginButton() {
       </svg>
       Continuar con Google
     </button>
+
+    <div className="flex items-center gap-3 my-4">
+      <div className="h-px flex-1 bg-[rgba(255,255,255,0.70)]" />
+      <span className="text-sm text-text-tertiary">o</span>
+      <div className="h-px flex-1 bg-[rgba(255,255,255,0.70)]" />
+    </div>
+
+    <button
+      onClick={handleExplore}
+      disabled={exploring}
+      className="w-full py-3 rounded-xl text-sm font-medium
+                 text-text-secondary border border-[rgba(255,255,255,0.70)]
+                 bg-[rgba(255,255,255,0.38)] backdrop-blur-[16px]
+                 hover:bg-[rgba(255,255,255,0.52)] transition-all duration-200
+                 disabled:opacity-50"
+    >
+      {exploring ? 'Entrando…' : 'Explorar sin cuenta'}
+    </button>
+
+    {exploreError && (
+      <p className="text-xs text-center text-danger mt-2">{exploreError}</p>
+    )}
+
+    <p className="text-xs text-center text-text-tertiary mt-3">
+      Tus datos se guardan en este dispositivo hasta que conectes tu cuenta
+    </p>
+  </>
   )
 }
