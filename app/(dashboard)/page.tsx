@@ -15,6 +15,14 @@ export default async function DashboardPage({
 
   if (!user) redirect('/login')
 
+  const { data: config } = await supabase
+    .from('user_config')
+    .select('onboarding_completed')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!config?.onboarding_completed) redirect('/onboarding')
+
   const { month, currency: currencyParam } = await searchParams
   const selectedMonth = month ?? getCurrentMonth()
   const viewCurrency = (currencyParam === 'USD' ? 'USD' : 'ARS') as 'ARS' | 'USD'

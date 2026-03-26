@@ -154,7 +154,7 @@ export function AccountBottomSheet({ account, type, month, onSave, onDelete, onC
         <div className="rounded-card border border-border-subtle bg-bg-tertiary px-3 py-3 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-medium uppercase tracking-wider text-text-tertiary">
-              {isNew ? 'Saldo de apertura' : `Saldo en ${getMonthLabel(month)}`}
+              {isNew ? 'SALDO AL CONFIGURAR LA CUENTA' : `Saldo en ${getMonthLabel(month)}`}
             </span>
             {periodSource && !isNew && (
               <span className="text-[9px] font-semibold tracking-wider text-text-disabled">
@@ -194,7 +194,7 @@ export function AccountBottomSheet({ account, type, month, onSave, onDelete, onC
           </div>
           <p className="text-[10px] text-text-disabled">
             {isNew
-              ? 'El dinero disponible en esta cuenta al empezar a usarla.'
+              ? 'El dinero que ya tenés en esta cuenta antes de empezar a registrar.'
               : 'Saldo disponible al inicio de este período.'}
           </p>
         </div>

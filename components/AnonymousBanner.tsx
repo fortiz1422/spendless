@@ -32,10 +32,11 @@ export function AnonymousBanner() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50
+      className="fixed left-0 right-0 z-40
                  bg-[rgba(255,255,255,0.38)] backdrop-blur-[16px]
                  border-t border-[rgba(255,255,255,0.70)]
                  px-4 py-3 flex items-center justify-between gap-3"
+      style={{ bottom: 'calc(env(safe-area-inset-bottom) + 64px)' }}
     >
       <p className="text-xs text-text-secondary leading-snug flex-1">
         Modo exploración — guardá tu progreso conectando tu cuenta

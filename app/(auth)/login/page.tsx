@@ -29,7 +29,7 @@ export default async function LoginPage({
           priority
         />
         <p className="mb-10 text-sm text-text-tertiary">
-          Tus gastos, sin fricción
+          gota, tu plata clara
         </p>
 
         {error === 'oauth' && (

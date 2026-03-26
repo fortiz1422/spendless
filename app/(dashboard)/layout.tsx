@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { TabBar } from '@/components/navigation/TabBar'
 import { ReactQueryProvider } from '@/components/providers/ReactQueryProvider'
 import { AnonymousBanner } from '@/components/AnonymousBanner'
+import { OnboardingNudgeBanner } from '@/components/OnboardingNudgeBanner'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -18,6 +19,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <main className="pb-tab-bar">{children}</main>
         <TabBar />
         <AnonymousBanner />
+        <OnboardingNudgeBanner />
     </div>
     </ReactQueryProvider>
   )
