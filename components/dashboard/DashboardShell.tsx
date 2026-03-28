@@ -64,6 +64,22 @@ function DashboardSkeleton() {
 export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
   const queryClient = useQueryClient()
   const [breakdownOpen, setBreakdownOpen] = useState(false)
+  const [keyboardOffset, setKeyboardOffset] = useState(0)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return
+    const vv = window.visualViewport
+    const handleViewportChange = () => {
+      const offset = window.innerHeight - vv.height - vv.offsetTop
+      setKeyboardOffset(Math.max(0, offset))
+    }
+    vv.addEventListener('resize', handleViewportChange)
+    vv.addEventListener('scroll', handleViewportChange)
+    return () => {
+      vv.removeEventListener('resize', handleViewportChange)
+      vv.removeEventListener('scroll', handleViewportChange)
+    }
+  }, [])
 
   const { data, isLoading } = useQuery<DashboardApiData>({
     queryKey: ['dashboard', selectedMonth, viewCurrency],
@@ -205,13 +221,16 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
       <div
         style={{
           position: 'fixed',
-          bottom: 'calc(env(safe-area-inset-bottom) + 76px)',
+          bottom: keyboardOffset > 0
+            ? keyboardOffset + 8
+            : 'calc(env(safe-area-inset-bottom) + 76px)',
           left: 0,
           right: 0,
           zIndex: 50,
           display: 'flex',
           justifyContent: 'center',
           pointerEvents: 'none',
+          transition: keyboardOffset > 0 ? 'none' : 'bottom 0.25s ease',
         }}
       >
         <div style={{ width: '100%', maxWidth: 448, padding: '0 16px', pointerEvents: 'auto' }}>
