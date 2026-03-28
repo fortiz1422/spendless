@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { AccountSection } from '@/components/settings/AccountSection'
 import { SettingsPreferences } from '@/components/settings/SettingsPreferences'
 import { getCurrentMonth } from '@/lib/dates'
-import type { Card, RolloverMode, Account } from '@/types/database'
+import type { Card, RolloverMode } from '@/types/database'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -12,10 +12,10 @@ export default async function SettingsPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: config }, { data: accountsData }] = await Promise.all([
+  const [{ data: config }, { data: accountsData }, { data: cardsData }] = await Promise.all([
     supabase
       .from('user_config')
-      .select('cards, default_currency, rollover_mode')
+      .select('default_currency, rollover_mode')
       .eq('user_id', user.id)
       .single(),
     supabase
@@ -24,15 +24,19 @@ export default async function SettingsPage() {
       .eq('user_id', user.id)
       .eq('archived', false)
       .order('created_at', { ascending: true }),
+    supabase
+      .from('cards')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('archived', false)
+      .order('created_at', { ascending: true }),
   ])
 
   const currency = (config?.default_currency ?? 'ARS') as 'ARS' | 'USD'
-  const allCards: Card[] = (config?.cards as Card[]) ?? []
+  const allCards: Card[] = (cardsData ?? []) as Card[]
   const rolloverMode = (config?.rollover_mode ?? 'off') as RolloverMode
   const currentMonth = getCurrentMonth()
-  const accounts: Account[] = (accountsData ?? []) as Account[]
-  const cashAccount = accounts.find((a) => a.type === 'cash') ?? null
-  const bankDigitalAccounts = accounts.filter((a) => a.type !== 'cash')
+  const accounts = accountsData ?? []
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -42,8 +46,7 @@ export default async function SettingsPage() {
           currency={currency}
           cards={allCards}
           rolloverMode={rolloverMode}
-          bankDigitalAccounts={bankDigitalAccounts}
-          cashAccount={cashAccount}
+          accounts={accounts}
         />
 
         {/* Cuenta */}

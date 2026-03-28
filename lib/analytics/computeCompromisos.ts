@@ -24,6 +24,7 @@ export function computeCompromisos(
   cards: Card[],
   dayOfMonth: number,
   ingresoMes: number | null,
+  prevMonthExpenses: Expense[] = [],
 ): CompromisosData {
   const creditExpenses = expenses.filter((e) => e.payment_method === 'CREDIT')
   const hasCreditExpenses = creditExpenses.length > 0
@@ -54,6 +55,15 @@ export function computeCompromisos(
         currentSpend += e.amount
       } else {
         nextCycleSpend += e.amount
+      }
+    }
+
+    // Previous month's post-closing expenses belong to this month's cycle
+    if (closingDay !== null) {
+      for (const e of prevMonthExpenses) {
+        if (e.card_id !== card.id) continue
+        const expDay = parseInt(e.date.substring(8, 10), 10)
+        if (expDay > closingDay) currentSpend += e.amount
       }
     }
 

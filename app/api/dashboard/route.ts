@@ -74,10 +74,10 @@ export async function GET(request: Request) {
   const nextMonthDate = addMonths(selectedMonth, 1) + '-01'
   const isCurrentMonth = selectedMonth === currentMonth
 
-  const [{ data: config }, { data: accountsData }] = await Promise.all([
+  const [{ data: config }, { data: accountsData }, { data: cardsData }] = await Promise.all([
     supabase
       .from('user_config')
-      .select('cards, default_currency, rollover_mode')
+      .select('default_currency, rollover_mode')
       .eq('user_id', user.id)
       .single(),
     supabase
@@ -87,14 +87,19 @@ export async function GET(request: Request) {
       .eq('archived', false)
       .order('is_primary', { ascending: false })
       .order('created_at', { ascending: true }),
+    supabase
+      .from('cards')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('archived', false)
+      .order('created_at', { ascending: true }),
   ])
 
   const userCurrency = (config?.default_currency ?? 'ARS') as 'ARS' | 'USD'
   const viewCurrency = (currencyParam === 'USD' ? 'USD' : 'ARS') as 'ARS' | 'USD'
   const currency = userCurrency
   const rolloverMode = (config?.rollover_mode ?? 'off') as RolloverMode
-  const allCards: Card[] = (config?.cards as Card[]) ?? []
-  const cards: Card[] = allCards.filter((c: Card) => !c.archived)
+  const cards: Card[] = (cardsData ?? []) as Card[]
   const accounts: Account[] = (accountsData ?? []) as Account[]
   const accountIds = accounts.map((a) => a.id)
 

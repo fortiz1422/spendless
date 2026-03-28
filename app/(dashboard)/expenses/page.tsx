@@ -38,8 +38,8 @@ export default async function ExpensesPage({
   const [y, m] = month.split('-').map(Number)
   const nextMonthDate = new Date(y, m, 1).toISOString().split('T')[0]
 
-  const [{ data: config }, incomeResult, transfersResult, accountsResult, expensesResult] = await Promise.all([
-    supabase.from('user_config').select('cards').eq('user_id', user.id).single(),
+  const [{ data: cardsData }, incomeResult, transfersResult, accountsResult, expensesResult] = await Promise.all([
+    supabase.from('cards').select('*').eq('user_id', user.id).eq('archived', false).order('created_at', { ascending: true }),
     supabase
       .from('income_entries')
       .select('*')
@@ -76,7 +76,7 @@ export default async function ExpensesPage({
     })(),
   ])
 
-  const cards: Card[] = ((config?.cards as Card[]) ?? []).filter((c: Card) => !c.archived)
+  const cards: Card[] = (cardsData ?? []) as Card[]
   const incomeEntries = (incomeResult.data ?? []) as IncomeEntry[]
   const transfers = (transfersResult.data ?? []) as Transfer[]
   const accounts = (accountsResult.data ?? []) as Account[]
@@ -95,7 +95,7 @@ export default async function ExpensesPage({
     : []
 
   const restRows: Row[] = [
-    ...(page === 1 ? transfers.map((t) => ({ kind: 'transfer' as const, data: t })) : []),
+    ...(page === 1 && !category && !paymentMethod ? transfers.map((t) => ({ kind: 'transfer' as const, data: t })) : []),
     ...expenses.map((e) => ({ kind: 'expense' as const, data: e })),
   ].sort((a, b) => b.data.date.localeCompare(a.data.date))
 

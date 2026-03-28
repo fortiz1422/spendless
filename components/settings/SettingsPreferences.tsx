@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { CurrencySection } from '@/components/settings/CurrencySection'
 import { AccountsSection } from '@/components/settings/AccountsSection'
-import { CashSection } from '@/components/settings/CashSection'
 import { CardsSection } from '@/components/settings/CardsSection'
 import { RolloverSection } from '@/components/settings/RolloverSection'
 import { addMonths } from '@/lib/dates'
@@ -23,8 +22,7 @@ interface Props {
   currency: 'ARS' | 'USD'
   cards: Card[]
   rolloverMode: RolloverMode
-  bankDigitalAccounts: Account[]
-  cashAccount: Account | null
+  accounts: Account[]
 }
 
 export function SettingsPreferences({
@@ -32,9 +30,9 @@ export function SettingsPreferences({
   currency,
   cards,
   rolloverMode,
-  bankDigitalAccounts,
-  cashAccount,
+  accounts,
 }: Props) {
+  const bankDigitalAccounts = accounts.filter((a) => a.type !== 'cash')
   const [month, setMonth] = useState(currentMonth)
   const minMonth = addMonths(currentMonth, -12)
   const maxMonth = addMonths(currentMonth, 3)
@@ -69,9 +67,8 @@ export function SettingsPreferences({
 
       <div className="flex flex-col gap-3">
         <CurrencySection currency={currency} />
-        <AccountsSection initialAccounts={bankDigitalAccounts} month={month} />
-        <CashSection initialCash={cashAccount} month={month} />
-        <CardsSection cards={cards} month={month} />
+        <AccountsSection initialAccounts={accounts} month={month} />
+        <CardsSection cards={cards} month={month} accounts={bankDigitalAccounts} />
         <RolloverSection initialMode={rolloverMode} />
       </div>
     </div>

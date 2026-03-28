@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Star, Bank } from '@phosphor-icons/react'
+import { Star, Bank, Wallet } from '@phosphor-icons/react'
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection'
 import { AccountBottomSheet } from '@/components/settings/AccountBottomSheet'
 import type { Account, AccountPeriodBalance } from '@/types/database'
@@ -16,14 +16,14 @@ export function AccountsSection({ initialAccounts, month }: Props) {
   const router = useRouter()
   const [accounts, setAccounts] = useState<Account[]>(initialAccounts)
   const [editing, setEditing] = useState<Account | null | undefined>(undefined) // undefined = closed, null = new
-  const [creatingType, setCreatingType] = useState<'bank' | 'digital'>('bank')
+  const [creatingType, setCreatingType] = useState<'bank' | 'digital' | 'cash'>('bank')
   const [periodBalances, setPeriodBalances] = useState<Record<string, AccountPeriodBalance>>({})
 
-  const bankDigital = accounts.filter((a) => a.type !== 'cash' && !a.archived)
+  const active = accounts.filter((a) => !a.archived)
 
   // Fetch period balances for the selected month
   useEffect(() => {
-    if (bankDigital.length === 0) return
+    if (active.length === 0) return
     fetch(`/api/account-balances?month=${month}`)
       .then((r) => r.json())
       .then((data: AccountPeriodBalance[]) => {
@@ -32,7 +32,7 @@ export function AccountsSection({ initialAccounts, month }: Props) {
         setPeriodBalances(map)
       })
       .catch(() => {})
-  }, [month, accounts.length])
+  }, [month, active.length])
 
   const handleSaved = (saved: Account) => {
     setAccounts((prev) => {
@@ -55,18 +55,20 @@ export function AccountsSection({ initialAccounts, month }: Props) {
     router.refresh()
   }
 
-  const activeCount = bankDigital.length
+  const activeCount = active.length
   const summary = activeCount === 0 ? 'Sin cuentas' : `${activeCount} cuenta${activeCount !== 1 ? 's' : ''}`
+
+  const TYPE_LABEL: Record<string, string> = { bank: 'Banco', digital: 'Digital', cash: 'Efectivo' }
 
   return (
     <>
       <CollapsibleSection icon={<Bank weight="duotone" size={18} className="text-text-primary icon-duotone" />} title="Cuentas" summary={summary}>
         <div>
-          {bankDigital.length === 0 && (
-            <p className="text-xs text-text-disabled py-1">Sin cuentas bancarias o digitales.</p>
+          {active.length === 0 && (
+            <p className="text-xs text-text-disabled py-1">Sin cuentas.</p>
           )}
 
-          {bankDigital.map((acc) => {
+          {active.map((acc) => {
             const pb = periodBalances[acc.id]
             const periodBalance = pb ? (pb.balance_ars > 0 ? pb.balance_ars : pb.balance_usd > 0 ? pb.balance_usd : null) : null
             return (
@@ -77,12 +79,13 @@ export function AccountsSection({ initialAccounts, month }: Props) {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
+                    {acc.type === 'cash' && <Wallet weight="duotone" size={13} className="shrink-0 text-text-tertiary" />}
                     <span className="text-sm text-text-primary truncate">{acc.name}</span>
                     {acc.is_primary && (
                       <Star weight="duotone" size={12} className="shrink-0 text-warning" />
                     )}
                   </div>
-                  <span className="text-[10px] text-text-tertiary capitalize">{acc.type === 'digital' ? 'Digital' : 'Banco'}</span>
+                  <span className="text-[10px] text-text-tertiary">{TYPE_LABEL[acc.type] ?? acc.type}</span>
                 </div>
                 {periodBalance !== null ? (
                   <span className="text-xs text-text-secondary tabular-nums">
@@ -109,6 +112,12 @@ export function AccountsSection({ initialAccounts, month }: Props) {
               className="flex-1 rounded-button border border-border-ocean py-2 text-xs text-text-tertiary hover:text-text-secondary hover:border-primary/30 transition-colors"
             >
               + Digital
+            </button>
+            <button
+              onClick={() => { setCreatingType('cash'); setEditing(null) }}
+              className="flex-1 rounded-button border border-border-ocean py-2 text-xs text-text-tertiary hover:text-text-secondary hover:border-primary/30 transition-colors"
+            >
+              + Efectivo
             </button>
           </div>
         </div>

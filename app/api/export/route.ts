@@ -18,14 +18,14 @@ export async function GET() {
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const [{ data: expenses, error }, { data: config }] = await Promise.all([
+  const [{ data: expenses, error }, { data: cardsData }] = await Promise.all([
     supabase
       .from('expenses')
       .select('*')
       .eq('user_id', user.id)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false }),
-    supabase.from('user_config').select('cards').eq('user_id', user.id).single(),
+    supabase.from('cards').select('id, name').eq('user_id', user.id),
   ])
 
   if (error) {
@@ -33,7 +33,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Error al exportar' }, { status: 500 })
   }
 
-  const cards: Card[] = Array.isArray(config?.cards) ? (config.cards as Card[]) : []
+  const cards: Pick<Card, 'id' | 'name'>[] = (cardsData ?? []) as Pick<Card, 'id' | 'name'>[]
   const cardMap = new Map(cards.map((c) => [c.id, c.name]))
 
   const headers = [

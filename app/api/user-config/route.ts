@@ -2,16 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
-const CardSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1),
-  closing_day: z.number().int().min(1).max(31).optional(),
-  archived: z.boolean().optional(),
-})
-
 const UpdateSchema = z.object({
   default_currency: z.enum(['ARS', 'USD']).optional(),
-  cards: z.array(CardSchema).optional(),
   onboarding_completed: z.boolean().optional(),
   rollover_mode: z.enum(['auto', 'manual', 'off']).optional(),
 })
@@ -25,7 +17,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('user_config')
-    .select('default_currency, cards')
+    .select('default_currency')
     .eq('user_id', user.id)
     .single()
 

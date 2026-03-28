@@ -223,6 +223,38 @@ export type Database = {
         }
         Relationships: []
       }
+      cards: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          closing_day: number | null
+          due_day: number
+          account_id: string | null
+          archived: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          closing_day?: number | null
+          due_day?: number
+          account_id?: string | null
+          archived?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          name?: string
+          closing_day?: number | null
+          due_day?: number
+          account_id?: string | null
+          archived?: boolean
+        }
+        Relationships: []
+      }
       accounts: {
         Row: {
           id: string
@@ -455,12 +487,9 @@ export type SubscriptionInsertion = {
   inserted_at: string
 }
 
-export type Card = {
-  id: string
-  name: string
-  archived?: boolean
-  closing_day?: number // día del mes de cierre (1–31)
-}
+export type Card       = Database['public']['Tables']['cards']['Row']
+export type CardInsert = Database['public']['Tables']['cards']['Insert']
+export type CardUpdate = Database['public']['Tables']['cards']['Update']
 
 export type Currency = 'ARS' | 'USD'
 export type PaymentMethod = 'CASH' | 'DEBIT' | 'TRANSFER' | 'CREDIT'

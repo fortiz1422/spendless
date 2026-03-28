@@ -9,6 +9,7 @@ import type { Card, Expense, Subscription } from '@/types/database'
 
 type AnalyticsApiData = {
   rawExpenses: Expense[]
+  prevMonthExpenses: Expense[]
   ingresoMes: number | null
   subscriptions: Subscription[]
   cards: Card[]
@@ -55,7 +56,7 @@ export function AnalyticsDataLoader({ selectedMonth }: Props) {
 
   if (isLoading || !data) return <AnalyticsSkeleton />
 
-  const { rawExpenses, ingresoMes, subscriptions, cards, currency, earliestDataMonth } = data
+  const { rawExpenses, prevMonthExpenses, ingresoMes, subscriptions, cards, currency, earliestDataMonth } = data
 
   const today = new Date()
   const [ymYear, ymMonth] = selectedMonth.split('-').map(Number)
@@ -64,7 +65,7 @@ export function AnalyticsDataLoader({ selectedMonth }: Props) {
   const dayOfMonth = isCurrentMonth ? today.getDate() : daysInMonth
 
   const metrics = computeMetrics(rawExpenses, ingresoMes, currency, selectedMonth)
-  const compromisos = computeCompromisos(rawExpenses, cards, dayOfMonth, ingresoMes)
+  const compromisos = computeCompromisos(rawExpenses, cards, dayOfMonth, ingresoMes, prevMonthExpenses)
 
   return (
     <AnalyticsClient

@@ -17,17 +17,19 @@ export async function GET(request: Request) {
   const startOfMonth = selectedMonth + '-01'
   const endOfMonth = addMonths(selectedMonth, 1) + '-01'
 
-  const { data: config } = await supabase
-    .from('user_config')
-    .select('default_currency, cards')
-    .eq('user_id', user.id)
-    .single()
+  const [{ data: config }, { data: cardsData }] = await Promise.all([
+    supabase.from('user_config').select('default_currency').eq('user_id', user.id).single(),
+    supabase.from('cards').select('*').eq('user_id', user.id).eq('archived', false).order('created_at', { ascending: true }),
+  ])
 
   const currency = (config?.default_currency ?? 'ARS') as 'ARS' | 'USD'
-  const cards = ((config?.cards as Card[]) ?? []).filter((c) => !c.archived)
+  const cards = (cardsData ?? []) as Card[]
+
+  const prevMonthStart = addMonths(selectedMonth, -1) + '-01'
 
   const [
     { data: rawExpenses },
+    { data: prevCreditExpenses },
     { data: incomeEntries },
     { data: legacyIncome },
     { data: oldestExpense },
@@ -41,6 +43,15 @@ export async function GET(request: Request) {
       .neq('category', 'Pago de Tarjetas')
       .gte('date', startOfMonth)
       .lt('date', endOfMonth),
+    supabase
+      .from('expenses')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('currency', currency)
+      .eq('payment_method', 'CREDIT')
+      .neq('category', 'Pago de Tarjetas')
+      .gte('date', prevMonthStart)
+      .lt('date', startOfMonth),
     supabase
       .from('income_entries')
       .select('amount, currency')
@@ -76,6 +87,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     rawExpenses: (rawExpenses ?? []) as Expense[],
+    prevMonthExpenses: (prevCreditExpenses ?? []) as Expense[],
     ingresoMes,
     subscriptions: (subscriptionsData ?? []) as Subscription[],
     cards,
