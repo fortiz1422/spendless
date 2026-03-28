@@ -3,24 +3,49 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
+import { Bank, Wallet, CreditCard, DeviceMobileSpeaker, Star } from '@phosphor-icons/react'
 import { CategoryIcon } from '@/components/ui/CategoryIcon'
 import { CATEGORIES } from '@/lib/validation/schemas'
 import { formatAmount, formatDate, dateInputToISO } from '@/lib/format'
-import type { Expense, Card } from '@/types/database'
+import type { Account, Card, Expense } from '@/types/database'
 
 interface Props {
   expense: Expense
   cards: Card[]
+  accounts: Account[]
 }
 
-const PAYMENT_LABELS: Record<string, string> = {
-  CASH: 'Efectivo',
-  DEBIT: 'Débito',
-  TRANSFER: 'Transferencia',
-  CREDIT: 'Crédito',
+type SourceKey = string
+
+function getInitialSource(expense: Expense, accounts: Account[]): SourceKey {
+  if (expense.payment_method === 'CREDIT') return 'credit'
+  if (expense.payment_method === 'CASH') return 'cash'
+  if (expense.account_id) return expense.account_id
+  const primary = accounts.find((a) => a.is_primary && a.type !== 'cash')
+  if (primary) return primary.id
+  return accounts.find((a) => a.type !== 'cash')?.id ?? 'cash'
 }
 
-export function ExpenseItem({ expense, cards }: Props) {
+function derivePaymentMethod(source: SourceKey, accounts: Account[]): 'CASH' | 'DEBIT' | 'CREDIT' {
+  if (source === 'credit') return 'CREDIT'
+  if (source === 'cash') return 'CASH'
+  const acc = accounts.find((a) => a.id === source)
+  return acc?.type === 'cash' ? 'CASH' : 'DEBIT'
+}
+
+function deriveAccountId(source: SourceKey, accounts: Account[]): string | null {
+  if (source === 'credit') return null
+  if (source === 'cash') return accounts.find((a) => a.type === 'cash')?.id ?? null
+  return source
+}
+
+function AccountIcon({ type, size = 14 }: { type: Account['type']; size?: number }) {
+  if (type === 'cash') return <Wallet weight="duotone" size={size} />
+  if (type === 'digital') return <DeviceMobileSpeaker weight="duotone" size={size} />
+  return <Bank weight="duotone" size={size} />
+}
+
+export function ExpenseItem({ expense, cards, accounts }: Props) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [expanded, setExpanded] = useState(false)
@@ -32,19 +57,34 @@ export function ExpenseItem({ expense, cards }: Props) {
   const [amount, setAmount] = useState(String(expense.amount))
   const [currency, setCurrency] = useState(expense.currency)
   const [category, setCategory] = useState(expense.category)
-  const [paymentMethod, setPaymentMethod] = useState(expense.payment_method)
+  const [source, setSource] = useState<SourceKey>(() => getInitialSource(expense, accounts))
   const [cardId, setCardId] = useState(expense.card_id ?? '')
+  const [installments, setInstallments] = useState(1)
+  const [installmentsInput, setInstallmentsInput] = useState('')
   const [date, setDate] = useState(expense.date.substring(0, 10))
   const [isWant, setIsWant] = useState(expense.is_want)
 
   const containerRef = useRef<HTMLDivElement>(null)
+
+  const isPagoTarjetas = category === 'Pago de Tarjetas'
+  const needsCard = source === 'credit' || isPagoTarjetas
+
+  const bankDigital = accounts.filter((a) => a.type !== 'cash')
+  const cashAccount = accounts.find((a) => a.type === 'cash') ?? null
+  const activeCards = cards.filter((c) => !c.archived)
+
+  const handleSourceChange = (key: SourceKey) => {
+    setSource(key)
+    if (key !== 'credit') setCardId('')
+  }
 
   const isDirty =
     description !== expense.description ||
     Number(amount) !== expense.amount ||
     currency !== expense.currency ||
     category !== expense.category ||
-    paymentMethod !== expense.payment_method ||
+    derivePaymentMethod(source, accounts) !== expense.payment_method ||
+    deriveAccountId(source, accounts) !== expense.account_id ||
     (cardId || null) !== expense.card_id ||
     date !== expense.date.substring(0, 10) ||
     isWant !== expense.is_want
@@ -67,7 +107,8 @@ export function ExpenseItem({ expense, cards }: Props) {
           amount: Number(amount),
           currency,
           category,
-          payment_method: paymentMethod,
+          payment_method: derivePaymentMethod(source, accounts),
+          account_id: deriveAccountId(source, accounts),
           card_id: cardId || null,
           date: dateInputToISO(date),
           is_want: isWant,
@@ -83,7 +124,7 @@ export function ExpenseItem({ expense, cards }: Props) {
       setError('Error al guardar. Intentá de nuevo.')
       setIsSaving(false)
     }
-  }, [isSaving, isDirty, expense.id, description, amount, currency, category, paymentMethod, cardId, date, isWant, router])
+  }, [isSaving, isDirty, expense.id, description, amount, currency, category, source, accounts, cardId, date, isWant, router, queryClient])
 
   const saveRef = useRef(handleSave)
   useEffect(() => { saveRef.current = handleSave }, [handleSave])
@@ -115,11 +156,13 @@ export function ExpenseItem({ expense, cards }: Props) {
     }
   }
 
-  const isPagoTarjetas = expense.category === 'Pago de Tarjetas'
+  const chipBase = 'flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors border'
+  const chipActive = 'border-primary bg-primary/15 text-primary'
+  const chipInactive = 'border-border-ocean bg-primary/[0.03] text-text-tertiary'
 
   return (
     <div ref={containerRef}>
-      {/* Collapsed row — cardless */}
+      {/* Collapsed row */}
       <div
         onClick={() => {
           if (expanded) {
@@ -146,7 +189,7 @@ export function ExpenseItem({ expense, cards }: Props) {
           </p>
         </div>
         <div className="text-right">
-          <p className={`text-sm font-medium ${isPagoTarjetas ? 'text-primary' : 'text-text-primary'}`}>
+          <p className={`text-sm font-medium ${expense.category === 'Pago de Tarjetas' ? 'text-primary' : 'text-text-primary'}`}>
             {formatAmount(expense.amount, expense.currency)}
           </p>
           {expense.currency === 'USD' && (
@@ -210,21 +253,57 @@ export function ExpenseItem({ expense, cards }: Props) {
             </div>
             <div>
               <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
-                Medio de pago
+                Fecha
               </label>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'DEBIT' | 'TRANSFER' | 'CREDIT')}
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
                 className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none"
-              >
-                {Object.entries(PAYMENT_LABELS).map(([val, label]) => (
-                  <option key={val} value={val}>{label}</option>
-                ))}
-              </select>
+              />
             </div>
           </div>
 
-          {(paymentMethod === 'CREDIT' || category === 'Pago de Tarjetas') && (
+          {/* ¿De dónde sale? */}
+          <div>
+            <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+              ¿De dónde sale?
+            </label>
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {bankDigital.map((acc) => (
+                <button
+                  key={acc.id}
+                  onClick={() => handleSourceChange(acc.id)}
+                  className={`${chipBase} ${source === acc.id ? chipActive : chipInactive}`}
+                >
+                  <AccountIcon type={acc.type} size={13} />
+                  <span>{acc.name}</span>
+                  {acc.is_primary && (
+                    <Star weight="fill" size={9} className={source === acc.id ? 'text-primary' : 'text-text-disabled'} />
+                  )}
+                </button>
+              ))}
+              <button
+                onClick={() => handleSourceChange('cash')}
+                className={`${chipBase} ${source === 'cash' ? chipActive : chipInactive}`}
+              >
+                <Wallet weight="duotone" size={13} />
+                <span>{cashAccount ? cashAccount.name : 'Efectivo'}</span>
+              </button>
+              {activeCards.length > 0 && (
+                <button
+                  onClick={() => handleSourceChange('credit')}
+                  className={`${chipBase} ${source === 'credit' || isPagoTarjetas ? chipActive : chipInactive}`}
+                >
+                  <CreditCard weight="duotone" size={13} />
+                  <span>Tarjeta</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Tarjeta selector */}
+          {needsCard && (
             <div>
               <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
                 Tarjeta
@@ -235,25 +314,53 @@ export function ExpenseItem({ expense, cards }: Props) {
                 className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none"
               >
                 <option value="">— seleccioná —</option>
-                {cards.map((c) => (
+                {activeCards.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-2">
+          {/* Cuotas (solo tarjeta de crédito, no Pago de Tarjetas) */}
+          {source === 'credit' && !isPagoTarjetas && (
             <div>
               <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
-                Fecha
+                Cuotas
               </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none"
-              />
+              <div className="flex flex-wrap gap-2">
+                {[1, 3, 6, 12, 18, 24].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => {
+                      setInstallments(n)
+                      setInstallmentsInput('')
+                    }}
+                    className={`${chipBase} ${installments === n && installmentsInput === '' ? chipActive : chipInactive}`}
+                  >
+                    {n === 1 ? 'Sin cuotas' : `${n}x`}
+                  </button>
+                ))}
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={2}
+                  max={72}
+                  placeholder="Otro"
+                  value={installmentsInput}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    setInstallmentsInput(v)
+                    const n = parseInt(v)
+                    if (!isNaN(n) && n >= 2 && n <= 72) setInstallments(n)
+                  }}
+                  className="w-16 rounded-input border border-transparent bg-bg-tertiary px-2 py-1.5 text-xs text-text-primary focus:border-primary focus:outline-none placeholder:text-text-disabled"
+                />
+              </div>
             </div>
+          )}
+
+          {/* Necesidad / Deseo */}
+          {!isPagoTarjetas && (
             <div>
               <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-text-secondary">
                 Tipo
@@ -277,7 +384,7 @@ export function ExpenseItem({ expense, cards }: Props) {
                 </button>
               </div>
             </div>
-          </div>
+          )}
 
           <div className="flex items-center gap-2 pt-1">
             {confirmDelete ? (

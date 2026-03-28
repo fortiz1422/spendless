@@ -137,7 +137,7 @@ export default async function ExpensesPage({
             {rows.map((row) => {
               if (row.kind === 'income') return <IncomeItem key={`i-${row.data.id}`} entry={row.data} />
               if (row.kind === 'transfer') return <TransferItem key={`t-${row.data.id}`} transfer={row.data} accounts={accounts} />
-              return <ExpenseItem key={`e-${row.data.id}`} expense={row.data} cards={cards} />
+              return <ExpenseItem key={`e-${row.data.id}`} expense={row.data} cards={cards} accounts={accounts} />
             })}
           </div>
         ) : (
