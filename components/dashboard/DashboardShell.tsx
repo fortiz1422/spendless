@@ -4,12 +4,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { SaldoVivoSheet } from '@/components/dashboard/SaldoVivoSheet'
 import { SmartInput } from '@/components/dashboard/SmartInput'
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
-import { CurrencyToggle } from '@/components/dashboard/CurrencyToggle'
 import { SaldoVivo } from '@/components/dashboard/SaldoVivo'
+import { CuentaSheet } from '@/components/settings/CuentaSheet'
 import { FiltroEstoico } from '@/components/dashboard/FiltroEstoico'
 import { Ultimos5 } from '@/components/dashboard/Ultimos5'
-import { RolloverBanner } from '@/components/dashboard/RolloverBanner'
 import { CierreMesModal } from '@/components/dashboard/CierreMesModal'
 import { HomePlusButton } from '@/components/dashboard/HomePlusButton'
 import { CardPaymentPrompt } from '@/components/dashboard/CardPaymentPrompt'
@@ -17,8 +15,19 @@ import { SubscriptionReviewBanner } from '@/components/subscriptions/Subscriptio
 import { InstrumentosCard } from '@/components/instruments/InstrumentosCard'
 import { RecurringIncomeBanner } from '@/components/dashboard/RecurringIncomeBanner'
 import { useCardPaymentPrompts } from '@/hooks/useCardPaymentPrompts'
-import { FF_INSTRUMENTS, FF_YIELD } from '@/lib/flags'
-import type { Account, Card, DashboardData, Expense, Instrument, IncomeEntry, RecurringIncome, Subscription, Transfer, YieldAccumulator } from '@/types/database'
+import { FF_INSTRUMENTS } from '@/lib/flags'
+import type {
+  Account,
+  Card,
+  DashboardData,
+  Expense,
+  Instrument,
+  IncomeEntry,
+  RecurringIncome,
+  Subscription,
+  Transfer,
+  YieldAccumulator,
+} from '@/types/database'
 import type { PrevMonthSummary } from '@/lib/rollover'
 
 type DashboardApiData = {
@@ -34,6 +43,7 @@ type DashboardApiData = {
   allUltimos: Expense[]
   incomeEntries: IncomeEntry[]
   transfers: Transfer[]
+  transferCurrencyAdjustment: number
   earliestDataMonth: string | null
   hasUsdExpenses: boolean
   selectedMonth: string
@@ -46,9 +56,22 @@ type DashboardApiData = {
   activeRecurring: RecurringIncome[]
 }
 
+type BreakdownData = {
+  breakdown: {
+    id: string
+    name: string
+    type: string
+    is_primary: boolean
+    saldo: number
+  }[]
+  total: number
+  currency: 'ARS' | 'USD'
+}
+
 interface Props {
   selectedMonth: string
   viewCurrency: 'ARS' | 'USD'
+  userEmail: string
 }
 
 function DashboardSkeleton() {
@@ -56,12 +79,16 @@ function DashboardSkeleton() {
     <div className="min-h-screen bg-bg-primary">
       <div
         className="mx-auto max-w-md px-4 pt-safe"
-        style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 'calc(env(safe-area-inset-bottom) + 180px)' }}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 24,
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 180px)',
+        }}
       >
-        <div className="grid grid-cols-3 items-center pt-5">
-          <div className="h-8 w-20 skeleton rounded-full" />
-          <div className="flex justify-center"><div className="h-6 w-16 skeleton rounded" /></div>
-          <div className="flex justify-end"><div className="h-9 w-9 skeleton rounded-full" /></div>
+        <div className="flex items-center justify-between pt-5">
+          <div className="h-9 w-9 skeleton rounded-full" />
+          <div className="h-9 w-9 skeleton rounded-full" />
         </div>
         <div className="h-44 skeleton rounded-card" />
         <div className="h-16 skeleton rounded-card" />
@@ -71,9 +98,10 @@ function DashboardSkeleton() {
   )
 }
 
-export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
+export function DashboardShell({ selectedMonth, viewCurrency, userEmail }: Props) {
   const queryClient = useQueryClient()
   const [breakdownOpen, setBreakdownOpen] = useState(false)
+  const [cuentaSheetOpen, setCuentaSheetOpen] = useState(false)
   const [keyboardOffset, setKeyboardOffset] = useState(0)
 
   useEffect(() => {
@@ -100,6 +128,19 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
     },
   })
 
+  const { data: breakdownData } = useQuery<BreakdownData>({
+    queryKey: ['account-breakdown', selectedMonth, viewCurrency, data?.isProjected ?? false],
+    queryFn: async () => {
+      const projected = data?.isProjected ? '&projected=true' : ''
+      const res = await fetch(
+        `/api/dashboard/account-breakdown?month=${selectedMonth}&currency=${viewCurrency}${projected}`,
+      )
+      if (!res.ok) throw new Error('breakdown fetch failed')
+      return res.json()
+    },
+    enabled: !!data,
+  })
+
   const invalidateDashboard = () =>
     queryClient.invalidateQueries({ queryKey: ['dashboard', selectedMonth, viewCurrency] })
 
@@ -110,12 +151,10 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
     data?.accounts ?? [],
   )
 
-  // Prefetch Analytics in background so the tab is instant on first visit
   useEffect(() => {
     queryClient.prefetchQuery({
       queryKey: ['analytics', selectedMonth],
-      queryFn: () =>
-        fetch(`/api/analytics-data?month=${selectedMonth}`).then((r) => r.json()),
+      queryFn: () => fetch(`/api/analytics-data?month=${selectedMonth}`).then((r) => r.json()),
     })
   }, [selectedMonth, queryClient])
 
@@ -126,14 +165,12 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
     accounts,
     cards,
     currency,
-    hasIncomeAfterRollover,
-    autoRolloverAmount,
     manualRolloverSummary,
     activeSubscriptions,
     allUltimos,
     incomeEntries,
     transfers,
-    earliestDataMonth,
+    transferCurrencyAdjustment,
     isCurrentMonth,
     isProjected,
     yieldAccumulators,
@@ -142,16 +179,6 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
     recurringPending,
     activeRecurring,
   } = data
-
-  // Cross-currency transfers shift per-currency balance
-  // e.g. ARS→USD: reduces ARS saldo, increases USD saldo
-  const transferCurrencyAdjustment = transfers
-    .filter((t) => t.currency_from !== t.currency_to)
-    .reduce((sum, t) => {
-      if (t.currency_from === viewCurrency) return sum - t.amount_from
-      if (t.currency_to === viewCurrency) return sum + t.amount_to
-      return sum
-    }, 0)
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -164,26 +191,20 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 180px)',
         }}
       >
-        <div className="grid grid-cols-3 items-center pt-5">
-          <div>
-            <CurrencyToggle viewCurrency={viewCurrency} selectedMonth={selectedMonth} />
-          </div>
-          <div className="flex justify-center">
-            <DashboardHeader
-              month={selectedMonth}
-              earliestDataMonth={earliestDataMonth ?? undefined}
-              viewCurrency={viewCurrency}
-              className=""
-            />
-          </div>
-          <div className="flex justify-end">
-            <HomePlusButton accounts={accounts} currency={currency} cards={cards} month={selectedMonth} />
-          </div>
+        <div className="flex items-center justify-between pt-5">
+          <button
+            onClick={() => setCuentaSheetOpen(true)}
+            aria-label="Abrir configuracion de cuenta"
+            className="transition-opacity hover:opacity-70 active:opacity-50"
+          >
+            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-sm font-bold text-white">
+                {userEmail.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          </button>
+          <HomePlusButton accounts={accounts} currency={currency} cards={cards} month={selectedMonth} />
         </div>
-
-        {autoRolloverAmount !== null && (
-          <RolloverBanner amount={autoRolloverAmount} currency={currency} />
-        )}
 
         <SaldoVivo
           data={dashboardData?.saldo_vivo ?? null}
@@ -191,6 +212,7 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
           gastosTarjeta={dashboardData?.gastos_tarjeta ?? 0}
           transferAdjustment={transferCurrencyAdjustment}
           capitalInstrumentos={FF_INSTRUMENTS ? capitalInstrumentosMes : 0}
+          saldoVivoOverride={breakdownData?.total ?? null}
           onBreakdownOpen={accounts.length > 0 ? () => setBreakdownOpen(true) : undefined}
           selectedMonth={selectedMonth}
           isProjected={isProjected}
@@ -219,7 +241,7 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
         )}
 
         {activeSubscriptions.length > 0 && (
-          <SubscriptionReviewBanner subscriptions={activeSubscriptions} currency={currency} cards={cards} />
+          <SubscriptionReviewBanner subscriptions={activeSubscriptions} cards={cards} />
         )}
 
         <Ultimos5
@@ -234,7 +256,6 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
         />
       </div>
 
-      {/* Fade abisal */}
       <div
         aria-hidden
         style={{
@@ -251,13 +272,10 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
         }}
       />
 
-      {/* Command Input */}
       <div
         style={{
           position: 'fixed',
-          bottom: keyboardOffset > 0
-            ? keyboardOffset + 8
-            : 'calc(env(safe-area-inset-bottom) + 76px)',
+          bottom: keyboardOffset > 0 ? keyboardOffset + 8 : 'calc(env(safe-area-inset-bottom) + 76px)',
           left: 0,
           right: 0,
           zIndex: 50,
@@ -280,9 +298,7 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
           periodoDesde={activePrompt.periodoDesde}
           periodoHasta={activePrompt.periodoHasta}
           accounts={accounts}
-          onConfirm={(finalAmount) =>
-            activePrompt.onConfirm(finalAmount).then(invalidateDashboard)
-          }
+          onConfirm={(finalAmount) => activePrompt.onConfirm(finalAmount).then(invalidateDashboard)}
           onDismiss={activePrompt.onDismiss}
         />
       )}
@@ -295,6 +311,12 @@ export function DashboardShell({ selectedMonth, viewCurrency }: Props) {
           accounts={accounts}
         />
       )}
+
+      <CuentaSheet
+        open={cuentaSheetOpen}
+        onClose={() => setCuentaSheetOpen(false)}
+        userEmail={userEmail}
+      />
     </div>
   )
 }

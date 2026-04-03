@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { addMonths, getCurrentMonth } from '@/lib/dates'
+import { buildSmartPerAccountBalances } from '@/lib/rollover'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -21,21 +22,29 @@ export async function GET(request: Request) {
   const queryMonth = projected ? getCurrentMonth() : month
   const monthDate = queryMonth + '-01'
   const nextMonthDate = addMonths(queryMonth, 1) + '-01'
+  const isCurrentMonth = queryMonth === getCurrentMonth()
 
   const [
     { data: accountsData },
+    { data: configData },
     { data: incomeData },
     { data: debitExpData },
     { data: cardPayData },
     { data: balancesData },
     { data: transfersData },
+    { data: yieldData },
   ] = await Promise.all([
     supabase
       .from('accounts')
-      .select('id, name, type, is_primary')
+      .select('*')
       .eq('user_id', user.id)
       .eq('archived', false)
       .order('is_primary', { ascending: false }),
+    supabase
+      .from('user_config')
+      .select('rollover_mode')
+      .eq('user_id', user.id)
+      .maybeSingle(),
     supabase
       .from('income_entries')
       .select('account_id, amount')
@@ -70,10 +79,16 @@ export async function GET(request: Request) {
       .eq('user_id', user.id)
       .gte('date', monthDate)
       .lt('date', nextMonthDate),
+    supabase
+      .from('yield_accumulator')
+      .select('account_id, accumulated')
+      .eq('user_id', user.id)
+      .eq('month', queryMonth),
   ])
 
   const accounts = accountsData ?? []
   const primaryId = accounts.find((a) => a.is_primary)?.id ?? accounts[0]?.id ?? null
+  const rolloverMode = configData?.rollover_mode ?? 'off'
 
   // NULL account_id → primary account
   const resolve = (id: string | null) => id ?? primaryId
@@ -86,11 +101,74 @@ export async function GET(request: Request) {
       (currency === 'ARS' ? b.balance_ars : b.balance_usd)
   }
 
+  const shouldUseLiveRolloverOpening =
+    !projected &&
+    isCurrentMonth &&
+    rolloverMode === 'auto' &&
+    (incomeData?.length ?? 0) === 0 &&
+    accounts.length > 0
+
+  if (shouldUseLiveRolloverOpening) {
+    const prevMonthDate = addMonths(queryMonth, -1) + '-01'
+    const accountIds = accounts.map((a) => a.id)
+    const [
+      { data: prevBalances },
+      { data: prevIncomeEntries },
+      { data: prevExpenses },
+      { data: prevTransfers },
+    ] = await Promise.all([
+      supabase
+        .from('account_period_balance')
+        .select('account_id, balance_ars, balance_usd')
+        .in('account_id', accountIds)
+        .eq('period', prevMonthDate),
+      supabase
+        .from('income_entries')
+        .select('account_id, amount, currency')
+        .eq('user_id', user.id)
+        .gte('date', prevMonthDate)
+        .lt('date', monthDate),
+      supabase
+        .from('expenses')
+        .select('account_id, amount, currency, category, payment_method')
+        .eq('user_id', user.id)
+        .gte('date', prevMonthDate)
+        .lt('date', monthDate),
+      supabase
+        .from('transfers')
+        .select('from_account_id, to_account_id, amount_from, amount_to, currency_from, currency_to')
+        .eq('user_id', user.id)
+        .gte('date', prevMonthDate)
+        .lt('date', monthDate),
+    ])
+
+    const liveOpeningBalances = buildSmartPerAccountBalances(
+      accounts,
+      prevBalances ?? [],
+      prevIncomeEntries ?? [],
+      prevExpenses ?? [],
+      prevTransfers ?? [],
+    )
+
+    for (const key of Object.keys(openingMap)) delete openingMap[key]
+    for (const balance of liveOpeningBalances) {
+      openingMap[balance.account_id] = currency === 'ARS' ? balance.balance_ars : balance.balance_usd
+    }
+  }
+
   // Income per account
   const incomeMap: Record<string, number> = {}
   for (const e of incomeData ?? []) {
     const id = resolve(e.account_id)
     if (id) incomeMap[id] = (incomeMap[id] ?? 0) + e.amount
+  }
+
+  // Yield per account: only impacts ARS Saldo Vivo
+  const yieldMap: Record<string, number> = {}
+  if (currency === 'ARS') {
+    for (const y of yieldData ?? []) {
+      yieldMap[y.account_id] = (yieldMap[y.account_id] ?? 0) + y.accumulated
+    }
   }
 
   // Debit expenses per account
@@ -132,6 +210,7 @@ export async function GET(request: Request) {
       (incomeMap[acc.id] ?? 0) -
       (debitMap[acc.id] ?? 0) -
       (cardMap[acc.id] ?? 0) +
+      (yieldMap[acc.id] ?? 0) +
       (transferMap[acc.id] ?? 0),
   }))
 

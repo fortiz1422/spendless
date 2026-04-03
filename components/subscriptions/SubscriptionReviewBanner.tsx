@@ -7,7 +7,6 @@ import type { Subscription, Card } from '@/types/database'
 
 interface Props {
   subscriptions: Subscription[]
-  currency: 'ARS' | 'USD'
   cards: Card[]
 }
 
@@ -17,7 +16,7 @@ function needsReview(sub: Subscription): boolean {
   return new Date(sub.last_reviewed_at) < threeMonthsAgo
 }
 
-export function SubscriptionReviewBanner({ subscriptions, currency, cards }: Props) {
+export function SubscriptionReviewBanner({ subscriptions, cards }: Props) {
   const [showSheet, setShowSheet] = useState(false)
 
   const stale = subscriptions.filter(needsReview)
@@ -45,7 +44,6 @@ export function SubscriptionReviewBanner({ subscriptions, currency, cards }: Pro
       {showSheet && (
         <SubscriptionReviewSheet
           subscriptions={subscriptions}
-          currency={currency}
           cards={cards}
           onDone={() => setShowSheet(false)}
         />

@@ -243,3 +243,13 @@ export function buildSmartPerAccountBalances(
     }
   })
 }
+
+export function sumAccountBalances(
+  balances: { balance_ars: number; balance_usd: number }[],
+  currency: 'ARS' | 'USD',
+): number {
+  return balances.reduce(
+    (sum, balance) => sum + (currency === 'ARS' ? balance.balance_ars : balance.balance_usd),
+    0,
+  )
+}

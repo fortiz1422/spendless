@@ -13,6 +13,7 @@ interface Props {
   expense: Expense
   cards: Card[]
   accounts: Account[]
+  onUpdate?: () => void
 }
 
 type SourceKey = string
@@ -45,7 +46,7 @@ function AccountIcon({ type, size = 14 }: { type: Account['type']; size?: number
   return <Bank weight="duotone" size={size} />
 }
 
-export function ExpenseItem({ expense, cards, accounts }: Props) {
+export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [expanded, setExpanded] = useState(false)
@@ -120,11 +121,12 @@ export function ExpenseItem({ expense, cards, accounts }: Props) {
       queryClient.invalidateQueries({ queryKey: ['analytics'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       router.refresh()
+      onUpdate?.()
     } catch {
       setError('Error al guardar. Intentá de nuevo.')
       setIsSaving(false)
     }
-  }, [isSaving, isDirty, expense.id, description, amount, currency, category, source, accounts, cardId, date, isWant, router, queryClient])
+  }, [isSaving, isDirty, expense.id, description, amount, currency, category, source, accounts, cardId, date, isWant, router, queryClient, onUpdate])
 
   const saveRef = useRef(handleSave)
   useEffect(() => { saveRef.current = handleSave }, [handleSave])
@@ -149,6 +151,7 @@ export function ExpenseItem({ expense, cards, accounts }: Props) {
       queryClient.invalidateQueries({ queryKey: ['analytics'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       router.refresh()
+      onUpdate?.()
     } catch {
       setError('Error al eliminar.')
       setIsSaving(false)

@@ -421,6 +421,7 @@ CREATE POLICY "accounts_delete" ON accounts FOR DELETE USING (auth.uid() = user_
 
 -- Add account_id FK to expenses (nullable, non-breaking)
 ALTER TABLE expenses ADD COLUMN IF NOT EXISTS account_id UUID REFERENCES accounts(id) ON DELETE SET NULL;
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS subscription_id UUID REFERENCES subscriptions(id) ON DELETE SET NULL;
 
 -- ============================================
 -- v1.3 — Income Entries + Account Period Balance

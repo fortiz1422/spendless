@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
-import Link from 'next/link'
-import { ArrowCircleUp, X, ArrowRight, ArrowsLeftRight, TrendUp, CaretRight, ArrowsClockwise } from '@phosphor-icons/react'
+import { ArrowCircleUp, X, ArrowsLeftRight, TrendUp, CaretRight, ArrowsClockwise } from '@phosphor-icons/react'
 import { formatAmount, formatDate } from '@/lib/format'
 import { CategoryIcon } from '@/components/ui/CategoryIcon'
 import { Modal } from '@/components/ui/Modal'
@@ -159,14 +158,8 @@ export function Ultimos5({ expenses, incomeEntries, transfers, accounts, month, 
 
   return (
     <div className="px-2">
-      <div className="mb-1 flex items-center justify-between">
+      <div className="mb-1">
         <p className="type-label text-text-label">Últimos movimientos</p>
-        <Link
-          href={`/expenses?month=${month}`}
-          className="flex items-center gap-1 text-[11px] font-medium text-primary no-underline"
-        >
-          Ver todos <ArrowRight size={11} weight="bold" />
-        </Link>
       </div>
 
       {movements.length === 0 ? (

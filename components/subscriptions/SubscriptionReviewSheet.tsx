@@ -2,20 +2,20 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { Trash } from '@phosphor-icons/react'
 import { Modal } from '@/components/ui/Modal'
-import { formatAmount } from '@/lib/format'
 import type { Subscription, Card } from '@/types/database'
 
 interface Props {
   subscriptions: Subscription[]
-  currency: 'ARS' | 'USD'
   cards: Card[]
   onDone: () => void
 }
 
-export function SubscriptionReviewSheet({ subscriptions, currency, cards, onDone }: Props) {
+export function SubscriptionReviewSheet({ subscriptions, cards, onDone }: Props) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [amounts, setAmounts] = useState<Record<string, string>>(
     Object.fromEntries(subscriptions.map((s) => [s.id, String(s.amount)])),
   )
@@ -33,7 +33,14 @@ export function SubscriptionReviewSheet({ subscriptions, currency, cards, onDone
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_active: false }),
     })
-    if (res.ok) setArchived((prev) => new Set([...prev, id]))
+    if (res.ok) {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+        queryClient.invalidateQueries({ queryKey: ['account-breakdown'] }),
+        queryClient.invalidateQueries({ queryKey: ['analytics'] }),
+      ])
+      setArchived((prev) => new Set([...prev, id]))
+    }
   }
 
   const handleDone = async () => {
@@ -54,6 +61,11 @@ export function SubscriptionReviewSheet({ subscriptions, currency, cards, onDone
             body: JSON.stringify(patch),
           })
         }),
+      ])
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+        queryClient.invalidateQueries({ queryKey: ['account-breakdown'] }),
+        queryClient.invalidateQueries({ queryKey: ['analytics'] }),
       ])
       router.refresh()
       onDone()

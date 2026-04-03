@@ -3,7 +3,7 @@
 import { Suspense } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { House, ChartBar, Gear } from '@phosphor-icons/react'
+import { House, ChartBar, ListBullets } from '@phosphor-icons/react'
 
 function TabBarInner() {
   const pathname = usePathname()
@@ -16,19 +16,19 @@ function TabBarInner() {
       href: `/${monthSuffix}`,
       icon: House,
       label: 'Home',
-      isActive: pathname === '/' || pathname.startsWith('/expenses'),
+      isActive: pathname === '/',
+    },
+    {
+      href: `/movimientos`,
+      icon: ListBullets,
+      label: 'Movimientos',
+      isActive: pathname.startsWith('/movimientos') || pathname.startsWith('/expenses'),
     },
     {
       href: `/analytics${monthSuffix}`,
       icon: ChartBar,
       label: 'Análisis',
       isActive: pathname.startsWith('/analytics'),
-    },
-    {
-      href: '/settings',
-      icon: Gear,
-      label: 'Config',
-      isActive: pathname.startsWith('/settings'),
     },
   ]
 

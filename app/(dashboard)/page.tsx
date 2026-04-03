@@ -27,5 +27,5 @@ export default async function DashboardPage({
   const selectedMonth = month ?? getCurrentMonth()
   const viewCurrency = (currencyParam === 'USD' ? 'USD' : 'ARS') as 'ARS' | 'USD'
 
-  return <DashboardShell selectedMonth={selectedMonth} viewCurrency={viewCurrency} />
+  return <DashboardShell selectedMonth={selectedMonth} viewCurrency={viewCurrency} userEmail={user.email ?? ''} />
 }

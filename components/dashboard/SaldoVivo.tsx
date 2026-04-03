@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
-import { formatAmount, formatCompact } from '@/lib/format'
-import { Wallet, CreditCard, ArrowsDownUp, CaretRight } from '@phosphor-icons/react'
+import { useRouter } from 'next/navigation'
+import { formatAmount } from '@/lib/format'
+import { ArrowsDownUp, CaretRight } from '@phosphor-icons/react'
 import { DisponibleRealSheet } from './DisponibleRealSheet'
+import { getCurrentMonth } from '@/lib/dates'
 import type { DashboardData } from '@/types/database'
 
 interface Props {
@@ -13,6 +15,7 @@ interface Props {
   gastosTarjeta?: number
   transferAdjustment?: number
   capitalInstrumentos?: number
+  saldoVivoOverride?: number | null
   onBreakdownOpen?: () => void
   selectedMonth?: string
   isProjected?: boolean
@@ -21,7 +24,9 @@ interface Props {
 type HeroMode = 'saldo_vivo' | 'disponible_real'
 type AnimPhase = 'idle' | 'exit' | 'pre-enter' | 'enter'
 
-export function SaldoVivo({ data, currency, gastosTarjeta = 0, transferAdjustment = 0, capitalInstrumentos = 0, onBreakdownOpen, selectedMonth = '', isProjected = false }: Props) {
+export function SaldoVivo({ data, currency, gastosTarjeta = 0, transferAdjustment = 0, capitalInstrumentos = 0, saldoVivoOverride = null, onBreakdownOpen, selectedMonth = '', isProjected = false }: Props) {
+  const router = useRouter()
+  const currentMonth = getCurrentMonth()
   const [mode, setMode] = useState<HeroMode>('saldo_vivo')
   const [displayedMode, setDisplayedMode] = useState<HeroMode>('saldo_vivo')
   const [animPhase, setAnimPhase] = useState<AnimPhase>('idle')
@@ -41,7 +46,15 @@ export function SaldoVivo({ data, currency, gastosTarjeta = 0, transferAdjustmen
   }
 
   const saldoInicial = (data.saldo_inicial as number | undefined) ?? 0
-  const disponible = saldoInicial + data.ingresos + (data.rendimientos ?? 0) - data.gastos_percibidos - data.pago_tarjetas + transferAdjustment - capitalInstrumentos
+  const computedSaldoVivo =
+    saldoInicial +
+    data.ingresos +
+    (data.rendimientos ?? 0) -
+    data.gastos_percibidos -
+    data.pago_tarjetas +
+    transferAdjustment -
+    capitalInstrumentos
+  const disponible = saldoVivoOverride ?? computedSaldoVivo
   const disponibleReal = disponible - gastosTarjeta
 
   const heroValue = displayedMode === 'saldo_vivo' ? disponible : disponibleReal
@@ -73,6 +86,15 @@ export function SaldoVivo({ data, currency, gastosTarjeta = 0, transferAdjustmen
 
   const isTappable = mode === 'saldo_vivo' ? !!onBreakdownOpen : true
 
+  const handleCurrencyToggle = (next: 'ARS' | 'USD') => {
+    if (next === currency) return
+    const params = new URLSearchParams()
+    if (selectedMonth !== currentMonth) params.set('month', selectedMonth)
+    if (next !== 'ARS') params.set('currency', next)
+    const query = params.toString()
+    router.push(query ? `/?${query}` : '/')
+  }
+
   const heroStyle: CSSProperties = animPhase === 'exit'
     ? { opacity: 0, transform: 'translateY(-8px)', transition: 'opacity 150ms ease, transform 150ms ease' }
     : animPhase === 'pre-enter'
@@ -94,16 +116,34 @@ export function SaldoVivo({ data, currency, gastosTarjeta = 0, transferAdjustmen
       />
 
       <div className="relative z-10">
-        {/* Toggle label */}
-        <button
-          onClick={handleToggle}
-          className="flex items-center gap-1.5 mb-1.5"
-        >
-          <span className="type-label text-text-label uppercase">
-            {mode === 'saldo_vivo' ? (isProjected ? 'SALDO INICIAL PROYECTADO' : 'SALDO VIVO') : 'DISPONIBLE REAL'}
-          </span>
-          <ArrowsDownUp size={13} weight="light" className="text-text-dim opacity-50" />
-        </button>
+        {/* Toggle label + ARS/USD inline */}
+        <div className="flex items-center justify-between mb-1.5">
+          <button
+            onClick={handleToggle}
+            className="flex items-center gap-1.5"
+          >
+            <span className="type-label text-text-label uppercase">
+              {mode === 'saldo_vivo' ? (isProjected ? 'SALDO INICIAL PROYECTADO' : 'SALDO VIVO') : 'DISPONIBLE REAL'}
+            </span>
+            <ArrowsDownUp size={13} weight="light" className="text-text-dim opacity-50" />
+          </button>
+
+          <div className="flex items-center gap-0.5">
+            {(['ARS', 'USD'] as const).map((c) => (
+              <button
+                key={c}
+                onClick={() => handleCurrencyToggle(c)}
+                className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors ${
+                  currency === c
+                    ? 'text-text-primary'
+                    : 'text-text-dim opacity-50 hover:opacity-80'
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Animated hero number + hint */}
         <div style={heroStyle}>
@@ -126,52 +166,6 @@ export function SaldoVivo({ data, currency, gastosTarjeta = 0, transferAdjustmen
           )}
         </div>
 
-        {/* Twin Pills */}
-        <div className="flex gap-2.5 mt-5">
-          {/* Percibidos */}
-          <div className="flex-1 flex items-center gap-3 px-3.5 py-3 rounded-full"
-            style={{
-              background: 'rgba(255,255,255,0.38)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,255,255,0.70)',
-            }}>
-            <div className="w-[30px] h-[30px] rounded-full shrink-0 bg-primary/8 border border-border-ocean flex items-center justify-center">
-              <Wallet size={13} weight="duotone" className="text-text-label" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-text-label leading-none mb-1">
-                Percibidos
-              </p>
-              <p className="type-amount text-text-primary tabular-nums">
-                {formatCompact(data.gastos_percibidos + data.pago_tarjetas, currency)}
-              </p>
-            </div>
-          </div>
-
-          {/* Tarjeta */}
-          {gastosTarjeta > 0 && (
-            <div className="flex-1 flex items-center gap-3 px-3.5 py-3 rounded-full"
-            style={{
-              background: 'rgba(255,255,255,0.38)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,255,255,0.70)',
-            }}>
-              <div className="w-[30px] h-[30px] rounded-full shrink-0 bg-primary/8 border border-border-ocean flex items-center justify-center">
-                <CreditCard size={13} weight="duotone" className="text-text-label" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-text-label leading-none mb-1">
-                  Tarjeta
-                </p>
-                <p className="type-amount text-text-primary tabular-nums">
-                  {formatCompact(gastosTarjeta, currency)}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       <DisponibleRealSheet

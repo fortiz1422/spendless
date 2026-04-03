@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { Bank, Wallet, DeviceMobileSpeaker, Star } from '@phosphor-icons/react'
 import { Modal } from '@/components/ui/Modal'
 import { CATEGORIES } from '@/lib/validation/schemas'
@@ -22,6 +23,7 @@ function AccountIcon({ type, size = 13 }: { type: Account['type']; size?: number
 
 export function SubscriptionSheet({ onClose, currency: defaultCurrency, cards, accounts }: Props) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
   const [currency, setCurrency] = useState<'ARS' | 'USD'>(defaultCurrency)
@@ -66,6 +68,11 @@ export function SubscriptionSheet({ onClose, currency: defaultCurrency, cards, a
         }),
       })
       if (!res.ok) throw new Error()
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+        queryClient.invalidateQueries({ queryKey: ['account-breakdown'] }),
+        queryClient.invalidateQueries({ queryKey: ['analytics'] }),
+      ])
       router.refresh()
       onClose()
     } catch {

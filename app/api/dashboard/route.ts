@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { buildPrevMonthSummary, buildSmartPerAccountBalances } from '@/lib/rollover'
+import { buildPrevMonthSummary, buildSmartPerAccountBalances, sumAccountBalances } from '@/lib/rollover'
 import { getCurrentMonth, addMonths } from '@/lib/dates'
 import { processYieldAccrual } from '@/lib/yieldEngine'
 import { FF_YIELD, FF_INSTRUMENTS } from '@/lib/flags'
@@ -41,6 +41,7 @@ async function processSubscriptions(supabase: any, userId: string, currentMonth:
       .from('expenses')
       .insert({
         user_id: userId,
+        subscription_id: sub.id,
         description: sub.description,
         category: sub.category,
         amount: sub.amount,
@@ -77,6 +78,7 @@ export async function GET(request: Request) {
   const selectedMonthDate = selectedMonth + '-01'
   const nextMonthDate = addMonths(selectedMonth, 1) + '-01'
   const isCurrentMonth = selectedMonth === currentMonth
+  const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Buenos_Aires' })
 
   const [{ data: config }, { data: accountsData }, { data: cardsData }] = await Promise.all([
     supabase
@@ -120,6 +122,7 @@ export async function GET(request: Request) {
     { data: usdCheckData },
     { data: allUltimosData },
     { data: transfersData },
+    { data: allTransfersData },
     { data: subscriptionsData },
     { data: yieldData },
     { data: instrumentsData },
@@ -142,10 +145,9 @@ export async function GET(request: Request) {
     accountIds.length > 0
       ? supabase
           .from('account_period_balance')
-          .select('account_id')
+          .select('account_id, source')
           .in('account_id', accountIds)
           .eq('period', selectedMonthDate)
-          .limit(1)
       : Promise.resolve({ data: [] }),
     supabase.from('expenses').select('date').eq('user_id', user.id).order('date', { ascending: true }).limit(1).maybeSingle(),
     supabase.from('expenses').select('id').eq('user_id', user.id).eq('currency', 'USD').limit(1).maybeSingle(),
@@ -155,6 +157,7 @@ export async function GET(request: Request) {
       .eq('user_id', user.id)
       .gte('date', selectedMonthDate)
       .lt('date', nextMonthDate)
+      .lte('date', isCurrentMonth ? todayDate : nextMonthDate)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(5),
@@ -167,6 +170,12 @@ export async function GET(request: Request) {
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(5),
+    supabase
+      .from('transfers')
+      .select('amount_from, amount_to, currency_from, currency_to')
+      .eq('user_id', user.id)
+      .gte('date', selectedMonthDate)
+      .lt('date', nextMonthDate),
     supabase
       .from('subscriptions')
       .select('*')
@@ -193,18 +202,29 @@ export async function GET(request: Request) {
 
   const incomeEntries = (incomeEntriesResult.data ?? []) as IncomeEntry[]
   const hasLegacyIncome = legacyIncomeResult.data !== null
-  const hasNewStyleIncome = incomeEntries.length > 0 || (periodBalancesResult.data?.length ?? 0) > 0
+  const hasConfiguredOpeningBalance = (periodBalancesResult.data ?? []).some(
+    (balance) => balance.source !== 'rollover_auto',
+  )
+  const hasNewStyleIncome = incomeEntries.length > 0 || hasConfiguredOpeningBalance
   const hasIncome = hasLegacyIncome || hasNewStyleIncome
   const earliestDataMonth = oldestExpense?.date?.substring(0, 7) ?? null
   const hasUsdExpenses = usdCheckData !== null
   const allUltimos = (allUltimosData ?? []) as Expense[]
   const transfers = (transfersData ?? []) as Transfer[]
+  const transferCurrencyAdjustment = (allTransfersData ?? []).reduce((sum, t) => {
+    if (t.currency_from !== t.currency_to) {
+      if (t.currency_from === viewCurrency) return sum - t.amount_from
+      if (t.currency_to === viewCurrency) return sum + t.amount_to
+    }
+    return sum
+  }, 0)
   const activeSubscriptions = (subscriptionsData ?? []) as Subscription[]
 
   let autoRolloverAmount: number | null = null
   let manualRolloverSummary = null
+  let effectiveSaldoInicial: number | null = null
 
-  if (rolloverMode !== 'off' && !hasIncome && isCurrentMonth) {
+  if (rolloverMode !== 'off' && isCurrentMonth) {
     const prevMonthStr = addMonths(currentMonth, -1)
     const prevMonthDate = prevMonthStr + '-01'
 
@@ -244,6 +264,14 @@ export async function GET(request: Request) {
     const hasPrevData = prevIncome !== null || (prevIncomeEntries?.length ?? 0) > 0 || prevBalanceSum > 0
 
     if (hasPrevData) {
+      const livePerAccountBalances = buildSmartPerAccountBalances(
+        accounts,
+        prevPeriodBalances ?? [],
+        prevIncomeEntries ?? [],
+        prevExps ?? [],
+        prevTransfers ?? [],
+      )
+
       // Filter expenses by currency for the global summary display
       const prevExpsForSummary = (prevExps ?? []).filter((e) => e.currency === currency)
       const summary = buildPrevMonthSummary(
@@ -255,34 +283,10 @@ export async function GET(request: Request) {
         prevPeriodBalances ?? [],
       )
 
-      if (rolloverMode === 'auto') {
-        const perAccountBalances = buildSmartPerAccountBalances(
-          accounts,
-          prevPeriodBalances ?? [],
-          prevIncomeEntries ?? [],
-          prevExps ?? [],
-          prevTransfers ?? [],
-        )
-        await Promise.all([
-          ...perAccountBalances.map((bal) =>
-            supabase.from('account_period_balance').upsert(
-              {
-                account_id: bal.account_id,
-                period: selectedMonthDate,
-                balance_ars: bal.balance_ars,
-                balance_usd: bal.balance_usd,
-                source: 'rollover_auto',
-                updated_at: new Date().toISOString(),
-              },
-              { onConflict: 'account_id,period' },
-            ),
-          ),
-          ...(prevIncome
-            ? [supabase.from('monthly_income').update({ closed: true, closed_at: new Date().toISOString() }).eq('id', prevIncome.id)]
-            : []),
-        ])
+      if (rolloverMode === 'auto' && incomeEntries.length === 0) {
+        effectiveSaldoInicial = sumAccountBalances(livePerAccountBalances, viewCurrency)
         autoRolloverAmount = summary.saldoFinal
-      } else {
+      } else if (rolloverMode === 'manual' && !hasIncome) {
         manualRolloverSummary = summary
       }
     }
@@ -348,6 +352,12 @@ export async function GET(request: Request) {
 
   const rawData = dashboardRaw as DashboardData | null
   let dashboardData: DashboardData | null = rawData
+  if (effectiveSaldoInicial !== null && rawData?.saldo_vivo) {
+    dashboardData = {
+      ...rawData,
+      saldo_vivo: { ...rawData.saldo_vivo, saldo_inicial: effectiveSaldoInicial },
+    }
+  }
   if (projectedSaldoInicial !== null && rawData?.saldo_vivo) {
     dashboardData = { ...rawData, saldo_vivo: { ...rawData.saldo_vivo, saldo_inicial: projectedSaldoInicial } }
   }
@@ -373,6 +383,7 @@ export async function GET(request: Request) {
     allUltimos,
     incomeEntries,
     transfers,
+    transferCurrencyAdjustment,
     earliestDataMonth,
     hasUsdExpenses,
     selectedMonth,

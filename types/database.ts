@@ -212,6 +212,7 @@ export type Database = {
         Row: {
           id: string
           user_id: string
+          subscription_id: string | null
           amount: number
           currency: 'ARS' | 'USD'
           category: string
@@ -230,6 +231,7 @@ export type Database = {
         Insert: {
           id?: string
           user_id: string
+          subscription_id?: string | null
           amount: number
           currency?: 'ARS' | 'USD'
           category: string
@@ -248,6 +250,7 @@ export type Database = {
         Update: {
           id?: string
           user_id?: string
+          subscription_id?: string | null
           amount?: number
           currency?: 'ARS' | 'USD'
           category?: string
