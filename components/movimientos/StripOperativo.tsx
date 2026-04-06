@@ -4,10 +4,10 @@ import { formatCompact } from '@/lib/format'
 import type { OrigenFilter } from './FiltroSheet'
 
 interface Props {
-  percibidos:    number
-  tarjeta:       number
-  pagoTarjeta:   number
-  currency?:     'ARS' | 'USD'
+  percibidos: number
+  tarjeta: number
+  pagoTarjeta: number
+  currency?: 'ARS' | 'USD'
   activeOrigen?: OrigenFilter | null
   onOrigenClick?: (o: OrigenFilter) => void
 }
@@ -43,7 +43,7 @@ export function StripOperativo({
           {formatCompact(percibidos, currency)}
         </span>
         <span style={{ fontSize: '10px', color: '#4A6070', lineHeight: 1.3 }}>
-          Caja + débito + pago tarjeta
+          Dinero que salió de tu cuenta
         </span>
       </div>
 
@@ -58,10 +58,10 @@ export function StripOperativo({
           Tarjeta
         </span>
         <span style={{ fontSize: '18px', fontWeight: 700, color: '#0D1829', letterSpacing: '-0.5px', lineHeight: 1, marginBottom: '4px' }}>
-          {tarjeta > 0 ? formatCompact(tarjeta, currency) : '—'}
+          {tarjeta > 0 ? formatCompact(tarjeta, currency) : '-'}
         </span>
         <span style={{ fontSize: '10px', color: '#4A6070', lineHeight: 1.3 }}>
-          Consumos aún no debitados
+          Consumos del mes que todavía no pagaste
         </span>
       </div>
 
@@ -76,10 +76,10 @@ export function StripOperativo({
           Pago tarjeta
         </span>
         <span style={{ fontSize: '18px', fontWeight: 700, color: '#2178A8', letterSpacing: '-0.5px', lineHeight: 1, marginBottom: '4px' }}>
-          {pagoTarjeta > 0 ? formatCompact(pagoTarjeta, currency) : '—'}
+          {pagoTarjeta > 0 ? formatCompact(pagoTarjeta, currency) : '-'}
         </span>
         <span style={{ fontSize: '10px', color: '#4A6070', lineHeight: 1.3 }}>
-          Pagos reales del mes
+          Pago de tarjeta por consumos previos
         </span>
       </div>
     </div>

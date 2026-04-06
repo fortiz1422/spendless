@@ -47,16 +47,7 @@ function buildFilterSummary(f: ActiveFilters, accounts: Account[]): string {
   const parts: string[] = []
   f.tipos.forEach((t) => parts.push(TIPO_LABELS[t] ?? t))
 
-  // percibido + pago_tarjeta together = "Percibidos" (matches the strip pill definition)
-  const isPercibidos =
-    f.origenes.length === 2 &&
-    f.origenes.includes('percibido') &&
-    f.origenes.includes('pago_tarjeta')
-  if (isPercibidos) {
-    parts.push('Percibidos')
-  } else {
-    f.origenes.forEach((o) => parts.push(ORIGEN_LABELS[o] ?? o))
-  }
+  f.origenes.forEach((o) => parts.push(ORIGEN_LABELS[o] ?? o))
 
   if (f.cuentas.length === 1) {
     parts.push(accounts.find((a) => a.id === f.cuentas[0])?.name ?? 'Cuenta')
@@ -155,16 +146,8 @@ export function MovimientosClient({ initialMonth }: Props) {
   const handleNextMonth = () => setSelectedMonth((m) => addMonths(m, 1))
 
   // Tap a strip metric → toggle origen filter.
-  // "Percibidos" = percibido + pago_tarjeta combined (matches strip's definition: non-CREDIT).
   const handleOrigenClick = (origen: OrigenFilter) => {
     setActiveFilters((prev) => {
-      if (origen === 'percibido') {
-        const isActive =
-          prev.origenes.length === 2 &&
-          prev.origenes.includes('percibido') &&
-          prev.origenes.includes('pago_tarjeta')
-        return { ...prev, origenes: isActive ? [] : ['percibido', 'pago_tarjeta'] }
-      }
       const already = prev.origenes.length === 1 && prev.origenes[0] === origen
       return { ...prev, origenes: already ? [] : [origen] }
     })
@@ -174,13 +157,7 @@ export function MovimientosClient({ initialMonth }: Props) {
 
   // Active origen for strip visual state
   const activeOrigen: OrigenFilter | null =
-    activeFilters.origenes.length === 2 &&
-    activeFilters.origenes.includes('percibido') &&
-    activeFilters.origenes.includes('pago_tarjeta')
-      ? 'percibido'
-      : activeFilters.origenes.length === 1
-        ? activeFilters.origenes[0]
-        : null
+    activeFilters.origenes.length === 1 ? activeFilters.origenes[0] : null
 
   return (
     <div className="min-h-screen bg-bg-primary">

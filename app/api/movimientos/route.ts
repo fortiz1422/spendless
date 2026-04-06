@@ -104,11 +104,9 @@ export async function GET(request: Request) {
 
   const statsExpenses = (statsExpensesData ?? []) as Pick<Expense, 'amount' | 'currency' | 'payment_method' | 'category'>[]
 
-  const percibidos = statsExpenses.filter((e) => e.currency === 'ARS').reduce((sum, e) => {
-    if (e.category === 'Pago de Tarjetas') return sum + e.amount
-    if (e.payment_method !== 'CREDIT')     return sum + e.amount
-    return sum
-  }, 0)
+  const percibidos = statsExpenses
+    .filter((e) => e.payment_method !== 'CREDIT' && e.category !== 'Pago de Tarjetas' && e.currency === 'ARS')
+    .reduce((sum, e) => sum + e.amount, 0)
 
   const tarjeta = statsExpenses
     .filter((e) => e.payment_method === 'CREDIT' && e.category !== 'Pago de Tarjetas' && e.currency === 'ARS')
