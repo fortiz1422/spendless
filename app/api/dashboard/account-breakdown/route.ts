@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentMonth } from '@/lib/dates'
 import { todayAR } from '@/lib/format'
+import { FF_YIELD } from '@/lib/flags'
 import { buildLiveBalanceBreakdown, sumLiveBreakdown } from '@/lib/live-balance'
 
 export async function GET(request: Request) {
@@ -58,11 +59,13 @@ export async function GET(request: Request) {
       .select('from_account_id, to_account_id, amount_from, amount_to, currency_from, currency_to')
       .eq('user_id', user.id)
       .lte('date', todayDate),
-    supabase
-      .from('yield_accumulator')
-      .select('account_id, accumulated')
-      .eq('user_id', user.id)
-      .lte('month', currentMonth),
+    FF_YIELD
+      ? supabase
+          .from('yield_accumulator')
+          .select('account_id, accumulated')
+          .eq('user_id', user.id)
+          .lte('month', currentMonth)
+      : Promise.resolve({ data: [] as { account_id: string; accumulated: number }[] }),
     supabase
       .from('instruments')
       .select('account_id, amount, currency')
@@ -77,7 +80,7 @@ export async function GET(request: Request) {
     debitExpenses: debitExpData ?? [],
     cardPayments: cardPayData ?? [],
     transfers: transfersData ?? [],
-    yields: yieldData ?? [],
+    yields: FF_YIELD ? yieldData ?? [] : [],
     activeInstruments: instrumentsData ?? [],
   })
 
