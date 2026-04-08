@@ -13,15 +13,24 @@ interface Props {
   accounts: Account[]
 }
 
+function formatARS(n: number): string {
+  if (n === 0) return ''
+  return new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 }).format(n)
+}
+
 export function LegacyCardPaymentModal({ open, onClose, onSuccess, card, accounts }: Props) {
-  const [monto, setMonto] = useState('')
+  const [montoRaw, setMontoRaw] = useState(0)
   const [accountId, setAccountId] = useState(card.account_id ?? (accounts[0]?.id ?? ''))
   const [fecha, setFecha] = useState(todayAR())
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const montoNum = parseFloat(monto.replace(/[^0-9.]/g, '')) || 0
-  const canSubmit = montoNum > 0 && !!accountId && !!fecha
+  const canSubmit = montoRaw > 0 && !!accountId && !!fecha
+
+  const handleMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const stripped = e.target.value.replace(/\D/g, '')
+    setMontoRaw(stripped === '' ? 0 : parseInt(stripped, 10))
+  }
 
   const handleSubmit = async () => {
     if (!canSubmit) return
@@ -33,7 +42,7 @@ export function LegacyCardPaymentModal({ open, onClose, onSuccess, card, account
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: montoNum,
+          amount: montoRaw,
           currency: 'ARS',
           category: 'Pago de Tarjetas',
           description: `Pago anterior ${card.name}`,
@@ -70,42 +79,47 @@ export function LegacyCardPaymentModal({ open, onClose, onSuccess, card, account
       </div>
 
       <div className="space-y-5 pb-24">
+        {/* Monto */}
         <div>
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-text-tertiary">
             Monto pagado
           </p>
-          <div className="flex items-center gap-2 rounded-[18px] bg-bg-secondary px-4 py-3.5">
-            <span className="text-sm text-text-secondary">$</span>
+          <div className="glass-2 flex items-center gap-2 rounded-[18px] px-4 py-3.5 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-1">
+            <span className="shrink-0 text-base font-bold text-text-secondary">$</span>
             <input
-              type="number"
-              min={0}
-              step={1}
-              value={monto}
-              onChange={(e) => setMonto(e.target.value)}
+              type="text"
+              inputMode="numeric"
+              value={formatARS(montoRaw)}
+              onChange={handleMontoChange}
               className="flex-1 bg-transparent text-right text-[20px] font-bold tabular-nums text-text-primary focus:outline-none"
-              inputMode="decimal"
+              placeholder="0"
             />
           </div>
         </div>
 
-        <div className="rounded-[18px] bg-bg-secondary px-4">
+        {/* Cuenta y Fecha */}
+        <div className="glass-2 overflow-hidden rounded-[18px]">
           {accounts.length > 0 && (
-            <div className="flex items-center justify-between border-b border-border-subtle py-3.5">
-              <span className="text-sm text-text-secondary">Cuenta</span>
-              <select
-                value={accountId}
-                onChange={(e) => setAccountId(e.target.value)}
-                className="max-w-[200px] bg-transparent text-right text-sm font-semibold text-text-primary focus:outline-none"
-              >
-                <option value="">— sin cuenta —</option>
+            <div className="border-b border-border-subtle px-4 py-3.5">
+              <p className="mb-2 text-xs text-text-secondary">Cuenta</p>
+              <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {accounts.map((a) => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
+                  <button
+                    key={a.id}
+                    onClick={() => setAccountId(a.id)}
+                    className={`flex shrink-0 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      accountId === a.id
+                        ? 'border-primary bg-primary/15 text-primary'
+                        : 'border-border-ocean bg-primary/[0.03] text-text-tertiary'
+                    }`}
+                  >
+                    {a.name}
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
           )}
-
-          <div className="flex items-center justify-between py-3.5">
+          <div className="flex items-center justify-between px-4 py-3.5">
             <span className="text-sm text-text-secondary">Fecha</span>
             <input
               type="date"
@@ -116,7 +130,8 @@ export function LegacyCardPaymentModal({ open, onClose, onSuccess, card, account
           </div>
         </div>
 
-        <div className="rounded-[18px] bg-bg-secondary px-4 py-4">
+        {/* Nota */}
+        <div className="glass-2 rounded-[18px] px-4 py-4">
           <p className="text-xs leading-5 text-text-secondary">
             Este pago va a bajar tu Saldo Vivo, pero no se va a usar para cancelar la deuda pendiente que Gota calcula desde tus consumos registrados.
           </p>
