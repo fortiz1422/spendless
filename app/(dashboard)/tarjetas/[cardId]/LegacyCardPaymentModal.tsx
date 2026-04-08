@@ -91,7 +91,7 @@ export function LegacyCardPaymentModal({ open, onClose, onSuccess, card, account
               inputMode="numeric"
               value={formatARS(montoRaw)}
               onChange={handleMontoChange}
-              className="flex-1 bg-transparent text-right text-[20px] font-bold tabular-nums text-text-primary focus:outline-none"
+              className="flex-1 border-0 bg-transparent text-right text-[20px] font-bold tabular-nums text-text-primary focus:outline-none"
               placeholder="0"
             />
           </div>
@@ -125,7 +125,7 @@ export function LegacyCardPaymentModal({ open, onClose, onSuccess, card, account
               type="date"
               value={fecha}
               onChange={(e) => setFecha(e.target.value)}
-              className="bg-transparent text-right text-sm font-semibold text-text-primary focus:outline-none [&::-webkit-calendar-picker-indicator]:opacity-50"
+              className="border-0 appearance-none bg-transparent text-right text-sm font-semibold text-text-primary focus:outline-none [&::-webkit-calendar-picker-indicator]:opacity-50"
             />
           </div>
         </div>
