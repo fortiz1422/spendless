@@ -84,7 +84,7 @@ export function LegacyCardPaymentModal({ open, onClose, onSuccess, card, account
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-text-tertiary">
             Monto pagado
           </p>
-          <div className="glass-2 flex items-center gap-2 rounded-[18px] px-4 py-3.5 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-1">
+          <div className="flex items-center gap-2 rounded-[18px] bg-bg-tertiary px-4 py-3.5 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-bg-secondary">
             <span className="shrink-0 text-base font-bold text-text-secondary">$</span>
             <input
               type="text"
@@ -98,7 +98,7 @@ export function LegacyCardPaymentModal({ open, onClose, onSuccess, card, account
         </div>
 
         {/* Cuenta y Fecha */}
-        <div className="glass-2 overflow-hidden rounded-[18px]">
+        <div className="overflow-hidden rounded-[18px] bg-bg-tertiary">
           {accounts.length > 0 && (
             <div className="border-b border-border-subtle px-4 py-3.5">
               <p className="mb-2 text-xs text-text-secondary">Cuenta</p>
@@ -131,7 +131,7 @@ export function LegacyCardPaymentModal({ open, onClose, onSuccess, card, account
         </div>
 
         {/* Nota */}
-        <div className="glass-2 rounded-[18px] px-4 py-4">
+        <div className="rounded-[18px] bg-bg-tertiary px-4 py-4">
           <p className="text-xs leading-5 text-text-secondary">
             Este pago va a bajar tu Saldo Vivo, pero no se va a usar para cancelar la deuda pendiente que Gota calcula desde tus consumos registrados.
           </p>

@@ -160,7 +160,7 @@ export function PagarResumenModal({ open, onClose, onSuccess, cycle, card, accou
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-text-tertiary">
             Monto a pagar
           </p>
-          <div className="glass-2 flex items-center gap-2 rounded-[18px] px-4 py-3.5 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-1">
+          <div className="flex items-center gap-2 rounded-[18px] bg-bg-tertiary px-4 py-3.5 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-bg-secondary">
             <span className="shrink-0 text-base font-bold text-text-secondary">$</span>
             <input
               type="text"
@@ -174,7 +174,7 @@ export function PagarResumenModal({ open, onClose, onSuccess, cycle, card, accou
         </div>
 
         {/* Cuenta y Fecha */}
-        <div className="glass-2 overflow-hidden rounded-[18px]">
+        <div className="overflow-hidden rounded-[18px] bg-bg-tertiary">
           {accounts.length > 0 && (
             <div className="border-b border-border-subtle px-4 py-3.5">
               <p className="mb-2 text-xs text-text-secondary">Cuenta</p>
@@ -207,7 +207,7 @@ export function PagarResumenModal({ open, onClose, onSuccess, cycle, card, accou
         </div>
 
         {/* Gastos registrados */}
-        <div className="glass-2 overflow-hidden rounded-[18px]">
+        <div className="overflow-hidden rounded-[18px] bg-bg-tertiary">
           <button
             onClick={() => setDetailOpen((o) => !o)}
             className="flex w-full items-center justify-between px-4 py-3.5"
