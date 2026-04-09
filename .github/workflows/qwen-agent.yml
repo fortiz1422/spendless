@@ -57,7 +57,7 @@ jobs:
 
       # ── 3. Instalar Qwen Code ─────────────────
       - name: Install Qwen Code
-        run: npm install -g @qwen/qwen-code
+        run: npm install -g @qwen-code/qwen-code
 
       # ── 4. Configurar modelo ──────────────────
       - name: Configure Qwen Code
@@ -117,7 +117,7 @@ jobs:
           Al final abrí un PR con título "[Qwen Nightly] Revisión de calidad YYYY-MM-DD"
           y descripción con tabla de hallazgos: qué encontraste, qué fixeaste, qué dejaste pendiente.
 
-          Lee docs/contexto-agente.md antes de empezar.
+          Lee docs/qwen-context.md antes de empezar.
           EOF
           else
             # MODO MANUAL — tarea específica
@@ -133,8 +133,7 @@ jobs:
           Descripción: ${TASK}
 
           Pasos obligatorios:
-          1. Leé docs/contexto-agente.md completo
-          2. Localizá el archivo(s) responsable del bug
+          1. Leé docs/qwen-context.md completo
           3. Implementá el fix mínimo necesario
           4. Corré tsc --noEmit — si hay errores de tipo, fixealos
           5. Abrí un PR con título "[${ISSUE}] <descripción breve>" en español
@@ -153,7 +152,7 @@ jobs:
           Descripción: ${TASK}
 
           Pasos obligatorios:
-          1. Leé docs/contexto-agente.md completo
+          1. Leé docs/qwen-context.md completo
           2. Entendé el alcance — si algo no está claro, comentalo en el PR y no asumas
           3. Implementá siguiendo el stack y design system de Gota (Light Fría)
           4. Usá Phosphor Icons, DM Sans, tokens de color correctos
@@ -163,7 +162,7 @@ jobs:
           Reglas:
           - NO toques RLS de Supabase
           - NO hagas deploy
-          - Toda lógica financiera nueva: consultá los conceptos en docs/contexto-agente.md
+          - Toda lógica financiera nueva: consultá los conceptos en docs/qwen-context.md
           - Si necesitás una nueva API route, seguí el patrón BFF de las existentes
           EOF
 
@@ -174,8 +173,7 @@ jobs:
           Issue referencia: ${ISSUE}
 
           Pasos obligatorios:
-          1. Leé docs/contexto-agente.md completo
-          2. Analizá el área indicada en profundidad
+          1. Leé docs/qwen-context.md completo
           3. Para cada problema encontrado:
              - Si es un fix seguro y acotado → fixealo
              - Si requiere decisión de producto → anotalo como TODO
