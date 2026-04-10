@@ -92,7 +92,7 @@ Pendientes operativos concretos:
 
 Ultimos avances aplicados:
 
-- `Disponible Real` ya quedo cerrado operativamente con migracion y etiquetado legacy aplicados
+- `Disponible Real` ya quedo cerrado en logica de producto y backend, pero sigue pendiente correr la migracion SQL y etiquetar pagos legacy historicos en Supabase
 - dashboard y analytics ya dejaron de usar `monthly_income` como fuente principal de ingresos
 - el setup legacy de ingresos ahora crea `income_entries`
 - se elimino una superficie legacy muerta que seguia escribiendo `monthly_income`

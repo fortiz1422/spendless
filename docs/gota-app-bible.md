@@ -57,26 +57,32 @@ La app diferencia entre gasto que ya impacta en caja y gasto que todavía no sal
 
 ### 3.4 Lectura Mensual
 
-El mes sigue siendo la unidad principal de análisis. Muchas pantallas, consultas y cálculos trabajan sobre un mes seleccionado en formato `YYYY-MM`.
+El mes sigue siendo importante para analytics, comparativas y snapshots operativos. Pero el hero principal ya no se define como una metrica mensual, sino como una lectura historica viva.
 
 ## 4. Conceptos Fundamentales del Negocio
 
 ### 4.1 Saldo Vivo
 
-Es el concepto más importante del producto. Busca responder cuánto dinero disponible real queda en el mes, teniendo en cuenta ingresos, saldo inicial o balances de cuenta, gastos percibidos y pagos de tarjeta.
+Es la metrica financiera principal del producto. Busca responder cuanto dinero vivo tenes hoy, usando opening balances por cuenta y movimientos historicos con impacto real.
 
 En lenguaje simple:
 
-- suma lo que entró
-- toma el saldo inicial o rollover
-- resta lo que ya salió efectivamente
-- resta lo pagado de tarjetas
+- parte de opening balances por cuenta
+- suma ingresos y rendimientos acumulados
+- resta gastos percibidos y pagos de tarjeta
+- ajusta transferencias cross-currency e instrumentos activos
 
-No trata de la misma forma una compra con crédito que una compra con débito o efectivo.
+No trata de la misma forma una compra con credito que una compra con debito o efectivo.
 
 ### 4.2 Disponible Real
 
-Es una lectura complementaria al `Saldo Vivo`. En la app existe como segundo modo del hero principal del dashboard. Conceptualmente apunta a mostrar una visión más aterrizada del disponible actual, apoyada en balances y breakdown por cuenta.
+Es una lectura complementaria al `Saldo Vivo`. En la app existe como segundo modo del hero principal del dashboard.
+
+Formula operativa:
+
+`Disponible Real = Saldo Vivo - deuda pendiente de tarjetas`
+
+La deuda pendiente contempla consumos con tarjeta registrados por Gota y excluye pagos legacy etiquetados con `is_legacy_card_payment`.
 
 ### 4.3 Gasto Percibido
 
@@ -108,7 +114,7 @@ La app hoy convive con dos modelos:
 - modelo viejo: `monthly_income`
 - modelo nuevo: `income_entries`
 
-La dirección del producto y del código apunta al segundo. Cuando hay datos del modelo nuevo, muchas pantallas lo priorizan.
+La direccion del producto y del codigo ya quedo orientada al segundo. `income_entries` es la fuente operativa principal y `monthly_income` queda como compatibilidad residual y cierre legacy de mes.
 
 ### 4.7 Transferencias
 
@@ -116,7 +122,7 @@ Son movimientos entre cuentas propias. No son ingresos ni gastos de consumo. Sir
 
 ### 4.8 Rollover
 
-Es el arrastre de saldo entre meses. Si queda plata al cierre de un mes, la app puede usarla como base para el siguiente.
+Es el arrastre de saldo entre meses. Sigue vivo como mecanismo de periodo y snapshots mensuales, pero no debe volver a ser la base principal del calculo de `Saldo Vivo`.
 
 Hoy el sistema soporta:
 
@@ -240,7 +246,7 @@ Desde ahí el usuario puede:
 
 - ver el número principal
 - alternar entre `Saldo Vivo` y `Disponible Real`
-- cambiar de mes
+- consultar periodos y vistas mensuales cuando haga falta
 - cambiar moneda
 - registrar un gasto
 - revisar últimos movimientos

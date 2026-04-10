@@ -55,10 +55,12 @@ En [movement-classification.ts](/C:/Users/Admin/Documents/gota/lib/movement-clas
 - `isCreditAccruedExpense`
 - `isPerceivedExpense`
 
-Primera adopcion ya aplicada en:
+Adopcion ya aplicada en:
 
 - [rollover.ts](/C:/Users/Admin/Documents/gota/lib/rollover.ts)
 - [route.ts](/C:/Users/Admin/Documents/gota/app/api/dashboard/route.ts)
+- [route.ts](/C:/Users/Admin/Documents/gota/app/api/movimientos/route.ts)
+- [route.ts](/C:/Users/Admin/Documents/gota/app/api/analytics-data/route.ts)
 
 ### Lo que se dejo explicitamente afuera
 
@@ -75,52 +77,22 @@ Primera adopcion ya aplicada en:
 
 ## 4. Recomendacion de implementacion siguiente
 
-El siguiente bloque recomendado es `movement-classification`, con alcance chico y controlado.
+El siguiente bloque recomendado ya no es `movement-classification`, porque ese modulo ya fue extraido y adoptado en dashboard, rollover, movimientos y analytics.
 
-### Contrato del modulo nuevo
+El siguiente bloque real pasa a ser:
 
-Archivo propuesto:
-
-- [movement-classification.ts](/C:/Users/Admin/Documents/gota/lib/movement-classification.ts)
-
-Forma:
-
-- helpers puros
-- sin dependencia de Supabase client
-- sin dependencia de queries
-
-Input minimo implementado:
-
-```ts
-type ExpenseLike = {
-  category: string
-  payment_method: string
-  is_legacy_card_payment?: boolean | null
-}
-```
-
-### Helpers propuestos
-
-- `isCardPayment(expense)`
-- `isLegacyCardPayment(expense)`
-- `isApplicableCardPayment(expense)`
-- `isCreditAccruedExpense(expense)`
-- `isPerceivedExpense(expense)`
-
-### Nota de naming
-
-Se eligio `isPerceivedExpense` y no `isDebitExpense` porque la semantica real es:
-
-- `CASH`
-- `DEBIT`
-- `TRANSFER`
-- excluyendo `Pago de Tarjetas`
+- consolidar mejor `gastosTarjeta`
+- formalizar la semantica de pagos legacy aplicables a deuda pendiente
+- definir una primitive mas canonica de resumen mensual
+- cubrir `live-balance` y `movement-classification` con tests
 
 ## 5. Orden recomendado
 
 ### Etapa 1
 
-Crear:
+Estado: implementada
+
+Crear y consolidar:
 
 - [movement-classification.ts](/C:/Users/Admin/Documents/gota/lib/movement-classification.ts)
 
@@ -128,46 +100,40 @@ Crear:
 
 Estado: implementada
 
-Adoptarlo en el mismo bloque inicial en:
+Adopcion inicial aplicada en:
 
 - [rollover.ts](/C:/Users/Admin/Documents/gota/lib/rollover.ts)
 - [route.ts](/C:/Users/Admin/Documents/gota/app/api/dashboard/route.ts)
 
-Razon:
-
-- ahi importa mucho la consistencia contable
-- hoy ambos comparten criterio pero sin helpers
-- conviene evitar una ventana donde rollover use clasificacion centralizada y dashboard no
-
-Alcance acotado para `dashboard`:
-
-- usar helpers en logica local sensible
-- especialmente en el bloque relacionado a `gastosTarjeta`
-- no reescribir queries SQL todavia en esta pasada
-
 ### Etapa 3
 
-Estado: siguiente bloque
+Estado: implementada
 
-Dejar para segunda pasada:
+Adopcion extendida aplicada en:
 
 - [route.ts](/C:/Users/Admin/Documents/gota/app/api/movimientos/route.ts)
 - [route.ts](/C:/Users/Admin/Documents/gota/app/api/analytics-data/route.ts)
 
-Razon:
+### Etapa 4
 
-- `movimientos` es mas UX-facing
-- `analytics` tiene criterio temporal mas delicado
+Estado: siguiente bloque
+
+Consolidar:
+
+- `gastosTarjeta`
+- pagos legacy aplicables a deuda pendiente
+- primitive mensual mas canonica
+- tests sobre primitives financieras
 
 ## 6. Recomendacion concreta para review externa
 
-La recomendacion concreta para revisar con Claude es:
+La recomendacion concreta para revisar externamente ahora es:
 
-1. implementar ya el modulo de helpers de clasificacion
-2. adoptarlo en `rollover.ts` y `dashboard/route.ts` dentro del mismo bloque inicial
-3. en `dashboard/route.ts`, usarlo solo donde haya clasificacion local sensible
-4. no tocar todavia las queries SQL ni reestructurar analytics o movimientos en esta pasada
-5. abrir un bloque separado despues para adopcion en `movimientos` y `analytics`
+1. tomar `movement-classification` como bloque ya consolidado
+2. revisar el calculo local restante de `gastosTarjeta` en [route.ts](/C:/Users/Admin/Documents/gota/app/api/dashboard/route.ts)
+3. formalizar la semantica de pagos legacy aplicables a deuda pendiente
+4. definir una primitive mensual mas canonica antes de seguir bajando logica repetida
+5. abrir una primera suite de tests sobre `live-balance` y `movement-classification`
 
 ## 7. Estado general
 
@@ -175,12 +141,12 @@ Estado actual del frente:
 
 - consolidacion del hero: iniciada y validada
 - docs madre: armados y alineados
-- `movement-classification`: ya iniciada
-- riesgo principal restante: `Pago de Tarjetas` + `is_legacy_card_payment` en deuda pendiente
+- `movement-classification`: ya implementada y adoptada
+- riesgo principal restante: `Pago de Tarjetas` + `is_legacy_card_payment` en deuda pendiente y `gastosTarjeta`
 
 ## 8. Conclusion
 
 El frente ya no esta en etapa de diagnostico general.  
 Ya paso a etapa de consolidacion incremental.
 
-El siguiente paso correcto no es otro rediseño grande, sino una extraccion chica y precisa de helpers de clasificacion para bajar la divergencia mas sensible sin abrir demasiado alcance.
+El siguiente paso correcto no es otro rediseño grande, sino cerrar la semantica mas delicada que todavia sigue local en dashboard y empezar a cubrir las primitives compartidas con tests.
