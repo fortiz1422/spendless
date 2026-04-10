@@ -17,9 +17,9 @@ export function InsightChips({ chips }: Props) {
 
   return (
     <div className="w-full flex gap-2 overflow-x-auto px-5 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {chips.map((chip, i) => (
+      {chips.map((chip) => (
         <span
-          key={i}
+          key={chip.label}
           className={`border rounded-full px-2.5 py-1 type-micro whitespace-nowrap shrink-0 ${
             EMPHASIS_CLASS[chip.emphasis ?? 'neutral']
           }`}

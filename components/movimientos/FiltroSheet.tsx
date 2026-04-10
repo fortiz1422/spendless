@@ -17,14 +17,15 @@ export interface ActiveFilters {
   cuentas:   string[]
   categorias: string[]
   monedas:   MonedaFilter[]
+  quincena:  1 | 2 | null
 }
 
 export const EMPTY_FILTERS: ActiveFilters = {
-  tipos: [], origenes: [], cuentas: [], categorias: [], monedas: [],
+  tipos: [], origenes: [], cuentas: [], categorias: [], monedas: [], quincena: null,
 }
 
 export function countFilters(f: ActiveFilters): number {
-  return f.tipos.length + f.origenes.length + f.cuentas.length + f.categorias.length + f.monedas.length
+  return f.tipos.length + f.origenes.length + f.cuentas.length + f.categorias.length + f.monedas.length + (f.quincena ? 1 : 0)
 }
 
 // ─── Options ──────────────────────────────────────────────────────────────────
@@ -128,7 +129,23 @@ export function FiltroSheet({ open, onClose, onApply, initial, accounts, categor
       {/* Sections */}
       <div className="space-y-6 pb-20">
 
-        {/* 1. Tipo — always expanded */}
+        {/* 1. Período — quincenas */}
+        <div>
+          <p className="type-label text-text-tertiary mb-3">Período del mes</p>
+          <div className="flex gap-2">
+            {([{ value: 1 as const, label: '1ra quincena' }, { value: 2 as const, label: '2da quincena' }]).map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setF((prev) => ({ ...prev, quincena: prev.quincena === value ? null : value }))}
+                className={f.quincena === value ? CHIP_SELECTED : CHIP_DEFAULT}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 2. Tipo — always expanded */}
         <div>
           <p className="type-label text-text-tertiary mb-3">Tipo</p>
           <div className="flex flex-wrap gap-2">
@@ -162,7 +179,7 @@ export function FiltroSheet({ open, onClose, onApply, initial, accounts, categor
           </div>
         )}
 
-        {/* 3. Cuenta — collapsible */}
+        {/* 4. Cuenta — collapsible */}
         {accounts.length > 0 && (
           <div>
             <button
@@ -197,7 +214,7 @@ export function FiltroSheet({ open, onClose, onApply, initial, accounts, categor
           </div>
         )}
 
-        {/* 4. Categoría — collapsible */}
+        {/* 5. Categoría — collapsible */}
         {categories.length > 0 && (
           <div>
             <button
@@ -232,7 +249,7 @@ export function FiltroSheet({ open, onClose, onApply, initial, accounts, categor
           </div>
         )}
 
-        {/* 5. Moneda — always expanded */}
+        {/* 6. Moneda — always expanded */}
         <div>
           <p className="type-label text-text-tertiary mb-3">Moneda</p>
           <div className="flex gap-2">

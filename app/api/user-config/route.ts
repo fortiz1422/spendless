@@ -5,7 +5,7 @@ import { z } from 'zod'
 const UpdateSchema = z.object({
   default_currency: z.enum(['ARS', 'USD']).optional(),
   onboarding_completed: z.boolean().optional(),
-  rollover_mode: z.enum(['auto', 'manual', 'off']).optional(),
+  rollover_mode: z.enum(['auto', 'off']).optional(),
 })
 
 export async function GET() {

@@ -98,7 +98,8 @@ export default async function TarjetaPage({
       paid_at: c.paid_at,
     }))
 
-    await supabase.from('card_cycles').upsert(
+    // Fire-and-forget — don't block page render; ignoreDuplicates makes it idempotent
+    void supabase.from('card_cycles').upsert(
       cyclesToUpsert,
       { onConflict: 'card_id,period_month', ignoreDuplicates: true }
     )

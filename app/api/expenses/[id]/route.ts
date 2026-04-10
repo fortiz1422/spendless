@@ -30,6 +30,22 @@ export async function PUT(
   try {
     const body = await request.json()
     const validated = UpdateSchema.parse(body)
+    const { data: existingExpense, error: existingError } = await supabase
+      .from('expenses')
+      .select('installment_group_id')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (existingError) throw existingError
+
+    if (existingExpense?.installment_group_id) {
+      return NextResponse.json(
+        { error: 'Las cuotas agrupadas no se pueden editar individualmente por ahora.' },
+        { status: 409 }
+      )
+    }
+
     const updatePayload = {
       ...validated,
       date: validated.date ? toDateOnly(validated.date) : undefined,

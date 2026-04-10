@@ -8,7 +8,6 @@ import { CuentasSubSheet } from '@/components/settings/CuentasSubSheet'
 import { TarjetasSubSheet } from '@/components/settings/TarjetasSubSheet'
 import { SubscriptionsSubSheet } from '@/components/settings/SubscriptionsSubSheet'
 import { createClient } from '@/lib/supabase/client'
-import type { RolloverMode } from '@/types/database'
 
 interface Props {
   open: boolean
@@ -25,9 +24,7 @@ export function CuentaSheet({ open, onClose, userEmail }: Props) {
   const [cardCount, setCardCount] = useState(0)
   const [subscriptionCount, setSubscriptionCount] = useState(0)
   const [currency, setCurrency] = useState<'ARS' | 'USD'>('ARS')
-  const [rolloverMode, setRolloverMode] = useState<RolloverMode>('off')
   const [isSavingCurrency, setIsSavingCurrency] = useState(false)
-  const [isSavingRollover, setIsSavingRollover] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -45,7 +42,6 @@ export function CuentaSheet({ open, onClose, userEmail }: Props) {
         setCardCount(Array.isArray(cards) ? cards.length : 0)
         setSubscriptionCount(Array.isArray(subscriptions) ? subscriptions.length : 0)
         if (config?.default_currency) setCurrency(config.default_currency)
-        if (config?.rollover_mode) setRolloverMode(config.rollover_mode)
       })
       .catch(() => {})
   }, [open])
@@ -67,23 +63,6 @@ export function CuentaSheet({ open, onClose, userEmail }: Props) {
       setCurrency(prev)
     } finally {
       setIsSavingCurrency(false)
-    }
-  }
-
-  const handleRolloverToggle = async () => {
-    const next: RolloverMode = rolloverMode === 'auto' ? 'off' : 'auto'
-    setRolloverMode(next)
-    setIsSavingRollover(true)
-    try {
-      await fetch('/api/user-config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rollover_mode: next }),
-      })
-    } catch {
-      setRolloverMode(rolloverMode)
-    } finally {
-      setIsSavingRollover(false)
     }
   }
 
@@ -110,8 +89,6 @@ export function CuentaSheet({ open, onClose, userEmail }: Props) {
   }
 
   const initial = userEmail.charAt(0).toUpperCase()
-  const isRolloverOn = rolloverMode === 'auto'
-
   return (
     <>
       <Modal open={open} onClose={onClose}>
@@ -225,29 +202,6 @@ export function CuentaSheet({ open, onClose, userEmail }: Props) {
               </div>
             </div>
 
-            {/* Rollover */}
-            <div className="flex items-center justify-between px-4 py-3">
-              <div className="flex-1 pr-4">
-                <p className="text-sm text-text-primary">Rollover automático</p>
-                <p className="mt-0.5 text-[11px] text-text-tertiary">
-                  Tu saldo al cierre se traslada al mes siguiente.
-                </p>
-              </div>
-              <button
-                onClick={handleRolloverToggle}
-                disabled={isSavingRollover}
-                aria-label={isRolloverOn ? 'Desactivar rollover' : 'Activar rollover'}
-                className={`relative h-[26px] w-[46px] shrink-0 overflow-hidden rounded-full transition-colors duration-200 disabled:opacity-50 ${
-                  isRolloverOn ? 'bg-primary' : 'bg-bg-elevated'
-                }`}
-              >
-                <span
-                  className={`absolute top-[3px] h-5 w-5 rounded-full bg-white transition-transform duration-200 ${
-                    isRolloverOn ? 'translate-x-[23px]' : 'translate-x-[3px]'
-                  }`}
-                />
-              </button>
-            </div>
           </div>
 
           {/* Cuenta */}

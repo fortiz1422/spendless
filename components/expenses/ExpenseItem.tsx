@@ -68,6 +68,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const isPagoTarjetas = category === 'Pago de Tarjetas'
+  const isInstallmentGroup = expense.installment_group_id != null
   const needsCard = source === 'credit' || isPagoTarjetas
 
   const bankDigital = accounts.filter((a) => a.type !== 'cash')
@@ -92,6 +93,11 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
 
   const handleSave = useCallback(async () => {
     if (isSaving) return
+    if (isInstallmentGroup) {
+      setExpanded(false)
+      setError(null)
+      return
+    }
     if (!isDirty) {
       setExpanded(false)
       setError(null)
@@ -127,7 +133,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
       setError('Error al guardar. Intentá de nuevo.')
       setIsSaving(false)
     }
-  }, [isSaving, isDirty, expense.id, description, amount, currency, category, source, accounts, cardId, date, isWant, router, queryClient, onUpdate])
+  }, [isSaving, isInstallmentGroup, isDirty, expense.id, description, amount, currency, category, source, accounts, cardId, date, isWant, router, queryClient, onUpdate])
 
   const saveRef = useRef(handleSave)
   useEffect(() => { saveRef.current = handleSave }, [handleSave])
@@ -207,6 +213,11 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
       {expanded && (
         <div className="space-y-3 border-b border-border-subtle bg-bg-secondary p-3">
           {error && <p className="text-xs text-danger">{error}</p>}
+          {isInstallmentGroup && (
+            <p className="text-xs text-text-secondary">
+              Las cuotas agrupadas no se pueden editar individualmente por ahora. Podés eliminarlas en grupo y volver a registrarlas.
+            </p>
+          )}
 
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -217,6 +228,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                disabled={isInstallmentGroup}
                 className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none"
               />
             </div>
@@ -229,10 +241,12 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
+                  disabled={isInstallmentGroup}
                   className="min-w-0 flex-1 rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none"
                 />
                 <button
                   onClick={() => setCurrency((c) => (c === 'ARS' ? 'USD' : 'ARS'))}
+                  disabled={isInstallmentGroup}
                   className="rounded-input bg-bg-tertiary px-2 py-2 text-[10px] font-semibold text-text-secondary"
                 >
                   {currency}
@@ -249,6 +263,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
+                disabled={isInstallmentGroup}
                 className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none"
               >
                 {CATEGORIES.map((c) => (
@@ -264,6 +279,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                disabled={isInstallmentGroup}
                 className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none"
               />
             </div>
@@ -279,6 +295,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
                 <button
                   key={acc.id}
                   onClick={() => handleSourceChange(acc.id)}
+                  disabled={isInstallmentGroup}
                   className={`${chipBase} ${source === acc.id ? chipActive : chipInactive}`}
                 >
                   <AccountIcon type={acc.type} size={13} />
@@ -290,6 +307,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
               ))}
               <button
                 onClick={() => handleSourceChange('cash')}
+                disabled={isInstallmentGroup}
                 className={`${chipBase} ${source === 'cash' ? chipActive : chipInactive}`}
               >
                 <Wallet weight="duotone" size={13} />
@@ -298,6 +316,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
               {activeCards.length > 0 && (
                 <button
                   onClick={() => handleSourceChange('credit')}
+                  disabled={isInstallmentGroup}
                   className={`${chipBase} ${source === 'credit' || isPagoTarjetas ? chipActive : chipInactive}`}
                 >
                   <CreditCard weight="duotone" size={13} />
@@ -316,6 +335,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
               <select
                 value={cardId}
                 onChange={(e) => setCardId(e.target.value)}
+                disabled={isInstallmentGroup}
                 className="w-full rounded-input border border-transparent bg-bg-tertiary px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none"
               >
                 <option value="">— seleccioná —</option>
@@ -340,6 +360,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
                       setInstallments(n)
                       setInstallmentsInput('')
                     }}
+                    disabled={isInstallmentGroup}
                     className={`${chipBase} ${installments === n && installmentsInput === '' ? chipActive : chipInactive}`}
                   >
                     {n === 1 ? 'Sin cuotas' : `${n}x`}
@@ -352,6 +373,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
                   max={72}
                   placeholder="Otro"
                   value={installmentsInput}
+                  disabled={isInstallmentGroup}
                   onChange={(e) => {
                     const v = e.target.value
                     setInstallmentsInput(v)
@@ -373,6 +395,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
               <div className="flex h-[38px] items-center gap-2">
                 <button
                   onClick={() => setIsWant(false)}
+                  disabled={isInstallmentGroup}
                   className={`rounded-button px-3 py-1.5 text-xs font-medium transition-colors ${
                     isWant === false ? 'bg-success/20 text-success' : 'bg-bg-tertiary text-text-secondary'
                   }`}
@@ -381,6 +404,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
                 </button>
                 <button
                   onClick={() => setIsWant(true)}
+                  disabled={isInstallmentGroup}
                   className={`rounded-button px-3 py-1.5 text-xs font-medium transition-colors ${
                     isWant === true ? 'bg-want/20 text-want' : 'bg-bg-tertiary text-text-secondary'
                   }`}
@@ -424,7 +448,7 @@ export function ExpenseItem({ expense, cards, accounts, onUpdate }: Props) {
                 <div className="flex-1" />
                 <button
                   onClick={handleSave}
-                  disabled={isSaving}
+                  disabled={isSaving || isInstallmentGroup}
                   className="rounded-button bg-primary px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
                 >
                   {isSaving ? <span className="spinner" /> : 'Guardar'}

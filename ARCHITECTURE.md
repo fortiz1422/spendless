@@ -136,7 +136,7 @@ Main entities visible in `types/database.ts`:
 
 - `account_period_balance`
   - per-account monthly balance baseline
-  - sources: `opening`, `rollover_auto`, `manual`
+  - source operativo actual: `rollover_auto`
 
 - `subscriptions`
   - recurring expenses with amount, currency, payment method, day-of-month, review timestamp
@@ -264,7 +264,7 @@ Required environment variable:
 
 ## Architecture Risks And Unclear Areas
 
-- `manual` rollover is modeled in types and used in dashboard logic, but settings only exposes auto/off.
+- rollover now behaves as internal snapshot infrastructure; docs and DB constraints may still reference older visible modes.
 - account deletion is not comprehensive relative to the UI copy; several user-linked tables are untouched.
 - some API routes still depend on the legacy `monthly_income` table while the primary UX increasingly uses `income_entries` and account balances.
 - the in-memory rate limiter for Gemini parsing is per-process only.

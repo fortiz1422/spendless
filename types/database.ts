@@ -155,7 +155,7 @@ export type Database = {
           period: string
           balance_ars: number
           balance_usd: number
-          source: 'opening' | 'rollover_auto' | 'manual'
+          source: 'rollover_auto'
           updated_at: string
         }
         Insert: {
@@ -163,13 +163,13 @@ export type Database = {
           period: string
           balance_ars?: number
           balance_usd?: number
-          source?: 'opening' | 'rollover_auto' | 'manual'
+          source?: 'rollover_auto'
           updated_at?: string
         }
         Update: {
           balance_ars?: number
           balance_usd?: number
-          source?: 'opening' | 'rollover_auto' | 'manual'
+          source?: 'rollover_auto'
           updated_at?: string
         }
         Relationships: []
@@ -522,7 +522,7 @@ export type Database = {
           default_currency: 'ARS' | 'USD'
           cards: Json
           onboarding_completed: boolean
-          rollover_mode: 'auto' | 'manual' | 'off'
+          rollover_mode: 'auto' | 'off'
           created_at: string
           updated_at: string
         }
@@ -531,7 +531,7 @@ export type Database = {
           default_currency?: 'ARS' | 'USD'
           cards?: Json
           onboarding_completed?: boolean
-          rollover_mode?: 'auto' | 'manual' | 'off'
+          rollover_mode?: 'auto' | 'off'
           created_at?: string
           updated_at?: string
         }
@@ -540,7 +540,7 @@ export type Database = {
           default_currency?: 'ARS' | 'USD'
           cards?: Json
           onboarding_completed?: boolean
-          rollover_mode?: 'auto' | 'manual' | 'off'
+          rollover_mode?: 'auto' | 'off'
           created_at?: string
           updated_at?: string
         }
@@ -604,7 +604,7 @@ export type MonthlyIncomeUpdate =
   Database['public']['Tables']['monthly_income']['Update']
 
 export type UserConfig = Database['public']['Tables']['user_config']['Row']
-export type RolloverMode = 'auto' | 'manual' | 'off'
+export type RolloverMode = 'auto' | 'off'
 
 export type Account = Database['public']['Tables']['accounts']['Row']
 export type AccountInsert = Database['public']['Tables']['accounts']['Insert']
@@ -649,7 +649,7 @@ export type AccountPeriodBalance = {
   period: string // YYYY-MM-01
   balance_ars: number
   balance_usd: number
-  source: 'opening' | 'rollover_auto' | 'manual'
+  source: 'rollover_auto'
   updated_at: string
 }
 

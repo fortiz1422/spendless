@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { FF_YIELD } from '@/lib/flags'
-import type { Account, AccountPeriodBalance, AccountType } from '@/types/database'
+import type { Account, AccountType } from '@/types/database'
 
 interface Props {
   account: Account | null  // null = crear nueva cuenta
@@ -23,7 +23,6 @@ const TYPE_LABELS: Record<AccountType, string> = {
 const SOURCE_LABELS: Record<string, string> = {
   opening: 'APERTURA',
   rollover_auto: 'ROLLOVER',
-  manual: 'MANUAL',
 }
 
 function getMonthLabel(ym: string): string {
@@ -42,8 +41,12 @@ export function AccountBottomSheet({ account, type, month, onSave, onDelete, onC
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const [periodArs, setPeriodArs] = useState('')
-  const [periodUsd, setPeriodUsd] = useState('')
+  const [openingArs, setOpeningArs] = useState(
+    account?.opening_balance_ars ? String(account.opening_balance_ars) : '',
+  )
+  const [openingUsd, setOpeningUsd] = useState(
+    account?.opening_balance_usd ? String(account.opening_balance_usd) : '',
+  )
   const [periodSource, setPeriodSource] = useState<string | null>(null)
   const [currentSaldoArs, setCurrentSaldoArs] = useState(0)
 
@@ -53,13 +56,9 @@ export function AccountBottomSheet({ account, type, month, onSave, onDelete, onC
       fetch(`/api/account-balances?month=${month}`).then((r) => r.json()),
       fetch(`/api/dashboard/account-breakdown?month=${month}&currency=ARS`).then((r) => r.json()),
     ])
-      .then(([balances, breakdownData]: [AccountPeriodBalance[], { breakdown: { id: string; saldo: number }[] }]) => {
+      .then(([balances, breakdownData]: [{ account_id: string; source: string }[], { breakdown: { id: string; saldo: number }[] }]) => {
         const bal = balances.find((b) => b.account_id === account.id)
-        if (bal) {
-          setPeriodArs(bal.balance_ars > 0 ? String(bal.balance_ars) : '')
-          setPeriodUsd(bal.balance_usd > 0 ? String(bal.balance_usd) : '')
-          setPeriodSource(bal.source)
-        }
+        if (bal) setPeriodSource(bal.source)
         const accBreakdown = breakdownData.breakdown?.find((b) => b.id === account.id)
         if (accBreakdown) setCurrentSaldoArs(Math.max(0, accBreakdown.saldo))
       })
@@ -74,6 +73,8 @@ export function AccountBottomSheet({ account, type, month, onSave, onDelete, onC
         name: name.trim(),
         type,
         is_primary: isPrimary,
+        opening_balance_ars: Number(openingArs) || 0,
+        opening_balance_usd: Number(openingUsd) || 0,
         daily_yield_enabled: yieldEnabled,
         daily_yield_rate: yieldEnabled && yieldRate !== '' ? Number(yieldRate) : null,
       }
@@ -95,22 +96,6 @@ export function AccountBottomSheet({ account, type, month, onSave, onDelete, onC
 
       if (!res.ok) throw new Error()
       const saved: Account = await res.json()
-
-      // Save period balance if any value is set
-      if (periodArs || periodUsd) {
-        const period = month.length === 7 ? month + '-01' : month
-        await fetch('/api/account-balances', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            account_id: saved.id,
-            period,
-            balance_ars: Number(periodArs) || 0,
-            balance_usd: Number(periodUsd) || 0,
-            source: isNew ? 'opening' : 'manual',
-          }),
-        })
-      }
 
       onSave(saved)
       onClose()
@@ -168,11 +153,11 @@ export function AccountBottomSheet({ account, type, month, onSave, onDelete, onC
           />
         </label>
 
-        {/* Saldo del período */}
+        {/* Saldo base histórico */}
         <div className="rounded-card border border-border-subtle bg-bg-tertiary px-3 py-3 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-medium uppercase tracking-wider text-text-tertiary">
-              {isNew ? 'SALDO AL CONFIGURAR LA CUENTA' : `Saldo en ${getMonthLabel(month)}`}
+              {isNew ? 'SALDO INICIAL HISTÓRICO' : 'Saldo inicial histórico'}
             </span>
             {periodSource && !isNew && (
               <span className="text-[9px] font-semibold tracking-wider text-text-disabled">
@@ -187,11 +172,8 @@ export function AccountBottomSheet({ account, type, month, onSave, onDelete, onC
                 type="number"
                 inputMode="decimal"
                 placeholder="0"
-                value={periodArs}
-                onChange={(e) => {
-                  setPeriodArs(e.target.value)
-                  if (!isNew) setPeriodSource('manual')
-                }}
+                value={openingArs}
+                onChange={(e) => setOpeningArs(e.target.value)}
                 className={inputClass}
               />
             </label>
@@ -201,11 +183,8 @@ export function AccountBottomSheet({ account, type, month, onSave, onDelete, onC
                 type="number"
                 inputMode="decimal"
                 placeholder="0"
-                value={periodUsd}
-                onChange={(e) => {
-                  setPeriodUsd(e.target.value)
-                  if (!isNew) setPeriodSource('manual')
-                }}
+                value={openingUsd}
+                onChange={(e) => setOpeningUsd(e.target.value)}
                 className={inputClass}
               />
             </label>
@@ -213,9 +192,15 @@ export function AccountBottomSheet({ account, type, month, onSave, onDelete, onC
           <p className="text-[10px] text-text-disabled">
             {isNew
               ? 'El dinero que ya tenés en esta cuenta antes de empezar a registrar.'
-              : 'Saldo disponible al inicio de este período.'}
+              : 'Corrige el punto de partida histórico de la cuenta. No edita snapshots mensuales.'}
           </p>
         </div>
+
+        {!isNew && periodSource && (
+          <p className="text-[10px] text-text-disabled">
+            El snapshot de {getMonthLabel(month)} se calcula o se cierra por separado.
+          </p>
+        )}
 
         {type !== 'cash' && (
           <div className="flex items-center justify-between rounded-card border border-border-subtle bg-bg-tertiary px-3 py-2.5">

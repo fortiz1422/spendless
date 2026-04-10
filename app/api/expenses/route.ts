@@ -101,10 +101,10 @@ export async function POST(request: Request) {
 
     // Multi-row insert for installments
     const baseDate = expenseFields.date.split('T')[0] // YYYY-MM-DD
-    // If installment_start is provided, amount is already per-installment (cuotas en curso)
-    const perInstallment = installment_start != null
-      ? expenseFields.amount
-      : Math.round((expenseFields.amount / numInstallments) * 100) / 100
+    const isInProgressInstallments = installment_start != null
+    const totalCents = Math.round(expenseFields.amount * 100)
+    const baseCents = Math.floor(totalCents / numInstallments)
+    const remainderCents = totalCents - baseCents * numInstallments
     const startNumber = installment_start ?? 1
     const grandTotal = installment_grand_total ?? numInstallments
     const groupId = crypto.randomUUID()
@@ -112,7 +112,9 @@ export async function POST(request: Request) {
     const rows = Array.from({ length: numInstallments }, (_, i) => ({
       user_id: user.id,
       ...expenseFields,
-      amount: perInstallment,
+      amount: isInProgressInstallments
+        ? expenseFields.amount
+        : (baseCents + (i === numInstallments - 1 ? remainderCents : 0)) / 100,
       date: addMonths(baseDate, i),
       installment_group_id: groupId,
       installment_number: startNumber + i,

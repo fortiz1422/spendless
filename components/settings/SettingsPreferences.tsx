@@ -5,9 +5,8 @@ import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { CurrencySection } from '@/components/settings/CurrencySection'
 import { AccountsSection } from '@/components/settings/AccountsSection'
 import { CardsSection } from '@/components/settings/CardsSection'
-import { RolloverSection } from '@/components/settings/RolloverSection'
 import { addMonths } from '@/lib/dates'
-import type { Account, Card, RolloverMode } from '@/types/database'
+import type { Account, Card } from '@/types/database'
 
 function getMonthLabel(month: string): string {
   const label = new Date(month + '-15').toLocaleDateString('es-AR', {
@@ -21,7 +20,6 @@ interface Props {
   currentMonth: string
   currency: 'ARS' | 'USD'
   cards: Card[]
-  rolloverMode: RolloverMode
   accounts: Account[]
 }
 
@@ -29,7 +27,6 @@ export function SettingsPreferences({
   currentMonth,
   currency,
   cards,
-  rolloverMode,
   accounts,
 }: Props) {
   const bankDigitalAccounts = accounts.filter((a) => a.type !== 'cash')
@@ -69,7 +66,6 @@ export function SettingsPreferences({
         <CurrencySection currency={currency} />
         <AccountsSection initialAccounts={accounts} month={month} />
         <CardsSection cards={cards} month={month} accounts={bankDigitalAccounts} />
-        <RolloverSection initialMode={rolloverMode} />
       </div>
     </div>
   )

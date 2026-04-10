@@ -12,10 +12,6 @@ interface Props {
   onClose: () => void
 }
 
-function toTitleCase(str: string): string {
-  return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
-}
-
 function closingDaysLabel(closingDay: number | null): string {
   if (!closingDay) return 'Sin ciclo'
   const today = new Date()
@@ -113,7 +109,7 @@ export function TarjetasSubSheet({ open, onClose }: Props) {
                 {/* Name + subtitle */}
                 <div className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-text-primary">
-                    {toTitleCase(card.name)}
+                    {card.name}
                   </span>
                   <span className="text-[10px] text-text-tertiary">
                     {card.account_name ? `${card.account_name} · ` : ''}

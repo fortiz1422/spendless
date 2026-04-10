@@ -27,6 +27,7 @@ interface ApiResponse {
   cards:               Card[]
   filteredSum:         number
   filteredSumCurrency: 'ARS' | 'USD'
+  statsCurrency:       'ARS' | 'USD'
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -62,6 +63,7 @@ function buildFilterSummary(f: ActiveFilters, accounts: Account[]): string {
   }
 
   f.monedas.forEach((m) => parts.push(m))
+  if (f.quincena) parts.push(f.quincena === 1 ? '1ra quincena' : '2da quincena')
   return parts.join(' · ')
 }
 
@@ -84,6 +86,7 @@ export function MovimientosClient({ initialMonth }: Props) {
   const [cards, setCards]                         = useState<Card[]>([])
   const [filteredSum, setFilteredSum]             = useState(0)
   const [filteredSumCurrency, setFilteredSumCurrency] = useState<'ARS' | 'USD'>('ARS')
+  const [statsCurrency, setStatsCurrency]         = useState<'ARS' | 'USD'>('ARS')
   const [isLoading, setIsLoading]                 = useState(true)
   const [isLoadingMore, setIsLoadingMore]         = useState(false)
 
@@ -101,6 +104,7 @@ export function MovimientosClient({ initialMonth }: Props) {
         if (filters.cuentas.length > 0)    params.set('cuentas',    filters.cuentas.join(','))
         if (filters.categorias.length > 0) params.set('categorias', filters.categorias.join(','))
         if (filters.monedas.length > 0)    params.set('monedas',    filters.monedas.join(','))
+        if (filters.quincena)              params.set('quincena',   String(filters.quincena))
 
         const res = await fetch(`/api/movimientos?${params}`)
         if (!res.ok) throw new Error('fetch failed')
@@ -112,6 +116,7 @@ export function MovimientosClient({ initialMonth }: Props) {
         setCategories(data.categories)
         setFilteredSum(data.filteredSum ?? 0)
         setFilteredSumCurrency(data.filteredSumCurrency ?? 'ARS')
+        setStatsCurrency(data.statsCurrency ?? 'ARS')
         if (!append) {
           setAccounts(data.accounts ?? [])
           setCards(data.cards ?? [])
@@ -215,6 +220,7 @@ export function MovimientosClient({ initialMonth }: Props) {
           percibidos={stats.percibidos}
           tarjeta={stats.tarjeta}
           pagoTarjeta={stats.pagoTarjeta}
+          currency={statsCurrency}
           activeOrigen={activeOrigen}
           onOrigenClick={handleOrigenClick}
         />

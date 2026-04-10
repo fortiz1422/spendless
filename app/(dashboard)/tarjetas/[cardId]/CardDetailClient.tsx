@@ -134,12 +134,27 @@ export function CardDetailClient({ card, accounts, resumenes, upcomingClosingDat
   const router = useRouter()
   const [currentCard, setCurrentCard] = useState<Card>(card)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [nameInput, setNameInput] = useState(currentCard.name)
+  const [savingName, setSavingName] = useState(false)
   const [payingCycle, setPayingCycle] = useState<EnrichedCycle | null>(null)
   const [isLegacyPaymentOpen, setIsLegacyPaymentOpen] = useState(false)
   const [revertingCycleId, setRevertingCycleId] = useState<string | null>(null)
   const [isReverting, setIsReverting] = useState(false)
 
-  const patchCard = async (patch: Partial<Pick<Card, 'closing_day' | 'due_day' | 'account_id'>>) => {
+  const handleSaveName = async () => {
+    const trimmed = nameInput.trim()
+    if (!trimmed || trimmed === currentCard.name) { setEditingName(false); return }
+    setSavingName(true)
+    try {
+      await patchCard({ name: trimmed })
+      setEditingName(false)
+    } finally {
+      setSavingName(false)
+    }
+  }
+
+  const patchCard = async (patch: Partial<Pick<Card, 'closing_day' | 'due_day' | 'account_id' | 'name'>>) => {
     const res = await fetch(`/api/cards/${currentCard.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -200,6 +215,40 @@ export function CardDetailClient({ card, accounts, resumenes, upcomingClosingDat
             Configuracion
           </p>
           <div className="rounded-[20px] bg-bg-secondary px-4">
+            {/* Nombre editable */}
+            <div className="flex items-center justify-between border-b border-border-subtle py-3.5">
+              <span className="text-sm text-text-secondary">Nombre</span>
+              {editingName ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') void handleSaveName()
+                      if (e.key === 'Escape') { setEditingName(false); setNameInput(currentCard.name) }
+                    }}
+                    className="w-36 rounded-lg border border-border-strong bg-bg-primary px-2 py-1 text-right text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+                    autoFocus
+                    disabled={savingName}
+                  />
+                  <button onClick={() => void handleSaveName()} disabled={savingName} className="text-xs font-semibold text-primary disabled:opacity-50">
+                    Guardar
+                  </button>
+                  <button onClick={() => { setEditingName(false); setNameInput(currentCard.name) }} className="text-xs text-text-tertiary">
+                    Cancelar
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-text-primary">{currentCard.name}</span>
+                  <button onClick={() => { setNameInput(currentCard.name); setEditingName(true) }} className="text-xs text-primary">
+                    Editar
+                  </button>
+                </div>
+              )}
+            </div>
+
             <DayField
               label="Cierre"
               value={currentCard.closing_day}
@@ -225,7 +274,7 @@ export function CardDetailClient({ card, accounts, resumenes, upcomingClosingDat
                   >
                     Sin cuenta
                   </button>
-                  {accounts.map((a) => (
+                  {[...accounts].sort((a) => a.id === currentCard.account_id ? -1 : 1).map((a) => (
                     <button
                       key={a.id}
                       onClick={() => void patchCard({ account_id: a.id })}

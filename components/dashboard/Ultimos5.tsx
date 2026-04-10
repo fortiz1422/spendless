@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
-import { ArrowCircleUp, X, ArrowsLeftRight, TrendUp, CaretRight, ArrowsClockwise } from '@phosphor-icons/react'
+import { ArrowCircleUp, ArrowsLeftRight, TrendUp, CaretRight, ArrowsClockwise } from '@phosphor-icons/react'
 import { formatAmount, formatDate, todayAR, toDateOnly } from '@/lib/format'
-import { CategoryIcon } from '@/components/ui/CategoryIcon'
 import { Modal } from '@/components/ui/Modal'
 import { FF_YIELD } from '@/lib/flags'
-import type { Account, Expense, IncomeEntry, RecurringIncome, Transfer, YieldAccumulator } from '@/types/database'
+import { ExpenseItem } from '@/components/expenses/ExpenseItem'
+import { IncomeEditSheet } from '@/components/movimientos/IncomeEditSheet'
+import { TransferEditSheet } from '@/components/movimientos/TransferEditSheet'
+import type { Account, Card, Expense, IncomeEntry, RecurringIncome, Transfer, YieldAccumulator } from '@/types/database'
 
 const INCOME_LABELS: Record<string, string> = {
   salary: 'Sueldo',
@@ -29,16 +31,11 @@ interface Props {
   incomeEntries: IncomeEntry[]
   transfers: Transfer[]
   accounts: Account[]
+  cards: Card[]
   month: string
   yieldAccumulators: YieldAccumulator[]
   isCurrentMonth: boolean
   recurringIncomes?: RecurringIncome[]
-}
-
-function getWantDotClass(isWant: boolean | null): string {
-  if (isWant === true) return 'bg-want'
-  if (isWant === false) return 'bg-success'
-  return 'bg-text-dim'
 }
 
 function getMovementSortDate(mv: Movement): number {
@@ -56,10 +53,11 @@ function getMovementDateOnly(mv: Movement): string {
   return toDateOnly(mv.data.date)
 }
 
-export function Ultimos5({ expenses, incomeEntries, transfers, accounts, month, yieldAccumulators, isCurrentMonth, recurringIncomes }: Props) {
+export function Ultimos5({ expenses, incomeEntries, transfers, accounts, cards, month, yieldAccumulators, isCurrentMonth, recurringIncomes }: Props) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
+  const [editingIncome, setEditingIncome] = useState<IncomeEntry | null>(null)
+  const [editingTransfer, setEditingTransfer] = useState<Transfer | null>(null)
   const [yieldSheetItem, setYieldSheetItem] = useState<YieldMovementData | null>(null)
   const [overrideAmount, setOverrideAmount] = useState('')
   const [isSavingOverride, setIsSavingOverride] = useState(false)
@@ -71,36 +69,10 @@ export function Ultimos5({ expenses, incomeEntries, transfers, accounts, month, 
   const accountMap = Object.fromEntries(accounts.map((a) => [a.id, a.name]))
   const today = todayAR()
 
-  const handleDeleteIncome = async (id: string) => {
-    setDeletedIds((prev) => new Set([...prev, id]))
-    try {
-      await fetch(`/api/income-entries/${id}`, { method: 'DELETE' })
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
-      queryClient.invalidateQueries({ queryKey: ['account-breakdown'] })
-      router.refresh()
-    } catch {
-      setDeletedIds((prev) => {
-        const s = new Set(prev)
-        s.delete(id)
-        return s
-      })
-    }
-  }
-
-  const handleDeleteTransfer = async (id: string) => {
-    setDeletedIds((prev) => new Set([...prev, id]))
-    try {
-      await fetch(`/api/transfers/${id}`, { method: 'DELETE' })
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
-      queryClient.invalidateQueries({ queryKey: ['account-breakdown'] })
-      router.refresh()
-    } catch {
-      setDeletedIds((prev) => {
-        const s = new Set(prev)
-        s.delete(id)
-        return s
-      })
-    }
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    queryClient.invalidateQueries({ queryKey: ['account-breakdown'] })
+    router.refresh()
   }
 
   const handleOpenYieldSheet = (ya: YieldMovementData) => {
@@ -154,10 +126,8 @@ export function Ultimos5({ expenses, incomeEntries, transfers, accounts, month, 
 
   const movements: Movement[] = [
     ...(expenses ?? []).map((e) => ({ kind: 'expense' as const, data: e })),
-    ...incomeEntries
-      .filter((e) => !deletedIds.has(e.id))
-      .map((e) => ({ kind: 'income' as const, data: e })),
-    ...transfers.filter((t) => !deletedIds.has(t.id)).map((t) => ({ kind: 'transfer' as const, data: t })),
+    ...incomeEntries.map((e) => ({ kind: 'income' as const, data: e })),
+    ...transfers.map((t) => ({ kind: 'transfer' as const, data: t })),
     ...yieldMovements,
   ]
     .sort((a, b) => {
@@ -232,7 +202,11 @@ export function Ultimos5({ expenses, incomeEntries, transfers, accounts, month, 
               const entry = mv.data
               const linkedRi = entry.recurring_income_id ? recurringMap.get(entry.recurring_income_id) : null
               return (
-                <div key={`i-${entry.id}`} className={`flex items-center gap-3.5 py-3.5 ${divider}`}>
+                <div
+                  key={`i-${entry.id}`}
+                  onClick={() => setEditingIncome(entry)}
+                  className={`flex cursor-pointer items-center gap-3.5 py-3.5 ${divider}`}
+                >
                   <div className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full border border-success/20 bg-success/10">
                     <ArrowCircleUp weight="duotone" size={18} className="text-success" />
                   </div>
@@ -250,20 +224,13 @@ export function Ultimos5({ expenses, incomeEntries, transfers, accounts, month, 
                     </p>
                     {linkedRi && (
                       <button
-                        onClick={() => setGestionarEntry({ entry, ri: linkedRi })}
+                        onClick={(e) => { e.stopPropagation(); setGestionarEntry({ entry, ri: linkedRi }) }}
                         aria-label="Gestionar ingreso recurrente"
                         className="flex items-center justify-center text-primary/50 transition-colors hover:text-primary"
                       >
                         <ArrowsClockwise size={14} weight="bold" />
                       </button>
                     )}
-                    <button
-                      onClick={() => handleDeleteIncome(entry.id)}
-                      aria-label="Eliminar ingreso"
-                      className="flex items-center justify-center text-text-disabled transition-colors hover:text-danger"
-                    >
-                      <X size={14} weight="bold" />
-                    </button>
                   </div>
                 </div>
               )
@@ -275,7 +242,11 @@ export function Ultimos5({ expenses, incomeEntries, transfers, accounts, month, 
               const toName = accountMap[transfer.to_account_id] ?? 'Cuenta'
               const sameCurrency = transfer.currency_from === transfer.currency_to
               return (
-                <div key={`t-${transfer.id}`} className={`flex items-center gap-3.5 py-3.5 ${divider}`}>
+                <div
+                  key={`t-${transfer.id}`}
+                  onClick={() => setEditingTransfer(transfer)}
+                  className={`flex cursor-pointer items-center gap-3.5 py-3.5 ${divider}`}
+                >
                   <div
                     className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full"
                     style={{ background: 'rgba(27,126,158,0.10)', border: '1px solid rgba(27,126,158,0.20)' }}
@@ -291,67 +262,49 @@ export function Ultimos5({ expenses, incomeEntries, transfers, accounts, month, 
                       {formatDate(transfer.date)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="text-right shrink-0">
-                      <p className="text-[14px] font-bold tabular-nums tracking-[-0.01em] text-text-secondary">
-                        {formatAmount(transfer.amount_from, transfer.currency_from)}
+                  <div className="text-right shrink-0">
+                    <p className="text-[14px] font-bold tabular-nums tracking-[-0.01em] text-text-secondary">
+                      {formatAmount(transfer.amount_from, transfer.currency_from)}
+                    </p>
+                    {!sameCurrency && (
+                      <p className="text-[11px] text-text-tertiary">
+                        {formatAmount(transfer.amount_to, transfer.currency_to)}
                       </p>
-                      {!sameCurrency && (
-                        <p className="text-[11px] text-text-tertiary">
-                          {formatAmount(transfer.amount_to, transfer.currency_to)}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleDeleteTransfer(transfer.id)}
-                      aria-label="Eliminar transferencia"
-                      className="flex items-center justify-center text-text-disabled transition-colors hover:text-danger"
-                    >
-                      <X size={14} weight="bold" />
-                    </button>
+                    )}
                   </div>
                 </div>
               )
             }
 
-            const expense = mv.data
-            const isPagoTarjetas = expense.category === 'Pago de Tarjetas'
-            const isUsd = expense.currency === 'USD'
             return (
-              <div key={`e-${expense.id}`} className={`flex items-center gap-3.5 py-3.5 ${divider}`}>
-                <CategoryIcon category={expense.category} size={18} container />
-                <div className="flex-1 min-w-0">
-                  <p className="m-0 truncate text-[13px] font-medium text-text-primary">
-                    {expense.description || expense.category}
-                  </p>
-                  <div className="mt-[3px] flex items-center gap-1.5">
-                    <span
-                      className={`inline-block h-[5px] w-[5px] shrink-0 rounded-full ${getWantDotClass(expense.is_want)}`}
-                    />
-                    <span className="text-[11px] text-text-label">
-                      {expense.category} · {formatDate(expense.date)}
-                    </span>
-                    {expense.installment_number != null && expense.installment_total != null && (
-                      <span className="text-[10px] text-text-tertiary">
-                        · Cuota {expense.installment_number}/{expense.installment_total}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <p
-                    className={`text-[14px] font-bold tabular-nums tracking-[-0.01em] ${isPagoTarjetas ? 'text-primary' : 'text-text-primary'}`}
-                  >
-                    {formatAmount(expense.amount, expense.currency)}
-                  </p>
-                  {isUsd && (
-                    <span className="text-[10px] font-semibold text-warning">USD</span>
-                  )}
-                </div>
-              </div>
+              <ExpenseItem
+                key={`e-${mv.data.id}`}
+                expense={mv.data}
+                cards={cards}
+                accounts={accounts}
+                onUpdate={handleRefresh}
+              />
             )
           })}
         </div>
+      )}
+
+      {editingIncome && (
+        <IncomeEditSheet
+          entry={editingIncome}
+          accounts={accounts}
+          onClose={() => setEditingIncome(null)}
+          onUpdate={() => { setEditingIncome(null); handleRefresh() }}
+        />
+      )}
+
+      {editingTransfer && (
+        <TransferEditSheet
+          transfer={editingTransfer}
+          accounts={accounts}
+          onClose={() => setEditingTransfer(null)}
+          onUpdate={() => { setEditingTransfer(null); handleRefresh() }}
+        />
       )}
 
       {/* Gestionar ingreso recurrente */}

@@ -9,6 +9,7 @@ import { InsightChips } from './InsightChips'
 import { CategoriaRow } from './CategoriaRow'
 import { AnalysisView } from './AnalysisView'
 import { buildHeroOutput } from '@/lib/heroEngine'
+import { readHeroCache } from '@/lib/heroEngine/cache'
 import type { InsightResult } from '@/lib/heroEngine'
 import { computeMetrics } from '@/lib/analytics/computeMetrics'
 import type { Metrics, HabitosDayEntry } from '@/lib/analytics/computeMetrics'
@@ -48,7 +49,12 @@ export function AnalyticsClient({
   const [soloPercibidos, setSoloPercibidos] = useState(false)
   const [drill, setDrill] = useState<Drill | null>(null)
   const [selDay, setSelDay] = useState<HabitosDayEntry | null>(null)
-  const [hero, setHero] = useState<InsightResult | null>(null)
+  const [hero, setHero] = useState<InsightResult | null>(() => {
+    const cached = readHeroCache()
+    return cached
+      ? { titular: cached.titular, sentiment: cached.sentiment, chips: cached.chips }
+      : null
+  })
 
   useEffect(() => {
     const result = buildHeroOutput(metrics, rawExpenses, cards, subscriptions, compromisos)
@@ -88,13 +94,7 @@ export function AnalyticsClient({
         <div className="flex items-center gap-3 px-5 pt-5 mb-4">
           <button
             onClick={() => handleSetDrill(null)}
-            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-            style={{
-              background: 'rgba(255,255,255,0.38)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,255,255,0.70)',
-            }}
+            className="glass-2 w-10 h-10 rounded-full flex items-center justify-center shrink-0"
           >
             <CaretLeft weight="bold" size={18} className="text-text-primary" />
           </button>
@@ -108,43 +108,24 @@ export function AnalyticsClient({
             earliestDataMonth={earliestDataMonth}
             className=""
           />
-          <div
-            className="p-1 flex"
-            style={{
-              background: 'rgba(255,255,255,0.50)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,255,255,0.70)',
-              borderRadius: 12,
-            }}
-          >
+          <div className="glass-2 p-1 flex rounded-xl">
             <button
               onClick={() => handleTabChange('diario')}
-              className={`px-3 py-1.5 type-meta transition-colors ${
+              className={`px-3 py-1.5 type-meta transition-colors rounded-[9px] ${
                 activeTab === 'diario'
-                  ? 'font-semibold text-white'
-                  : 'bg-transparent text-[#4A6070]'
+                  ? 'font-semibold text-white bg-text-primary'
+                  : 'bg-transparent text-text-secondary'
               }`}
-              style={
-                activeTab === 'diario'
-                  ? { background: '#0D1829', borderRadius: 9 }
-                  : undefined
-              }
             >
               Diario
             </button>
             <button
               onClick={() => handleTabChange('analisis')}
-              className={`px-3 py-1.5 type-meta transition-colors ${
+              className={`px-3 py-1.5 type-meta transition-colors rounded-[9px] ${
                 activeTab === 'analisis'
-                  ? 'font-semibold text-white'
-                  : 'bg-transparent text-[#4A6070]'
+                  ? 'font-semibold text-white bg-text-primary'
+                  : 'bg-transparent text-text-secondary'
               }`}
-              style={
-                activeTab === 'analisis'
-                  ? { background: '#0D1829', borderRadius: 9 }
-                  : undefined
-              }
             >
               Análisis
             </button>

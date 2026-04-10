@@ -14,7 +14,6 @@ import type {
   Instrument,
   IncomeEntry,
   RecurringIncome,
-  RolloverMode,
   Subscription,
   Transfer,
 } from '@/types/database'
@@ -109,7 +108,6 @@ export async function GET(request: Request) {
   const userCurrency = (config?.default_currency ?? 'ARS') as 'ARS' | 'USD'
   const viewCurrency = (currencyParam === 'USD' ? 'USD' : 'ARS') as 'ARS' | 'USD'
   const currency = userCurrency
-  const rolloverMode = (config?.rollover_mode ?? 'off') as RolloverMode
   const cards: Card[] = (cardsData ?? []) as Card[]
   const accounts: Account[] = (accountsData ?? []) as Account[]
   const accountIds = accounts.map((a) => a.id)
@@ -121,7 +119,6 @@ export async function GET(request: Request) {
 
   const [
     incomeEntriesResult,
-    periodBalancesResult,
     { data: oldestExpense },
     { data: usdCheckData },
     { data: allUltimosData },
@@ -147,13 +144,6 @@ export async function GET(request: Request) {
       .lt('date', nextMonthDate)
       .order('date', { ascending: false })
       .limit(20),
-    accountIds.length > 0
-      ? supabase
-          .from('account_period_balance')
-          .select('account_id, source')
-          .in('account_id', accountIds)
-          .eq('period', selectedMonthDate)
-      : Promise.resolve({ data: [] }),
     supabase.from('expenses').select('date').eq('user_id', user.id).order('date', { ascending: true }).limit(1).maybeSingle(),
     supabase.from('expenses').select('id').eq('user_id', user.id).eq('currency', 'USD').limit(1).maybeSingle(),
     supabase
@@ -252,8 +242,8 @@ export async function GET(request: Request) {
   ])
 
   const incomeEntries = (incomeEntriesResult.data ?? []) as IncomeEntry[]
-  const hasConfiguredOpeningBalance = (periodBalancesResult.data ?? []).some(
-    (balance) => balance.source !== 'rollover_auto',
+  const hasConfiguredOpeningBalance = accounts.some(
+    (account) => account.opening_balance_ars > 0 || account.opening_balance_usd > 0,
   )
   const hasIncome = incomeEntries.length > 0 || hasConfiguredOpeningBalance
   const earliestDataMonth = oldestExpense?.date?.substring(0, 7) ?? null
@@ -272,9 +262,9 @@ export async function GET(request: Request) {
   const activeSubscriptions = (subscriptionsData ?? []) as Subscription[]
 
   let autoRolloverAmount: number | null = null
-  let manualRolloverSummary = null
+  const manualRolloverSummary = null
 
-  if (rolloverMode !== 'off' && isCurrentMonth) {
+  if (isCurrentMonth) {
     const prevMonthStr = addMonths(currentMonth, -1)
     const prevMonthDate = prevMonthStr + '-01'
 
@@ -306,7 +296,6 @@ export async function GET(request: Request) {
       // Filter expenses by currency for the global summary display
       const prevExpsForSummary = (prevExps ?? []).filter((e) => e.currency === currency)
       const summary = buildPrevMonthSummary(
-        null,
         prevExpsForSummary,
         currency,
         prevMonthStr,
@@ -314,10 +303,8 @@ export async function GET(request: Request) {
         prevPeriodBalances ?? [],
       )
 
-      if (rolloverMode === 'auto' && incomeEntries.length === 0) {
+      if (incomeEntries.length === 0) {
         autoRolloverAmount = summary.saldoFinal
-      } else if (rolloverMode === 'manual' && !hasIncome) {
-        manualRolloverSummary = summary
       }
     }
   }

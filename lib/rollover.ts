@@ -1,8 +1,8 @@
-import type { Account, MonthlyIncome } from '@/types/database'
+import type { Account } from '@/types/database'
 
 export type PrevMonthSummary = {
-  prevIncomeId: string | null // null when no monthly_income for that month
-  prevMonth: string           // YYYY-MM
+  prevIncomeId: null
+  prevMonth: string // YYYY-MM
   ingresos: number
   saldoInicial: number
   gastosMes: number
@@ -37,80 +37,33 @@ type PrevAccountBalance = {
 }
 type MinAccountBalance = { balance_ars: number; balance_usd: number }
 
-export function calcularSaldoFinal(
-  prevIncome: Pick<
-    MonthlyIncome,
-    'amount_ars' | 'amount_usd' | 'saldo_inicial_ars' | 'saldo_inicial_usd'
-  >,
-  prevExpenses: MinExpense[],
-  currency: 'ARS' | 'USD',
-): number {
-  const ingresos = currency === 'ARS' ? prevIncome.amount_ars : prevIncome.amount_usd
-  const saldoInicial =
-    currency === 'ARS' ? prevIncome.saldo_inicial_ars : prevIncome.saldo_inicial_usd
-
-  const gastosMes = prevExpenses
-    .filter(
-      (e) =>
-        ['CASH', 'DEBIT', 'TRANSFER'].includes(e.payment_method) &&
-        e.category !== 'Pago de Tarjetas',
-    )
-    .reduce((s, e) => s + e.amount, 0)
-
-  const pagosTarjeta = prevExpenses
-    .filter((e) => e.category === 'Pago de Tarjetas')
-    .reduce((s, e) => s + e.amount, 0)
-
-  return Math.max(0, saldoInicial + ingresos - gastosMes - pagosTarjeta)
-}
-
 /**
  * Builds the previous month summary for rollover.
  *
- * Priority (same as get_dashboard_data SQL):
- *   saldo_inicial → account_period_balance > monthly_income > 0
- *   ingresos      → income_entries > monthly_income > 0
- *
- * prevIncome can be null when the user never used monthly_income.
+ * Priority:
+ *   saldo_inicial -> account_period_balance > 0
+ *   ingresos -> income_entries > 0
  */
 export function buildPrevMonthSummary(
-  prevIncome: MonthlyIncome | null,
   prevExpenses: MinExpense[],
   currency: 'ARS' | 'USD',
   prevMonth: string,
   prevIncomeEntries: MinIncomeEntry[] = [],
   prevAccountBalances: MinAccountBalance[] = [],
 ): PrevMonthSummary {
-  // Ingresos: income_entries first, fallback to monthly_income
   const entriesSum = prevIncomeEntries
     .filter((e) => e.currency === currency)
     .reduce((s, e) => s + e.amount, 0)
 
-  const ingresos =
-    entriesSum > 0
-      ? entriesSum
-      : prevIncome
-        ? currency === 'ARS'
-          ? prevIncome.amount_ars
-          : prevIncome.amount_usd
-        : 0
+  const ingresos = entriesSum > 0 ? entriesSum : 0
 
-  // Saldo inicial: account_period_balance first, fallback to monthly_income
   const balanceSum = prevAccountBalances.reduce(
     (s, b) => s + (currency === 'ARS' ? b.balance_ars : b.balance_usd),
     0,
   )
 
-  const saldoInicial =
-    balanceSum > 0
-      ? balanceSum
-      : prevIncome
-        ? currency === 'ARS'
-          ? prevIncome.saldo_inicial_ars
-          : prevIncome.saldo_inicial_usd
-        : 0
+  const saldoInicial = balanceSum > 0 ? balanceSum : 0
 
-  // Filter by currency to avoid mixing ARS/USD amounts
   const gastosMes = prevExpenses
     .filter(
       (e) =>
@@ -127,7 +80,7 @@ export function buildPrevMonthSummary(
   const saldoFinal = Math.max(0, saldoInicial + ingresos - gastosMes - pagosTarjeta)
 
   return {
-    prevIncomeId: prevIncome?.id ?? null,
+    prevIncomeId: null,
     prevMonth,
     ingresos,
     saldoInicial,
@@ -166,7 +119,7 @@ export function buildPerAccountBalances(
  *   3. Subtracting CASH/DEBIT/TRANSFER expenses and card payments per account
  *   4. Applying internal transfers (from loses, to gains)
  *
- * Null account_id on income/expenses → assigned to primary account.
+ * Null account_id on income/expenses -> assigned to primary account.
  */
 export function buildSmartPerAccountBalances(
   accounts: Account[],
@@ -180,7 +133,6 @@ export function buildSmartPerAccountBalances(
   const primary = accounts.find((a) => a.is_primary) ?? accounts[0]
   const accountIds = new Set(accounts.map((a) => a.id))
 
-  // Initialize map with previous period balances
   const map = new Map<string, { ars: number; usd: number }>()
   for (const acc of accounts) {
     map.set(acc.id, { ars: 0, usd: 0 })
@@ -192,20 +144,17 @@ export function buildSmartPerAccountBalances(
     }
   }
 
-  // Helper: resolve null account_id → primary
   const resolve = (accountId: string | null | undefined): string => {
     const id = accountId ?? primary.id
     return accountIds.has(id) ? id : primary.id
   }
 
-  // Add income entries
   for (const entry of incomeEntries) {
     const bal = map.get(resolve(entry.account_id))!
     if (entry.currency === 'ARS') bal.ars += entry.amount
     else if (entry.currency === 'USD') bal.usd += entry.amount
   }
 
-  // Subtract direct expenses (CASH/DEBIT/TRANSFER) and card payments
   for (const exp of expenses) {
     const isDirectExpense =
       ['CASH', 'DEBIT', 'TRANSFER'].includes(exp.payment_method) &&
@@ -219,7 +168,6 @@ export function buildSmartPerAccountBalances(
     else if (cur === 'USD') bal.usd -= exp.amount
   }
 
-  // Apply internal transfers: from_account loses, to_account gains
   for (const t of transfers) {
     const fromBal = map.get(t.from_account_id)
     const toBal = map.get(t.to_account_id)
@@ -233,7 +181,6 @@ export function buildSmartPerAccountBalances(
     }
   }
 
-  // Return all accounts, clamping to 0
   return accounts.map((acc) => {
     const bal = map.get(acc.id)!
     return {

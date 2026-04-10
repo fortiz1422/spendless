@@ -33,6 +33,8 @@ export async function GET(request: Request) {
   const cuentas   = (searchParams.get('cuentas')   ?? '').split(',').filter(Boolean)
   const categorias = (searchParams.get('categorias') ?? '').split(',').filter(Boolean)
   const monedas   = (searchParams.get('monedas')   ?? '').split(',').filter(Boolean) as MonedaFilter[]
+  const quincenaParam = parseInt(searchParams.get('quincena') ?? '0', 10)
+  const quincena  = quincenaParam === 1 || quincenaParam === 2 ? quincenaParam as 1 | 2 : null
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -41,6 +43,10 @@ export async function GET(request: Request) {
   const selectedMonth = monthParam ?? getCurrentMonth()
   const startOfMonth  = selectedMonth + '-01'
   const endOfMonth    = addMonths(selectedMonth, 1) + '-01'
+
+  // Quincena sub-range (overrides start/end for both movements and stats)
+  const effectiveStart = quincena === 2 ? selectedMonth + '-16' : startOfMonth
+  const effectiveEnd   = quincena === 1 ? selectedMonth + '-16' : endOfMonth
 
   // Which collections to fetch
   const wantsExpenses  = tipos.length === 0 || tipos.some((t) => t === 'gasto' || t === 'suscripcion')
@@ -57,19 +63,19 @@ export async function GET(request: Request) {
   ] = await Promise.all([
     wantsExpenses
       ? supabase.from('expenses').select('*').eq('user_id', user.id)
-          .gte('date', startOfMonth).lt('date', endOfMonth)
+          .gte('date', effectiveStart).lt('date', effectiveEnd)
           .order('date', { ascending: false }).order('created_at', { ascending: false })
       : Promise.resolve({ data: [] as Expense[] }),
 
     wantsIncome
       ? supabase.from('income_entries').select('*').eq('user_id', user.id)
-          .gte('date', startOfMonth).lt('date', endOfMonth)
+          .gte('date', effectiveStart).lt('date', effectiveEnd)
           .order('date', { ascending: false })
       : Promise.resolve({ data: [] as IncomeEntry[] }),
 
     wantsTransfers
       ? supabase.from('transfers').select('*').eq('user_id', user.id)
-          .gte('date', startOfMonth).lt('date', endOfMonth)
+          .gte('date', effectiveStart).lt('date', effectiveEnd)
           .order('date', { ascending: false })
       : Promise.resolve({ data: [] as Transfer[] }),
 
@@ -99,27 +105,30 @@ export async function GET(request: Request) {
     .from('expenses')
     .select('amount, currency, payment_method, category')
     .eq('user_id', user.id)
-    .gte('date', startOfMonth)
-    .lt('date', endOfMonth)
+    .gte('date', effectiveStart)
+    .lt('date', effectiveEnd)
 
   const statsExpenses = (statsExpensesData ?? []) as Pick<Expense, 'amount' | 'currency' | 'payment_method' | 'category'>[]
 
+  // Option D: stats currency follows the active moneda filter
+  const statsCurrency: 'ARS' | 'USD' = monedas.length === 1 && monedas[0] === 'USD' ? 'USD' : 'ARS'
+
   const percibidos = statsExpenses
-    .filter((e) => e.payment_method !== 'CREDIT' && e.category !== 'Pago de Tarjetas' && e.currency === 'ARS')
+    .filter((e) => e.payment_method !== 'CREDIT' && e.category !== 'Pago de Tarjetas' && e.currency === statsCurrency)
     .reduce((sum, e) => sum + e.amount, 0)
 
   const tarjeta = statsExpenses
-    .filter((e) => e.payment_method === 'CREDIT' && e.category !== 'Pago de Tarjetas' && e.currency === 'ARS')
+    .filter((e) => e.payment_method === 'CREDIT' && e.category !== 'Pago de Tarjetas' && e.currency === statsCurrency)
     .reduce((sum, e) => sum + e.amount, 0)
 
   const pagoTarjeta = statsExpenses
-    .filter((e) => e.category === 'Pago de Tarjetas' && e.currency === 'ARS')
+    .filter((e) => e.category === 'Pago de Tarjetas' && e.currency === statsCurrency)
     .reduce((sum, e) => sum + e.amount, 0)
 
   // ── Available categories (for filter UI) ───────────────────────────────────
   const { data: allCatsData } = await supabase
     .from('expenses').select('category')
-    .eq('user_id', user.id).gte('date', startOfMonth).lt('date', endOfMonth)
+    .eq('user_id', user.id).gte('date', effectiveStart).lt('date', effectiveEnd)
 
   const categories = [...new Set((allCatsData ?? []).map((e: { category: string }) => e.category))].sort()
 
@@ -236,6 +245,7 @@ export async function GET(request: Request) {
   return NextResponse.json({
     movements,
     stats: { percibidos, tarjeta, pagoTarjeta },
+    statsCurrency,
     total,
     categories,
     accounts,

@@ -8,7 +8,6 @@ import { SaldoVivo } from '@/components/dashboard/SaldoVivo'
 import { CuentaSheet } from '@/components/settings/CuentaSheet'
 import { FiltroEstoico } from '@/components/dashboard/FiltroEstoico'
 import { Ultimos5 } from '@/components/dashboard/Ultimos5'
-import { CierreMesModal } from '@/components/dashboard/CierreMesModal'
 import { HomePlusButton } from '@/components/dashboard/HomePlusButton'
 import { CardPaymentPrompt } from '@/components/dashboard/CardPaymentPrompt'
 import { SubscriptionReviewBanner } from '@/components/subscriptions/SubscriptionReviewBanner'
@@ -142,7 +141,6 @@ export function DashboardShell({ selectedMonth, viewCurrency, userEmail }: Props
     accounts,
     cards,
     currency,
-    manualRolloverSummary,
     activeSubscriptions,
     allUltimos,
     incomeEntries,
@@ -225,6 +223,7 @@ export function DashboardShell({ selectedMonth, viewCurrency, userEmail }: Props
           incomeEntries={incomeEntries}
           transfers={transfers}
           accounts={accounts}
+          cards={cards}
           month={selectedMonth}
           yieldAccumulators={yieldAccumulators}
           isCurrentMonth={isCurrentMonth}
@@ -239,7 +238,7 @@ export function DashboardShell({ selectedMonth, viewCurrency, userEmail }: Props
           bottom: 0,
           left: 0,
           right: 0,
-          height: 180,
+          height: 140,
           zIndex: 46,
           pointerEvents: 'none',
           background: 'linear-gradient(to bottom, transparent, var(--color-bg-primary))',
@@ -251,7 +250,7 @@ export function DashboardShell({ selectedMonth, viewCurrency, userEmail }: Props
       <div
         style={{
           position: 'fixed',
-          bottom: keyboardOffset > 0 ? keyboardOffset + 8 : 'calc(env(safe-area-inset-bottom) + 76px)',
+          bottom: keyboardOffset > 0 ? keyboardOffset + 8 : 'calc(env(safe-area-inset-bottom) + 58px)',
           left: 0,
           right: 0,
           zIndex: 50,
@@ -266,7 +265,7 @@ export function DashboardShell({ selectedMonth, viewCurrency, userEmail }: Props
         </div>
       </div>
 
-      {activePrompt && !manualRolloverSummary && (
+      {activePrompt && (
         <CardPaymentPrompt
           card={activePrompt.card}
           amount={activePrompt.amount}
@@ -276,15 +275,6 @@ export function DashboardShell({ selectedMonth, viewCurrency, userEmail }: Props
           accounts={accounts}
           onConfirm={(finalAmount) => activePrompt.onConfirm(finalAmount).then(invalidateDashboardData)}
           onDismiss={activePrompt.onDismiss}
-        />
-      )}
-
-      {manualRolloverSummary && (
-        <CierreMesModal
-          summary={manualRolloverSummary}
-          toMonth={selectedMonth}
-          currency={currency}
-          accounts={accounts}
         />
       )}
 

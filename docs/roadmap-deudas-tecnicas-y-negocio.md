@@ -319,9 +319,22 @@ Tratarlo como snapshot derivado siempre que sea posible.
 
 **Estado actualizado**
 
-Parcialmente acotado.
+Avance fuerte.
 
-Ya se decidio que `account_period_balance` no debe ser la fuente principal del hero ni del total vivo. Falta cerrar formalmente si queda solo como snapshot derivado o si conserva algun uso manual controlado.
+Ya se decidio que `account_period_balance` no debe ser la fuente principal del hero ni del total vivo.
+
+Ademas:
+
+- dashboard ya no lo usa para detectar apertura configurada del mes actual
+- yield ya no depende de `account_period_balance` como saldo base primario
+- alta y edicion de cuenta ya no escriben snapshots automaticos
+- la apertura real queda en `accounts.opening_balance_*`
+- el write manual normal de producto ya no esta habilitado
+
+Sigue pendiente:
+
+- decidir si `source: opening` debe sobrevivir solo como compatibilidad semantica o tambien como writer permitido
+- dejar documentado oficialmente que APB queda como snapshot derivado de periodo para rollover y reporting
 
 **Prioridad**
 
@@ -432,6 +445,20 @@ No seguir expandiendo cuotas hasta cerrar una auditoría completa del flujo.
 - el comportamiento esperado está documentado
 - hay tests para inserción y borrado grupal
 
+**Estado actualizado**
+
+Avance parcial importante:
+
+- ya se auditó el flujo actual de cuotas
+- la expansión de compras nuevas ahora reconcilia centavos y cierra exacto con el total
+- la edición individual de cuotas agrupadas quedó bloqueada en UI y backend
+- se confirmó que el impacto en ciclos de tarjeta depende de la fecha mensual de cada fila y hoy funciona como se espera
+
+Sigue pendiente:
+
+- definir e implementar edición grupal real si se quiere soportar corrección de una operación en cuotas sin borrarla y recrearla
+- agregar tests específicos de cuotas
+
 **Prioridad**
 
 P0
@@ -442,7 +469,7 @@ P0
 
 **Problema**
 
-`rollover` existe como parte importante del sistema, pero no está completamente estabilizado como concepto de producto. Además, `manual` existe en tipos/lógica y no está claramente expuesto o consolidado.
+`rollover` existe como parte importante del sistema, pero no estaba completamente estabilizado como concepto de producto.
 
 **Por qué existe hoy**
 
@@ -469,9 +496,8 @@ Reducir el alcance contable de rollover y dejarlo como herramienta de período, 
 
 **Trabajo técnico esperado**
 
-- revisar todos los caminos `auto`, `manual`, `off`
-- definir qué ve el usuario en cada modo
-- decidir si `manual` se expone formalmente o se elimina
+- revisar el rol real de rollover como infraestructura vs feature visible
+- definir si el usuario debe ver algo o si queda solo como mecanismo interno
 
 **Riesgos / edge cases**
 
@@ -483,6 +509,19 @@ Reducir el alcance contable de rollover y dejarlo como herramienta de período, 
 
 - producto tiene una postura clara sobre rollover
 - UI y lógica soportan exactamente los modos vigentes
+
+**Estado actualizado**
+
+Avance importante:
+
+- `Saldo Vivo` ya no depende de rollover
+- la UI de configuración ya no expone rollover como preferencia del usuario
+- `manual` dejó de tener sentido en runtime
+- rollover queda encaminado como infraestructura interna de snapshots mensuales
+
+Sigue pendiente:
+
+- alinear documentación residual y constraints legacy de base de datos si se quiere cerrar el cleanup completo
 
 **Prioridad**
 
@@ -937,7 +976,7 @@ Si estas deudas siguen abiertas:
 - [~] decidir futuro de `monthly_income`
 - [ ] decidir rol de `account_period_balance`
 - [ ] cerrar `Disponible Real` con migración y etiquetado legacy aplicado en Supabase
-- [ ] auditar cuotas de punta a punta
+- [~] auditar cuotas de punta a punta
 
 ### P1
 

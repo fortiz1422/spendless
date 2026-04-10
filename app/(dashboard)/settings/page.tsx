@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { AccountSection } from '@/components/settings/AccountSection'
 import { SettingsPreferences } from '@/components/settings/SettingsPreferences'
 import { getCurrentMonth } from '@/lib/dates'
-import type { Card, RolloverMode } from '@/types/database'
+import type { Card } from '@/types/database'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -15,7 +15,7 @@ export default async function SettingsPage() {
   const [{ data: config }, { data: accountsData }, { data: cardsData }] = await Promise.all([
     supabase
       .from('user_config')
-      .select('default_currency, rollover_mode')
+      .select('default_currency')
       .eq('user_id', user.id)
       .single(),
     supabase
@@ -34,7 +34,6 @@ export default async function SettingsPage() {
 
   const currency = (config?.default_currency ?? 'ARS') as 'ARS' | 'USD'
   const allCards: Card[] = (cardsData ?? []) as Card[]
-  const rolloverMode = (config?.rollover_mode ?? 'off') as RolloverMode
   const currentMonth = getCurrentMonth()
   const accounts = accountsData ?? []
 
@@ -45,7 +44,6 @@ export default async function SettingsPage() {
           currentMonth={currentMonth}
           currency={currency}
           cards={allCards}
-          rolloverMode={rolloverMode}
           accounts={accounts}
         />
 

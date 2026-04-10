@@ -40,11 +40,12 @@
 - structured expense creation API with zod validation
 - expense categories and payment methods
 - optional account linkage
-- installment expansion into multiple rows on save
+- installment expansion into multiple rows on save, with exact cent reconciliation on new installment purchases
 - duplicate-expense detection endpoint via Supabase RPC
 - expense editing
 - expense deletion
 - grouped installment deletion when deleting one expense in a group
+- grouped installments cannot be edited individually; they must be deleted as a group and recreated
 
 ### Income Management
 
@@ -68,10 +69,10 @@
 - create account
 - account types: bank, digital, cash
 - set primary account
-- edit opening balances
+- edit historical opening balances in `accounts`
 - archive account when deletion is blocked by linked expenses
 - hard-delete account when no linked expenses exist
-- per-period account balances exposed through `/api/account-balances`
+- per-period account-balance snapshots exposed through `/api/account-balances`
 
 ### Cards
 
@@ -124,12 +125,11 @@
 - hero-chip system
 - CSV export of expenses
 
-### Rollover And Monthly Carry
+### Rollover And Monthly Snapshots
 
-- rollover mode in `user_config`
 - previous-month summary logic
 - automatic per-account rollover calculation
-- manual rollover summary flow in dashboard logic and modal handling
+- rollover writes monthly snapshots to `account_period_balance` with `source: 'rollover_auto'`
 - projected starting balance for future months
 
 ### Yield And Instruments
@@ -149,7 +149,6 @@ These are implemented but behind feature flags.
 - default currency switching
 - account management
 - card management
-- rollover toggle
 - sign out
 - account deletion
 
@@ -162,22 +161,9 @@ These are implemented but behind feature flags.
 
 ## Features That Appear In Progress Or Partially Implemented
 
-### Legacy Monthly Income vs New Income Model
+### Historical Cleanup Still Pending In Database
 
-Both models are active:
-
-- legacy: `monthly_income`
-- newer: `income_entries` plus `account_period_balance`
-
-The dashboard and analytics prefer new data when available and fall back to legacy values. This looks like an unfinished migration rather than a stable final state.
-
-### Manual Rollover
-
-- the type system allows `rollover_mode: 'manual'`
-- dashboard logic computes `manualRolloverSummary`
-- `CierreMesModal` exists
-
-But settings only exposes `auto` and `off`. There is no obvious current UI entry point to set `manual`.
+The runtime already moved away from some legacy models, but database/schema cleanup is still pending in parts of Supabase.
 
 ### Investments / Yield Rollout
 

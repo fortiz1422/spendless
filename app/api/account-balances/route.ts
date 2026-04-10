@@ -7,7 +7,7 @@ const Schema = z.object({
   period: z.string().regex(/^\d{4}-\d{2}(-\d{2})?$/),
   balance_ars: z.number().min(0).default(0),
   balance_usd: z.number().min(0).default(0),
-  source: z.enum(['opening', 'rollover_auto', 'manual']).default('manual'),
+  source: z.enum(['rollover_auto']).default('rollover_auto'),
 })
 
 export async function GET(request: Request) {

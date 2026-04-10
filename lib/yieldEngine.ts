@@ -8,23 +8,85 @@
  * Respeta override manual: si is_manual_override = true, no pisa el valor
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { todayAR } from '@/lib/format'
+import { buildLiveBalanceBreakdown } from '@/lib/live-balance'
+import type { Account, Database } from '@/types/database'
+
 export async function processYieldAccrual(
-  supabase: any,
+  supabase: SupabaseClient<Database>,
   userId: string,
   currentMonth: string, // YYYY-MM
 ): Promise<void> {
   const { data: accounts } = await supabase
     .from('accounts')
-    .select('id, daily_yield_rate')
+    .select('*')
     .eq('user_id', userId)
     .eq('daily_yield_enabled', true)
     .eq('archived', false)
 
   if (!accounts?.length) return
 
-  const todayStr = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+  const todayStr = todayAR()
   const monthStart = currentMonth + '-01'
+
+  const [
+    { data: incomeData },
+    { data: debitExpenseData },
+    { data: cardPaymentData },
+    { data: transfersData },
+    { data: priorYieldData },
+    { data: instrumentsData },
+  ] = await Promise.all([
+    supabase
+      .from('income_entries')
+      .select('account_id, amount')
+      .eq('user_id', userId)
+      .eq('currency', 'ARS')
+      .lte('date', todayStr),
+    supabase
+      .from('expenses')
+      .select('account_id, amount')
+      .eq('user_id', userId)
+      .eq('currency', 'ARS')
+      .lte('date', todayStr)
+      .in('payment_method', ['CASH', 'DEBIT', 'TRANSFER'])
+      .neq('category', 'Pago de Tarjetas'),
+    supabase
+      .from('expenses')
+      .select('account_id, amount')
+      .eq('user_id', userId)
+      .eq('currency', 'ARS')
+      .lte('date', todayStr)
+      .eq('category', 'Pago de Tarjetas'),
+    supabase
+      .from('transfers')
+      .select('from_account_id, to_account_id, amount_from, amount_to, currency_from, currency_to')
+      .eq('user_id', userId)
+      .lte('date', todayStr),
+    supabase
+      .from('yield_accumulator')
+      .select('account_id, accumulated')
+      .eq('user_id', userId)
+      .lt('month', currentMonth),
+    supabase
+      .from('instruments')
+      .select('account_id, amount, currency')
+      .eq('user_id', userId)
+      .eq('status', 'active'),
+  ])
+
+  const breakdown = buildLiveBalanceBreakdown({
+    accounts: accounts as Account[],
+    currency: 'ARS',
+    incomes: incomeData ?? [],
+    debitExpenses: debitExpenseData ?? [],
+    cardPayments: cardPaymentData ?? [],
+    transfers: transfersData ?? [],
+    yields: priorYieldData ?? [],
+    activeInstruments: instrumentsData ?? [],
+  })
+  const liveBalanceByAccount = new Map(breakdown.map((row) => [row.id, row.saldo]))
 
   for (const account of accounts) {
     const rate = account.daily_yield_rate as number | null
@@ -43,15 +105,8 @@ export async function processYieldAccrual(
     // Idempotencia: ya se acreditó hoy
     if (ya?.last_accrued_date === todayStr) continue
 
-    // Saldo base del período (simplificado — ver GOT-27 decisión de diseño)
-    const { data: periodBalance } = await supabase
-      .from('account_period_balance')
-      .select('balance_ars')
-      .eq('account_id', account.id)
-      .eq('period', monthStart)
-      .maybeSingle()
-
-    const baseSaldo = (periodBalance?.balance_ars ?? 0) as number
+    // Base transicional: saldo vivo ARS por cuenta sin el yield del mes en curso.
+    const baseSaldo = liveBalanceByAccount.get(account.id) ?? 0
     if (baseSaldo <= 0) continue
 
     // Determinar desde qué fecha acreditar
